@@ -1,0 +1,6 @@
+@UniTodo_HostAddress = http://localhost:5252
+
+GET {{UniTodo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
