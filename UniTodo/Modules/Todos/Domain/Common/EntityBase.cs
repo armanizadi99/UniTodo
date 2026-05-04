@@ -2,9 +2,9 @@
 {
     public class EntityBase
     {
-public DateTime CreatedAt { get; private set; }
+public DateTimeOffset CreatedAt { get; private set; }
         public int Id { get; private set; }
-public DateTime UpdatedAt { get; private set; }
+public DateTimeOffset UpdatedAt { get; private set; }
 
         protected EntityBase() { }
 
