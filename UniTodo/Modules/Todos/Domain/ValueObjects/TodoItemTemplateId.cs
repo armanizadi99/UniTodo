@@ -1,4 +1,4 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public record TodoItemTemplateId (int Id);
+    public readonly record struct TodoItemTemplateId( int Id );
 }

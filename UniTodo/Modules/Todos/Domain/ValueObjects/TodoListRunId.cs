@@ -1,4 +1,4 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public record TodoListRunId (int Id);
+    public readonly record struct TodoListRunId (int Id);
 }
