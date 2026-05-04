@@ -11,8 +11,8 @@ public TodoItemTemplateId? TodoItemTemplateId { get; private set; }
 public TodoItemDescription description { get; private set; }
 public int position { get; private set; }
 public bool IsCompleted { get; private set; }
-public DateAndTime CompletedAt { get; private set; }
-public TodoItemNotes Notes { get; private set; }
+public DateTimeOffset? CompletedAt { get; private set; }
+public TodoItemNotes? Notes { get; private set; }
 
 public TodoListRun Run { get; private set; }
     }
