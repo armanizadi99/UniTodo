@@ -9,10 +9,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         private readonly List<TodoItem> _todoItems = new List<TodoItem>();
 
 public TodoListId TodoListId { get; private set; }
-public DateTime PeriodStart{ get; private set; }
-public DateTime PeriodEnd { get; private set; }
 public TodoListRunStatus Status { get; private set; }
-public DateTime? ClosedAt{ get; private set; }
+public DateTimeOffset? ClosedAt{ get; private set; }
 
         public TodoList TodoList { get; private set; }
 
