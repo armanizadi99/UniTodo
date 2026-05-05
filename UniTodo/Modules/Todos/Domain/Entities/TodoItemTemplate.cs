@@ -10,5 +10,11 @@ public TodoItemDescription Description { get; private set; }
         public bool IsDeleted { get; private set; }
 
         public TodoList TodoList { get; private set; }
+
+public TodoItemTemplate( TodoListId todoListId, TodoItemDescription description )
+        {
+        TodoListId = todoListId;
+        Description = description;
+        }
     }
 }
