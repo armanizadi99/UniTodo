@@ -9,7 +9,6 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 public TodoListRunId RunId { get; private set; }
 public TodoItemTemplateId? TodoItemTemplateId { get; private set; }
 public TodoItemDescription description { get; private set; }
-public int position { get; private set; }
 public bool IsCompleted { get; private set; }
 public DateTimeOffset? CompletedAt { get; private set; }
 public TodoItemNotes? Notes { get; private set; }
