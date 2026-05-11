@@ -1,14 +1,14 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public class EntityBase
+    public class EntityBase<TEntityIdType>
     {
 public DateTimeOffset CreatedAt { get; protected  set; }
-        public int Id { get; private set; }
+        public TEntityIdType Id { get; private set; }
 public DateTimeOffset UpdatedAt { get; protected  set; }
 
         protected EntityBase() { }
 
-        protected EntityBase( int id = default )
+        protected EntityBase( TEntityIdType id = default )
         {
         Id = id;
         }

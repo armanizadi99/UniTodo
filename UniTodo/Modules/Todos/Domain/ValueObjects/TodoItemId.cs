@@ -2,13 +2,13 @@
 
 namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public readonly record struct TodoListRunId : IStronglyTypedId<int>
+    public readonly record struct TodoItemId : IStronglyTypedId<int>
     {
         public int Value { get; init; }
 
-public TodoListRunId(int value)
-{
-        IdHelper.GuardAgainstInvalid(value, nameof(TodoListRunId));
+        public TodoItemId( int value )
+        {
+        IdHelper.GuardAgainstInvalid(value, nameof(TodoItemId));
         Value = value;
         }
     }

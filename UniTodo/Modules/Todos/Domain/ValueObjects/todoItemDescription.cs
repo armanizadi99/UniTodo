@@ -1,4 +1,18 @@
-﻿namespace UniTodo.Modules.Todos.Domain.ValueObjects
+﻿using UniTodo.Modules.Todos.Domain.Common;
+
+namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public record TodoItemDescription (string Description);
+    public record TodoItemDescription 
+{
+public string Value { get; init; }
+
+public TodoItemDescription(string value)
+{
+        if (string.IsNullOrEmpty(value))
+            throw new DomainArgumentException(nameof(TodoItemDescription), "Description couldn't be null or empty.");
+        if (value.Length > Constants.DescriptionMaxLength)
+            throw new DomainArgumentException(nameof(TodoItemDescription), $"Description couldn't be longer than {Constants.DescriptionMaxLength} characters");
+        Value = value;
+        }
+    }
 }

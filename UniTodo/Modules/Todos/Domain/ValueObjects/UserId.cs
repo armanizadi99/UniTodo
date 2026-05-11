@@ -1,4 +1,16 @@
-﻿namespace UniTodo.Modules.Todos.Domain.ValueObjects
+﻿using UniTodo.Modules.Todos.Domain.Common;
+
+namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public readonly record struct UserId (Guid userId);
+    public readonly record struct UserId : IStronglyTypedId<Guid>
+    {
+public Guid Value { get; init; }
+
+public UserId(Guid value)
+{
+        if (value == Guid.Empty)
+            throw new DomainArgumentException(nameof(UserId), "UserId couldn't be empty.");
+Value = value;
+        }
+    }
 }

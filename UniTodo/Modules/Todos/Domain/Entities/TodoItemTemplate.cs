@@ -3,15 +3,14 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    public class TodoItemTemplate : EntityBase
+    public class TodoItemTemplate : EntityBase<TodoItemTemplateId>
     {
-public TodoListId TodoListId { get; private set; }
+public TodoListTemplateId TodoListId { get; private set; }
 public TodoItemDescription Description { get; private set; }
-        public bool IsDeleted { get; private set; }
 
-        public TodoList TodoList { get; private set; }
+        public TodoListTemplate TodoList { get; private set; }
 
-public TodoItemTemplate( TodoListId todoListId, TodoItemDescription description )
+public TodoItemTemplate( TodoListTemplateId todoListId, TodoItemDescription description )
         {
         TodoListId = todoListId;
         Description = description;
