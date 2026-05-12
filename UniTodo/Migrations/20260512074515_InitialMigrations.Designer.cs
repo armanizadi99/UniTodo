@@ -11,8 +11,8 @@ using UniTodo.Modules.Todos.Infrastructure.Db;
 namespace UniTodo.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20260509055408_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260512074515_InitialMigrations")]
+    partial class InitialMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
