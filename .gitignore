@@ -418,5 +418,8 @@ FodyWeavers.xsd
 *.msp
 
 
+#sqlite db files
+*.db
+
 # my files
 *.txt
