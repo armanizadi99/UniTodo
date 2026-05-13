@@ -11,11 +11,11 @@ namespace UniTodo.Modules.Todos.Application.Services
 {
     public class TodoListTemplateService : ITodoListTemplateService
     {
-        private readonly IRepository<TodoListTemplate, TodoListTemplateId> _repository;
+        private readonly IRepository<TodoListTemplate> _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContext _userContext;
 
-public TodoListTemplateService( IRepository<TodoListTemplate, TodoListTemplateId> repository, IUnitOfWork unitOfWork, IUserContext userContext  )
+public TodoListTemplateService( IRepository<TodoListTemplate> repository, IUnitOfWork unitOfWork, IUserContext userContext  )
         {
         _repository = repository;
 _unitOfWork = unitOfWork;
@@ -27,21 +27,21 @@ public async Task<IReadOnlyList<TodoListTemplateDto>> GetUserTodoListsAsync()
         var userTodoLists = await _repository.GetListAsync(e => e.OwnerId == _userContext.UserId);
         return userTodoLists
 .Select(tl => new TodoListTemplateDto(
-tl.Id.Value, tl.Name, tl.ResetPolicy, tl.Status, 
+tl.Id, tl.Name, tl.ResetPolicy, tl.Status, 
 tl.CreatedAt, tl.UpdatedAt)).ToList();
         }
 
 public async Task<TodoListTemplateDto> GetTodoListTemplateByIdAsync( int id )
 {
         var todoListTemplate = await _repository.GetByIdOrThrowAsync(id);
-        return new TodoListTemplateDto(todoListTemplate.Id.Value, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
+        return new TodoListTemplateDto(todoListTemplate.Id, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
         }
         public async Task<TodoListTemplateDto> CreateTodoListTemplateAsync(CreateTodoListTemplateDto dto)
     {
 var todoList = new TodoListTemplate(_userContext.UserId, dto.Name, dto.ResetPolicy!.Value);
         await _repository.AddAsync(todoList);
         await _unitOfWork.SaveChangesAsync();
-        return new TodoListTemplateDto(todoList.Id.Value, todoList.Name, todoList.ResetPolicy, todoList.Status, todoList.CreatedAt, todoList.UpdatedAt);
+        return new TodoListTemplateDto(todoList.Id, todoList.Name, todoList.ResetPolicy, todoList.Status, todoList.CreatedAt, todoList.UpdatedAt);
         }
 
 public async Task DeleteTodoListAsync(int id)

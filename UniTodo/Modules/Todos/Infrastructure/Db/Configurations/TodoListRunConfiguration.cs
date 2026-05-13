@@ -10,10 +10,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Id)
-        .HasConversion(id => id.Value,
-        value => new Domain.ValueObjects.TodoListRunId(value));
-
         builder.Property(e => e.ownerId)
         .HasConversion(id => id.Value,
         value => new Domain.ValueObjects.UserId(value))

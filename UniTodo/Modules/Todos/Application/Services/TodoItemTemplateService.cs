@@ -9,12 +9,12 @@ namespace UniTodo.Modules.Todos.Application.Services
 {
     public class TodoItemTemplateService : ITodoItemTemplateService
     {
-private readonly IRepository<TodoItemTemplate, TodoItemTemplateId> _todoItemTemplateRepository;
-        private readonly IRepository<TodoListTemplate, TodoListTemplateId> _todoListRepository;
+private readonly IRepository<TodoItemTemplate> _todoItemTemplateRepository;
+        private readonly IRepository<TodoListTemplate> _todoListRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContext _userContext;
 
-public TodoItemTemplateService( IRepository<TodoItemTemplate, TodoItemTemplateId> todoItemTemplateRepository, IRepository<TodoListTemplate, TodoListTemplateId> todoListRepository, IUserContext userContext, IUnitOfWork unitOfWork )
+public TodoItemTemplateService( IRepository<TodoItemTemplate> todoItemTemplateRepository, IRepository<TodoListTemplate> todoListRepository, IUserContext userContext, IUnitOfWork unitOfWork )
         {
         _todoItemTemplateRepository = todoItemTemplateRepository;
         _todoListRepository = todoListRepository;
@@ -27,10 +27,10 @@ public TodoItemTemplateService( IRepository<TodoItemTemplate, TodoItemTemplateId
         var todoList = await _todoListRepository.GetByIdOrThrowAsync(dto.TodoListId!.Value);
         if (todoList.OwnerId == _userContext.UserId)
             throw new DomainNotAuthorizedException();
-        var todoItemTemplate = new TodoItemTemplate(new TodoListTemplateId(dto.TodoListId!.Value), new TodoItemDescription(dto.Description));
+        var todoItemTemplate = new TodoItemTemplate(dto.TodoListId!.Value, new TodoItemDescription(dto.Description));
         await _todoItemTemplateRepository.AddAsync(todoItemTemplate);
         await _unitOfWork.SaveChangesAsync();
-        return todoItemTemplate.Id.Value;
+        return todoItemTemplate.Id;
         }
 
 public async Task DeleteTodoItemTemplateAsync(int id)

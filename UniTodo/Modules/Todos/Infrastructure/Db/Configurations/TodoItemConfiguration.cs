@@ -10,14 +10,9 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
     {
 public void Configure(EntityTypeBuilder<TodoItem> builder)
 {
-        builder.HasKey(e => e.Id);
+        builder.HasKey(e => e.Id);        
 
-        builder.Property(e => e.Id)
-        .HasConversion(id => id.Value,
-        value => new TodoItemId(value));
         builder.Property(e => e.RunId)
-        .HasConversion(id => id.Value,
-        value => new Domain.ValueObjects.TodoListRunId(value))
 .IsRequired();
 
         builder.Property(e => e.description)

@@ -12,8 +12,6 @@ public void Configure(EntityTypeBuilder<TodoItemTemplate> builder)
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.TodoListId)
-        .HasConversion(id => id.Value,
-        value => new Domain.ValueObjects.TodoListTemplateId(value))
 .IsRequired();
 
         builder.Property(e => e.Description)
@@ -21,10 +19,6 @@ public void Configure(EntityTypeBuilder<TodoItemTemplate> builder)
         value => new Domain.ValueObjects.TodoItemDescription(value))
 .IsRequired()
 .HasMaxLength(Constants.DescriptionMaxLength);
-
-        builder.Property(e => e.Id)
-        .HasConversion(id => id.Value,
-        value => new Domain.ValueObjects.TodoItemTemplateId(value));
         }
     }
 }

@@ -13,9 +13,6 @@ public void Configure(EntityTypeBuilder<TodoListTemplate> builder)
 .SetPropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id)
-        .HasConversion(id => id.Value,
-        value => new Domain.ValueObjects.TodoListTemplateId(value));
 
 
         builder.Property(e => e.OwnerId)

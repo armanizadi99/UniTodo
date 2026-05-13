@@ -8,14 +8,13 @@ namespace UniTodo.Modules.Todos.Application.Extensions
 {
     public static class RepositoryExtensions
     {
-        public static async Task<TEntity> GetByIdOrThrowAsync<TEntity, TEntityId>(
-            this IRepository<TEntity, TEntityId> repository,
+        public static async Task<TEntity> GetByIdOrThrowAsync<TEntity>(
+            this IRepositoryWithTypedId<TEntity, int> repository,
             int id,
             params Expression<Func<TEntity, object>>[] includes )
-            where TEntity : EntityBase<TEntityId>
-where TEntityId : IStronglyTypedId<int>
+            where TEntity : EntityBase<int>
         {
-        var entity = await repository.GetAsync(e => e.Id.Value == id, includes);
+        var entity = await repository.GetAsync(e => e.Id == id, includes);
         if (entity is null)
             throw new DomainEntityNotFoundException(typeof(TEntity).Name, id);
 

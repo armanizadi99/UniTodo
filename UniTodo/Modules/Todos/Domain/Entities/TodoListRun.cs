@@ -4,7 +4,7 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    public class TodoListRun : EntityBase<TodoListRunId>
+    public class TodoListRun : EntityBase
     {
         private readonly List<TodoItem> _todoItems = new List<TodoItem>();
 

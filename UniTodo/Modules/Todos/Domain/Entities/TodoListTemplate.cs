@@ -5,7 +5,7 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    public class TodoListTemplate : EntityBase<TodoListTemplateId>
+    public class TodoListTemplate : EntityBase
     {
         private readonly List<TodoItemTemplate> _todoItemTemplates = new List<TodoItemTemplate>();
 
