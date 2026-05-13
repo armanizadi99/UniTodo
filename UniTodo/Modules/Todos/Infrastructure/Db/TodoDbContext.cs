@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
 using UniTodo.Modules.Todos.Infrastructure.Db.Configurations;
 
