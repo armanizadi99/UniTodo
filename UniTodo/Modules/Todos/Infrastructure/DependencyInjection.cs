@@ -17,6 +17,7 @@ IConfigurationSection moduleConfiguration)
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped(typeof(IRepositoryWithTypedId<,>), typeof(RepositoryWithTypedId<,>));
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 //this is a singleton service that other services also might require, so I have to later move it into the host. Registering it multiple times doesn't break anything, but well, it seams a bit dirty.
         services.AddHttpContextAccessor();
