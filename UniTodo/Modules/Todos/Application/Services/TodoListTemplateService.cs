@@ -31,12 +31,17 @@ tl.Id.Value, tl.Name, tl.ResetPolicy, tl.Status,
 tl.CreatedAt, tl.UpdatedAt)).ToList();
         }
 
-public async Task<int> CreateTodoListAsync(CreateTodoListTemplateDto dto)
+public async Task<TodoListTemplateDto> GetTodoListTemplateByIdAsync( int id )
+{
+        var todoListTemplate = await _repository.GetByIdOrThrowAsync(id);
+        return new TodoListTemplateDto(todoListTemplate.Id.Value, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
+        }
+        public async Task<TodoListTemplateDto> CreateTodoListTemplateAsync(CreateTodoListTemplateDto dto)
     {
 var todoList = new TodoListTemplate(_userContext.UserId, dto.Name, dto.ResetPolicy!.Value);
         await _repository.AddAsync(todoList);
         await _unitOfWork.SaveChangesAsync();
-        return todoList.Id.Value;
+        return new TodoListTemplateDto(todoList.Id.Value, todoList.Name, todoList.ResetPolicy, todoList.Status, todoList.CreatedAt, todoList.UpdatedAt);
         }
 
 public async Task DeleteTodoListAsync(int id)
