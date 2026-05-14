@@ -3,7 +3,7 @@ using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Application.Interfaces
 {
-    public interface IRepositoryWithTypedId<TEntity, TEntityId> 
+    internal interface IRepositoryWithTypedId<TEntity, TEntityId> 
 where TEntity : EntityBase<TEntityId>
     {
         Task<TEntity?> GetAsync(

@@ -1,6 +1,6 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Enums
 {
-    public enum TodoListRunStatus
+    internal enum TodoListRunStatus
     {
 Active,
 Closed

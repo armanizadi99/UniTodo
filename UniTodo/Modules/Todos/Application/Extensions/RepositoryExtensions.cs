@@ -6,9 +6,9 @@ using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Application.Extensions
 {
-    public static class RepositoryExtensions
+    internal static class RepositoryExtensions
     {
-        public static async Task<TEntity> GetByIdOrThrowAsync<TEntity>(
+        internal static async Task<TEntity> GetByIdOrThrowAsync<TEntity>(
             this IRepositoryWithTypedId<TEntity, int> repository,
             int id,
             params Expression<Func<TEntity, object>>[] includes )

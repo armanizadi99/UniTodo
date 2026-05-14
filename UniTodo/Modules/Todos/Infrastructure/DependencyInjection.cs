@@ -6,9 +6,9 @@ using UniTodo.Modules.Todos.Infrastructure.Db;
 
 namespace UniTodo.Modules.Todos.Infrastructure
 {
-    public static class DependencyInjection
+    internal static class DependencyInjection
     {
-public static IServiceCollection AddTodosInfrastructure(
+internal static IServiceCollection AddTodoInfrastructure(
 this IServiceCollection services, 
 IConfigurationSection moduleConfiguration)
 {
@@ -22,14 +22,6 @@ IConfigurationSection moduleConfiguration)
 //this is a singleton service that other services also might require, so I have to later move it into the host. Registering it multiple times doesn't break anything, but well, it seams a bit dirty.
         services.AddHttpContextAccessor();
 
-        return services;
-        }
-
-public static IServiceCollection AddTodoModule( this IServiceCollection services, 
-IConfigurationSection moduleConfiguration)
-{
-        services.AddTodoApplication();
-        services.AddTodosInfrastructure(moduleConfiguration);
         return services;
         }
     }

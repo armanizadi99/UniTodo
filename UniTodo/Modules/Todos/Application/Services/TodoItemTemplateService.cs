@@ -7,7 +7,7 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Application.Services
 {
-    public class TodoItemTemplateService : ITodoItemTemplateService
+    internal class TodoItemTemplateService : ITodoItemTemplateService
     {
 private readonly IRepository<TodoItemTemplate> _todoItemTemplateRepository;
         private readonly IRepository<TodoListTemplate> _todoListRepository;
@@ -22,7 +22,7 @@ public TodoItemTemplateService( IRepository<TodoItemTemplate> todoItemTemplateRe
         _unitOfWork = unitOfWork;
         }
 
-        public async Task<int> AddTodoItemTemplateAsync(AddTodoItemTemplateDto dto)
+        async Task<int> ITodoItemTemplateService.AddTodoItemTemplateAsync( AddTodoItemTemplateDto dto)
 {
         var todoList = await _todoListRepository.GetByIdOrThrowAsync(dto.TodoListId!.Value);
         if (todoList.OwnerId == _userContext.UserId)
@@ -33,7 +33,7 @@ public TodoItemTemplateService( IRepository<TodoItemTemplate> todoItemTemplateRe
         return todoItemTemplate.Id;
         }
 
-public async Task DeleteTodoItemTemplateAsync(int id)
+async Task ITodoItemTemplateService.DeleteTodoItemTemplateAsync( int id)
 {
 var todoItemTemplateToDelete = await _todoItemTemplateRepository.GetByIdOrThrowAsync(id, i => i.TodoList);
 if(todoItemTemplateToDelete.TodoList.OwnerId == _userContext.UserId)

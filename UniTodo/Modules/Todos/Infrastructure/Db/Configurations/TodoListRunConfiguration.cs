@@ -4,9 +4,9 @@ using UniTodo.Modules.Todos.Domain.Entities;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
-    public class TodoListRunConfiguration : IEntityTypeConfiguration<TodoListRun>
+    internal class TodoListRunConfiguration : IEntityTypeConfiguration<TodoListRun>
     {
-        public void Configure( EntityTypeBuilder<TodoListRun> builder )
+        void IEntityTypeConfiguration<TodoListRun>.Configure( EntityTypeBuilder<TodoListRun> builder )
 {
         builder.HasKey(e => e.Id);
 

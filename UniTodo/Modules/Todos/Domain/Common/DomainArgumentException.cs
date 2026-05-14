@@ -1,10 +1,10 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public class DomainArgumentException : DomainException
+    internal class DomainArgumentException : DomainException
     {
-public string ArgumentName { get; private set; }
+internal string ArgumentName { get; private set; }
 
-public DomainArgumentException(string argumentName, string message = "") : base(message)
+internal DomainArgumentException(string argumentName, string message = "") : base(message)
 {
         ArgumentName = argumentName;
         }

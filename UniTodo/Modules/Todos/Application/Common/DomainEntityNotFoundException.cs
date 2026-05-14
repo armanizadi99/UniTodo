@@ -2,12 +2,12 @@
 
 namespace UniTodo.Modules.Todos.Application.Common
 {
-    public class DomainEntityNotFoundException : DomainException
+    internal class DomainEntityNotFoundException : DomainException
     {
-        public string EntityName { get; private set; }
-public int Id { get; private set; }
+        internal string EntityName { get; private set; }
+internal int Id { get; private set; }
 
-        public DomainEntityNotFoundException( string entityName, int id     ) : base("")
+        internal DomainEntityNotFoundException( string entityName, int id     ) : base("")
         {
         EntityName = entityName;
         Id = id;

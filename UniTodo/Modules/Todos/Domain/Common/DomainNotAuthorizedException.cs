@@ -1,7 +1,7 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public class DomainNotAuthorizedException : DomainException
+    internal class DomainNotAuthorizedException : DomainException
     {
-        public DomainNotAuthorizedException( string message = "") : base(message) { }
+        internal DomainNotAuthorizedException( string message = "") : base(message) { }
     }
 }

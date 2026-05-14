@@ -7,10 +7,10 @@ namespace UniTodo.Modules.Todos.Application.DTOs
     {
 [Required]
 [Range(1, int.MaxValue)]
-public int? TodoListId { get; set; }
+internal int? TodoListId { get; set; }
 
 [Required]
 [MaxLength(Constants.DescriptionMaxLength)]
-public string Description { get; set; }
+internal string Description { get; set; }
     }
 }

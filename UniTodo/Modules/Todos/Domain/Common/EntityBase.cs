@@ -1,15 +1,15 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public abstract class EntityBase<TEntityId>
+    internal abstract class EntityBase<TEntityId>
     {
-        public DateTimeOffset CreatedAt { get; protected set; }
-        public TEntityId Id { get; private set; }
-        public DateTimeOffset UpdatedAt { get; protected set; }
+        internal DateTimeOffset CreatedAt { get; private protected set; }
+        internal TEntityId Id { get; private set; }
+        internal DateTimeOffset UpdatedAt { get; private protected set; }
 
         protected EntityBase() { }
 
     }       
-public abstract class EntityBase : EntityBase<int>
+internal abstract class EntityBase : EntityBase<int>
 {
     }
 }

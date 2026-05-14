@@ -5,9 +5,9 @@ using UniTodo.Modules.Todos.Domain.Entities;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
-    public class TodoItemTemplateConfiguration : IEntityTypeConfiguration<TodoItemTemplate>
+    internal class TodoItemTemplateConfiguration : IEntityTypeConfiguration<TodoItemTemplate>
     {
-public void Configure(EntityTypeBuilder<TodoItemTemplate> builder)
+void IEntityTypeConfiguration<TodoItemTemplate>.Configure(EntityTypeBuilder<TodoItemTemplate> builder)
 {
         builder.HasKey(e => e.Id);
 

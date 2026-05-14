@@ -6,9 +6,9 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
-    public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
+    internal class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
     {
-public void Configure(EntityTypeBuilder<TodoItem> builder)
+void IEntityTypeConfiguration<TodoItem>.Configure(EntityTypeBuilder<TodoItem> builder)
 {
         builder.HasKey(e => e.Id);        
 
@@ -22,7 +22,7 @@ public void Configure(EntityTypeBuilder<TodoItem> builder)
         .HasMaxLength(Constants.DescriptionMaxLength);
 
         builder.Property(e => e.Notes)
-        .HasConversion(notes => notes.Value,
+        .HasConversion(notes => notes!.Value,
         value => new Domain.ValueObjects.TodoItemNotes(value))
         .IsRequired()
         .HasMaxLength(Constants.NotesMaxLength);

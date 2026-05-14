@@ -1,7 +1,7 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public class DomainInvalidOperationException : DomainException
+    internal class DomainInvalidOperationException : DomainException
     {
-        public DomainInvalidOperationException( string message ) : base(message) { }
+        internal DomainInvalidOperationException( string message ) : base(message) { }
     }
 }

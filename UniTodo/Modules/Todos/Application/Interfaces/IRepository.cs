@@ -2,7 +2,7 @@
 
 namespace UniTodo.Modules.Todos.Application.Interfaces
 {
-    public interface IRepository<TEntity> : IRepositoryWithTypedId<TEntity, int>
+    internal interface IRepository<TEntity> : IRepositoryWithTypedId<TEntity, int>
 where TEntity : EntityBase<int>
     {
     }

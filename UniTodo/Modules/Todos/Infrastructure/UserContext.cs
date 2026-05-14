@@ -3,11 +3,11 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Infrastructure
 {
-    public class UserContext : IUserContext
+    internal class UserContext : IUserContext
     {
-public UserId UserId { get; }
+UserId IUserContext.UserId { get; }
 
-public UserContext(IHttpContextAccessor httpContextAccessor)
+        public UserContext( IHttpContextAccessor httpContextAccessor)
 {
 //UserId = userId;
         }

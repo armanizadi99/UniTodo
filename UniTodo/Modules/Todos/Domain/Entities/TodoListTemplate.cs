@@ -5,18 +5,18 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    public class TodoListTemplate : EntityBase
+    internal class TodoListTemplate : EntityBase
     {
         private readonly List<TodoItemTemplate> _todoItemTemplates = new List<TodoItemTemplate>();
 
-        public UserId OwnerId { get; private set; }
-        public string Name { get; private set; }
-        public ResetPolicy ResetPolicy { get; private set; }
-        public TodoListStatus Status { get; private set; }
+        internal UserId OwnerId { get; private set; }
+        internal string Name { get; private set; }
+        internal ResetPolicy ResetPolicy { get; private set; }
+        internal TodoListStatus Status { get; private set; }
 
-        public IReadOnlyCollection<TodoItemTemplate> TodoItemTemplates => _todoItemTemplates.AsReadOnly();
+        internal IReadOnlyCollection<TodoItemTemplate> TodoItemTemplates => _todoItemTemplates.AsReadOnly();
 
-public TodoListTemplate( UserId ownerId, string name, ResetPolicy resetPolicy)
+internal TodoListTemplate( UserId ownerId, string name, ResetPolicy resetPolicy)
         {
         if (!ResetPolicy.IsDefined(resetPolicy))
             throw new ArgumentOutOfRangeException($"{nameof(resetPolicy)} is not defined.");
@@ -27,7 +27,7 @@ public TodoListTemplate( UserId ownerId, string name, ResetPolicy resetPolicy)
         Status = TodoListStatus.Active;
         }
 
-public void Archive(UserId actorUserId)
+internal void Archive(UserId actorUserId)
 {
         if (OwnerId != actorUserId)
             throw new DomainNotAuthorizedException();
@@ -36,7 +36,7 @@ public void Archive(UserId actorUserId)
         Status = TodoListStatus.Archived;
         }
 
-public void MakeActive(UserId actorUserId)
+internal void MakeActive(UserId actorUserId)
 {
         if (OwnerId != actorUserId)
             throw new DomainNotAuthorizedException();

@@ -2,11 +2,11 @@
 
 namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    public record TodoItemDescription 
+    internal record TodoItemDescription 
 {
-public string Value { get; init; }
+internal string Value { get; init; }
 
-public TodoItemDescription(string value)
+internal TodoItemDescription(string value)
 {
         if (string.IsNullOrEmpty(value))
             throw new DomainArgumentException(nameof(TodoItemDescription), "Description couldn't be null or empty.");

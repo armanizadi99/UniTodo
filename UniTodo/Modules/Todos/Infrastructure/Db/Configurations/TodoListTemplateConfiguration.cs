@@ -5,9 +5,9 @@ using UniTodo.Modules.Todos.Domain.Entities;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
-    public class TodoListTemplateConfiguration : IEntityTypeConfiguration<TodoListTemplate>
+    internal class TodoListTemplateConfiguration : IEntityTypeConfiguration<TodoListTemplate>
     {
-public void Configure(EntityTypeBuilder<TodoListTemplate> builder)
+void IEntityTypeConfiguration<TodoListTemplate>.Configure(EntityTypeBuilder<TodoListTemplate> builder)
 {
         builder.Metadata.FindNavigation(nameof(TodoListTemplate.TodoItemTemplates))!
 .SetPropertyAccessMode(PropertyAccessMode.Field);

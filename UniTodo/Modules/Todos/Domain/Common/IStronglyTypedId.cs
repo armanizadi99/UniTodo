@@ -1,7 +1,7 @@
 ﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
-    public interface IStronglyTypedId<TId>
+    internal interface IStronglyTypedId<TId>
     {
-public TId Value { get; init; } 
+internal TId Value { get; init; } 
     }
 }

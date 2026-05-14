@@ -9,11 +9,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-    public class TodoListTemplateController : ControllerBase
+    public  class TodoListTemplateController : ControllerBase
     {
         private readonly ITodoListTemplateService _TodoListTemplateService;
 
-public TodoListTemplateController(ITodoListTemplateService todoListTemplateService)
+public  TodoListTemplateController(ITodoListTemplateService todoListTemplateService)
 {
         _TodoListTemplateService = todoListTemplateService;
         }
