@@ -9,9 +9,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
     {
 void IEntityTypeConfiguration<TodoListTemplate>.Configure(EntityTypeBuilder<TodoListTemplate> builder)
 {
-        builder.Metadata.FindNavigation(nameof(TodoListTemplate.TodoItemTemplates))!
-.SetPropertyAccessMode(PropertyAccessMode.Field);
-
         builder.HasKey(e => e.Id);
 
 
@@ -33,6 +30,9 @@ value => new Domain.ValueObjects.UserId(value))
         builder.HasMany(e => e.TodoItemTemplates)
         .WithOne(e => e.TodoList)
         .HasForeignKey(e => e.TodoListId);
+
+        builder.Navigation(nameof(TodoListTemplate.TodoItemTemplates))
+                       .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

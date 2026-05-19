@@ -26,12 +26,12 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
         .HasMaxLength(100);
 
 
-        builder.Metadata.FindNavigation(nameof(TodoListRun.TodoItems))!
-        .SetPropertyAccessMode(PropertyAccessMode.Field);
-
         builder.HasMany(e => e.TodoItems)
         .WithOne(e => e.Run)
         .HasForeignKey(e => e.RunId);
+
+        builder.Navigation(nameof(TodoListRun.TodoItems))
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
