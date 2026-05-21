@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation.AspNetCore;
+using Scalar.AspNetCore;
 using System.Text;
 using UniTodo.Modules.Auth;
 using UniTodo.Modules.Todos.Infrastructure;
@@ -40,6 +41,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
