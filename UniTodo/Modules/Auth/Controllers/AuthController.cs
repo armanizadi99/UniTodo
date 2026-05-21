@@ -90,7 +90,7 @@ new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(2),
+            Expires = DateTime.UtcNow.AddHours(2000),
 SigningCredentials = credentials,
 Issuer = "my own app",
 Audience = "for my todo app"
