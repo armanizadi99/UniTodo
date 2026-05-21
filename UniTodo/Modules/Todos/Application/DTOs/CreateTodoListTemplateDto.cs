@@ -8,9 +8,9 @@ namespace UniTodo.Modules.Todos.Application.DTOs
 {
         [Required]
         [MaxLength(100)]
-        internal string Name { get; set; }
+        public string Name { get; set; }
         [Required]
             [EnumDataType(typeof(ResetPolicy))]
-            internal ResetPolicy? ResetPolicy { get; set; }
+            public ResetPolicy? ResetPolicy { get; set; }
     }
 }
