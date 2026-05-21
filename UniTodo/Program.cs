@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation.AspNetCore;
-using Scalar.AspNetCore;
 using System.Text;
+using System.Text.Json.Serialization;
 using UniTodo.Modules.Auth;
 using UniTodo.Modules.Todos.Infrastructure;
 using UniTodo.Modules.Todos.ModuleStartup;
@@ -29,20 +29,24 @@ IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisisjut a 
 };
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+.AddJsonOptions(options =>
+{
+options.JsonSerializerOptions.Converters
+.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
+});
 builder.Services.AddTodoModule(builder.Configuration.GetSection("TodoModule"));
 builder.Services.AddAuthModule(builder.Configuration.GetSection("AuthModule"));
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
-app.MapScalarApiReference();
+app.UseSwagger();
+app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

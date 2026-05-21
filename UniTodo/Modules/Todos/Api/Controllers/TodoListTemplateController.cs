@@ -19,7 +19,7 @@ public  TodoListTemplateController(ITodoListTemplateService todoListTemplateServ
         }
 
 [HttpGet]
-public async Task<ActionResult<List<TodoListTemplateDto>>> GetAllTodoListTemplatesForCurrentUserAsync()
+public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync()
 {
         var result = await _TodoListTemplateService.GetUserTodoListsAsync();
 
@@ -27,15 +27,14 @@ public async Task<ActionResult<List<TodoListTemplateDto>>> GetAllTodoListTemplat
         }
 
 [HttpPost]
-public async Task<ActionResult<int>> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto)
+public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto)
 {
         var result = await _TodoListTemplateService.CreateTodoListTemplateAsync(dto);
-
-        return CreatedAtAction(nameof(GetTodoListTemplateByIdAsync), new { id = result.Id }, result);
+        return CreatedAtRoute("GetTodoListTemplateById", new { id = result.Id }, result);
         }
 
-[HttpGet("{id:int:min(1)}")]
-public async Task<ActionResult<TodoListTemplateDto>> GetTodoListTemplateByIdAsync([FromRoute] int id)
+[HttpGet("{id:int:min(1)}", Name = "GetTodoListTemplateById")]
+public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id)
 {
         var result = await _TodoListTemplateService.GetTodoListTemplateByIdAsync(id);
 
