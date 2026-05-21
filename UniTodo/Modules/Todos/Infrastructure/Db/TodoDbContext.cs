@@ -24,5 +24,25 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
         modelBuilder.ApplyConfiguration(new TodoItemTemplateConfiguration());
         modelBuilder.ApplyConfiguration(new TodoItemConfiguration());
         }
+
+public override async Task<int> SaveChangesAsync(CancellationToken ct =  default)
+{
+        var entries = ChangeTracker.Entries<IAuditable>();
+
+foreach ( var entry in entries )
+{
+        var now = DateTimeOffset.UtcNow;
+
+if(entry.State is  EntityState.Added)
+{
+        entry.Property(p => p.CreatedAt).CurrentValue = now;
+        }
+if(entry.State is EntityState.Modified)
+{
+        entry.Property(p => p.UpdatedAt).CurrentValue = now;
+        }
+        }
+        return await base.SaveChangesAsync(ct);
+        }
     }
 }
