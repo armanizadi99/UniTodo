@@ -25,7 +25,7 @@ public TodoItemTemplateService( IRepository<TodoItemTemplate> todoItemTemplateRe
         async Task<int> ITodoItemTemplateService.AddTodoItemTemplateAsync( AddTodoItemTemplateDto dto)
 {
         var todoList = await _todoListRepository.GetByIdOrThrowAsync(dto.TodoListId!.Value);
-        if (todoList.OwnerId == _userContext.UserId)
+        if (todoList.OwnerId != _userContext.UserId)
             throw new DomainNotAuthorizedException();
         var todoItemTemplate = new TodoItemTemplate(dto.TodoListId!.Value, new TodoItemDescription(dto.Description));
         await _todoItemTemplateRepository.AddAsync(todoItemTemplate);
@@ -36,7 +36,7 @@ public TodoItemTemplateService( IRepository<TodoItemTemplate> todoItemTemplateRe
 async Task ITodoItemTemplateService.DeleteTodoItemTemplateAsync( int id)
 {
 var todoItemTemplateToDelete = await _todoItemTemplateRepository.GetByIdOrThrowAsync(id, i => i.TodoList);
-if(todoItemTemplateToDelete.TodoList.OwnerId == _userContext.UserId)
+if(todoItemTemplateToDelete.TodoList.OwnerId != _userContext.UserId)
 throw new DomainNotAuthorizedException();
         _todoItemTemplateRepository.Remove(todoItemTemplateToDelete);
         await _unitOfWork.SaveChangesAsync();
