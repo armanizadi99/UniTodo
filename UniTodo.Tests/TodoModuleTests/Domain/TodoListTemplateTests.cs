@@ -5,7 +5,7 @@ using UniTodo.Modules.Todos.Domain.Enums;
 using UniTodo.Modules.Todos.Domain.ValueObjects;
 using Xunit;
 
-namespace UniTodo.Tests
+namespace UniTodo.Tests.TodoModuleTests.Domain
 {
     public class TodoListTemplateTests
     {

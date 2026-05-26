@@ -6,7 +6,7 @@ using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Infrastructure;
 using Xunit;
 
-namespace UniTodo.Tests
+namespace UniTodo.Tests.TodoModuleTests.Infrastructure
 {
     public class UserContextTests
     {
@@ -28,7 +28,7 @@ namespace UniTodo.Tests
             var userContext = new UserContext(httpContextAccessor);
 
             // Act
-            var result = ((UniTodo.Modules.Todos.Application.Interfaces.IUserContext)userContext).UserId;
+            var result = ((Modules.Todos.Application.Interfaces.IUserContext)userContext).UserId;
 
             // Assert
             result.Value.Should().Be(userId);
