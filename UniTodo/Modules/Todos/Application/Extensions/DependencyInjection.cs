@@ -4,12 +4,11 @@ namespace UniTodo.Modules.Todos.Application.Extensions
 {
     internal static class DependencyInjection
     {
-internal static IServiceCollection AddTodoApplication(
-this IServiceCollection services)
-{
-        services.AddScoped<ITodoListTemplateService, TodoListTemplateService>();
-        services.AddScoped<ITodoItemTemplateService, TodoItemTemplateService>();
-        return services;
+        internal static IServiceCollection AddTodoApplication(
+        this IServiceCollection services)
+        {
+            services.AddScoped<ITodoListTemplateService, TodoListTemplateService>();
+            return services;
         }
     }
 }
