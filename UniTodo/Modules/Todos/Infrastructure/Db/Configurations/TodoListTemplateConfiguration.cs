@@ -7,32 +7,36 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
     internal class TodoListTemplateConfiguration : IEntityTypeConfiguration<TodoListTemplate>
     {
-void IEntityTypeConfiguration<TodoListTemplate>.Configure(EntityTypeBuilder<TodoListTemplate> builder)
-{
-        builder.HasKey(e => e.Id);
+        void IEntityTypeConfiguration<TodoListTemplate>.Configure(EntityTypeBuilder<TodoListTemplate> builder)
+        {
+            builder.HasKey(e => e.Id);
 
 
-        builder.Property(e => e.OwnerId)
-        .HasConversion(id => id.Value,
-value => new Domain.ValueObjects.UserId(value))
-.IsRequired();
+            builder.Property(e => e.OwnerId)
+            .HasConversion(id => id.Value,
+    value => new Domain.ValueObjects.UserId(value))
+    .IsRequired();
 
-        builder.Property(e => e.Name)
-        .IsRequired()
-        .HasMaxLength(Constants.NameMaxLength);
+            builder.Property(e => e.Name)
+            .IsRequired()
+            .HasMaxLength(Constants.NameMaxLength)
+    .UseCollation("NOCASE");
 
-        builder.Property(e => e.ResetPolicy)
-        .IsRequired();
+            builder.HasIndex(e => e.Name)
+            .IsUnique();
 
-        builder.Property(e => e.Status)
-        .IsRequired();
+            builder.Property(e => e.ResetPolicy)
+            .IsRequired();
 
-        builder.HasMany(e => e.TodoItemTemplates)
-        .WithOne(e => e.TodoList)
-        .HasForeignKey(e => e.TodoListId);
+            builder.Property(e => e.Status)
+            .IsRequired();
 
-        builder.Navigation(nameof(TodoListTemplate.TodoItemTemplates))
-                       .UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.HasMany(e => e.TodoItemTemplates)
+            .WithOne(e => e.TodoList)
+            .HasForeignKey(e => e.TodoListId);
+
+            builder.Navigation(nameof(TodoListTemplate.TodoItemTemplates))
+                           .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
