@@ -6,20 +6,20 @@ namespace UniTodo.Modules.Todos.ModuleStartup
 {
     public static class TodoModuleStartup
     {
-public static IServiceCollection AddTodoModule(
-this IServiceCollection services,
-IConfigurationSection moduleConfiguration)
-{
-        services.AddTodoApplication();
-        services.AddTodoInfrastructure(moduleConfiguration);
+        public static IServiceCollection AddTodoModule(
+        this IServiceCollection services,
+        IConfigurationSection moduleConfiguration)
+        {
+            services.AddTodoApplication();
+            services.AddTodoInfrastructure(moduleConfiguration);
 
-        return services;
+            return services;
         }
 
-public static IEndpointRouteBuilder MapTodoEndpoints(
-this IEndpointRouteBuilder endpointRouteBuilder)
-{
-        return endpointRouteBuilder;
+        public static IEndpointRouteBuilder MapTodoEndpoints(
+        this IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            return endpointRouteBuilder;
         }
     }
 }

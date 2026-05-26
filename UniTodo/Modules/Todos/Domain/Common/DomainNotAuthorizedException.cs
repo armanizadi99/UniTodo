@@ -2,6 +2,6 @@
 {
     internal class DomainNotAuthorizedException : DomainException
     {
-        internal DomainNotAuthorizedException( string message = "") : base(message) { }
+        internal DomainNotAuthorizedException(string message = "") : base(message) { }
     }
 }

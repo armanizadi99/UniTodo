@@ -8,17 +8,18 @@ namespace UniTodo.Modules.Todos.Application.Extensions
 {
     internal static class RepositoryExtensions
     {
-        internal static async Task<TEntity> GetByIdOrThrowAsync<TEntity>(
+        /*internal static async Task<TEntity> GetByIdOrThrowAsync<TEntity>(
             this IRepositoryWithTypedId<TEntity, int> repository,
             int id,
+CancellationToken cancellationToken = default,
             params Expression<Func<TEntity, object>>[] includes )
             where TEntity : EntityBase<int>
         {
-        var entity = await repository.GetAsync(e => e.Id == id, includes);
+        var entity = await repository.GetByIdAsync(id, cancellationToken, includes);
         if (entity is null)
             throw new DomainEntityNotFoundException(typeof(TEntity).Name, id);
 
         return entity;
-        }
+        }*/
     }
 }

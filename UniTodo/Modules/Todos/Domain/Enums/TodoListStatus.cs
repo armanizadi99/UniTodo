@@ -2,7 +2,7 @@
 {
     public enum TodoListStatus
     {
-Active,
-Archived
+        Active,
+        Archived
     }
 }

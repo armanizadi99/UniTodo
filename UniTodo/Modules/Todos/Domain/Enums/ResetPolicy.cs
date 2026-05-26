@@ -2,9 +2,9 @@
 {
     public enum ResetPolicy
     {
-None,
-Daily,
-Weekly,
-Monthly
+        None,
+        Daily,
+        Weekly,
+        Monthly
     }
 }

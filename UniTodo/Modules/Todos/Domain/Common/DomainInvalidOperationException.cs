@@ -2,6 +2,6 @@
 {
     internal class DomainInvalidOperationException : DomainException
     {
-        internal DomainInvalidOperationException( string message ) : base(message) { }
+        internal DomainInvalidOperationException(string message) : base(message) { }
     }
 }

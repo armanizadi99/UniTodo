@@ -2,7 +2,7 @@
 {
     internal enum TodoListRunStatus
     {
-Active,
-Closed
+        Active,
+        Closed
     }
 }

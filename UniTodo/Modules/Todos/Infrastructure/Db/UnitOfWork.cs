@@ -6,14 +6,14 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
     {
         private readonly TodoDbContext _context;
 
-        public UnitOfWork( TodoDbContext context )
+        public UnitOfWork(TodoDbContext context)
         {
-_context = context;
+            _context = context;
         }
 
-async Task<int> IUnitOfWork.SaveChangesAsync( CancellationToken cancellationToken)
-{
-        return await _context.SaveChangesAsync(cancellationToken);
+        async Task<int> IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            return await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

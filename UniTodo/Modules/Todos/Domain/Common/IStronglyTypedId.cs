@@ -2,6 +2,6 @@
 {
     internal interface IStronglyTypedId<TId>
     {
-internal TId Value { get; init; } 
+        internal TId Value { get; init; }
     }
 }

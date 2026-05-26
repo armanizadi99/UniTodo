@@ -8,8 +8,8 @@
 
         protected EntityBase() { }
 
-    }       
-public abstract class EntityBase : EntityBase<int>
-{
+    }
+    public abstract class EntityBase : EntityBase<int>
+    {
     }
 }

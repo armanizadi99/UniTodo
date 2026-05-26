@@ -6,19 +6,20 @@ namespace UniTodo.Modules.Auth
 {
     public static class AuthStartup
     {
-public static IServiceCollection AddAuthModule(this IServiceCollection services,
-IConfigurationSection moduleConfiguration) {
-        
-        services.AddDbContext<AuthDbContext>(options =>
+        public static IServiceCollection AddAuthModule(this IServiceCollection services,
+        IConfigurationSection moduleConfiguration)
         {
-        options.UseSqlite(moduleConfiguration.GetConnectionString("sqlite"));
-        });
 
-        services.AddIdentityCore<ApplicationUser>()
-                .AddEntityFrameworkStores<AuthDbContext>()
-                .AddDefaultTokenProviders();
+            services.AddDbContext<AuthDbContext>(options =>
+            {
+                options.UseSqlite(moduleConfiguration.GetConnectionString("sqlite"));
+            });
 
-        return services;
+            services.AddIdentityCore<ApplicationUser>()
+                    .AddEntityFrameworkStores<AuthDbContext>()
+                    .AddDefaultTokenProviders();
+
+            return services;
         }
     }
 }

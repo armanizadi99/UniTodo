@@ -2,6 +2,6 @@
 {
     internal class DomainException : Exception
     {
-internal DomainException(string  message) : base(message) { } 
+        internal DomainException(string message) : base(message) { }
     }
 }
