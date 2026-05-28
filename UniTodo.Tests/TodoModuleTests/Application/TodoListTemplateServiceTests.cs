@@ -19,7 +19,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         private readonly ITodoListTemplateRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserContext _userContext;
-        private readonly ITodoListTemplateService _service;
+        private readonly TodoListTemplateService _service;
         private readonly UserId _currentUserId;
 
         public TodoListTemplateServiceTests()

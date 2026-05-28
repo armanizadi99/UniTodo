@@ -3,7 +3,7 @@ using UniTodo.Modules.Todos.Application.Interfaces;
 
 namespace UniTodo.Modules.Todos.Application.Services
 {
-    internal class TodoListRunService : ITodoListRunService
+    internal class TodoListRunService
     {
         private readonly ITodoListRunRepository _runRepository;
         private readonly ITodoListTemplateRepository _templateRepository;
@@ -18,87 +18,87 @@ public TodoListRunService( ITodoListRunRepository runRepository, ITodoListTempla
         _unitOfWork = unitOfWork;
         }
 
-        Task<TodoListRunDto> ITodoListRunService.CreateTodoListRunFromTemplateAsync(int templateId, CancellationToken cancellationToken)
+        Task<TodoListRunDto> CreateTodoListRunFromTemplateAsync(int templateId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<TodoListRunDto> ITodoListRunService.CreateTodoListRunAsync(CancellationToken cancellationToken)
+        Task<TodoListRunDto> CreateTodoListRunAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.DeleteTodoListRunAsync(int id, CancellationToken cancellationToken)
+        Task DeleteTodoListRunAsync(int id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<TodoItemDto> ITodoListRunService.AddTodoItemToTodoListRunAsync(int todoListRunId, AddTodoItemDto dto, CancellationToken cancellationToken)
+        Task<TodoItemDto> AddTodoItemToTodoListRunAsync(int todoListRunId, AddTodoItemDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.DeleteTodoItemFromTodoListRunAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
+        Task DeleteTodoItemFromTodoListRunAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<IReadOnlyList<TodoItemDto>> ITodoListRunService.GetTodoListRunItemsAsync(int todoListRunId, CancellationToken cancellationToken)
+        Task<IReadOnlyList<TodoItemDto>> GetTodoListRunItemsAsync(int todoListRunId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<IReadOnlyList<TodoListRunMemberDto>> ITodoListRunService.GetTodoListRunMembersAsync(int todoListRunId, CancellationToken cancellationToken)
+        Task<IReadOnlyList<TodoListRunMemberDto>> GetTodoListRunMembersAsync(int todoListRunId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<IReadOnlyList<TodoListRunDto>> ITodoListRunService.GetUserActiveTodoRunsAsync(CancellationToken cancellationToken)
+        Task<IReadOnlyList<TodoListRunDto>> GetUserActiveTodoRunsAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.MakeTodoListRunSharedAsync(int id, CancellationToken cancellationToken)
+        Task MakeTodoListRunSharedAsync(int id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.MakeTodoListRunPrivateAsync(int id, CancellationToken cancellationToken)
+        Task MakeTodoListRunPrivateAsync(int id, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.MarkTodoItemCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
+        Task MarkTodoItemCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.MarkTodoItemNotCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
+        Task MarkTodoItemNotCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.UpdateNotesForTodoItemAsync(int todoListRunId, int todoItemId, UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
+        Task UpdateNotesForTodoItemAsync(int todoListRunId, int todoItemId, UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.AsignMemberToItemAsync(int todoListRunId, int todoItemId, AsignMemberToTodoItemDto dto, CancellationToken cancellationToken)
+        Task AsignMemberToItemAsync(int todoListRunId, int todoItemId, AsignMemberToTodoItemDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.ChangeTodoItemDescriptionAsync(int todoListRunId, int todoItemId, ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
+        Task ChangeTodoItemDescriptionAsync(int todoListRunId, int todoItemId, ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<TodoListRunMemberDto> ITodoListRunService.AddMemberToTodoListRunAsync(int todoListRunId, AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
+        Task<TodoListRunMemberDto> AddMemberToTodoListRunAsync(int todoListRunId, AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task ITodoListRunService.RemoveMemberFromTodoListRunAsync(int todoListRunId, RemoveMemberFromTodoListRunDto dto, CancellationToken cancellationToken)
+        Task RemoveMemberFromTodoListRunAsync(int todoListRunId, RemoveMemberFromTodoListRunDto dto, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

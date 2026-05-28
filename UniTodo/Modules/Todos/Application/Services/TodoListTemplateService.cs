@@ -10,7 +10,7 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Application.Services
 {
-    internal class TodoListTemplateService : ITodoListTemplateService
+    public class TodoListTemplateService
     {
         private readonly ITodoListTemplateRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
@@ -23,7 +23,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             _userContext = userContext;
         }
 
-        async Task<IReadOnlyList<TodoListTemplateDto>> ITodoListTemplateService.GetUserTodoListsAsync()
+        public async Task<IReadOnlyList<TodoListTemplateDto>> GetUserTodoListsAsync()
         {
             var userTodoLists = await _repository.GetUserTodoListTemplatesAsync(_userContext.UserId.Value);
             return userTodoLists
@@ -32,7 +32,7 @@ namespace UniTodo.Modules.Todos.Application.Services
     tl.CreatedAt, tl.UpdatedAt)).ToList();
         }
 
-        async Task<TodoListTemplateDto> ITodoListTemplateService.GetTodoListTemplateByIdAsync(int id)
+        public async Task<TodoListTemplateDto> GetTodoListTemplateByIdAsync(int id)
         {
             var todoListTemplate = await _repository.GetTodoListTemplateByIdOrThrowAsync(id);
             if (todoListTemplate.OwnerId != _userContext.UserId)
@@ -40,7 +40,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             return new TodoListTemplateDto(todoListTemplate.Id, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
         }
 
-        async Task<TodoListTemplateDto> ITodoListTemplateService.CreateTodoListTemplateAsync(CreateTodoListTemplateDto dto)
+        public async Task<TodoListTemplateDto> CreateTodoListTemplateAsync(CreateTodoListTemplateDto dto)
         {
             if (await _repository.IsNameDuplicateAsync(dto.Name))
                 throw new DomainDuplicateEntitiesException("This TodoListTemplate already exists.");
@@ -51,7 +51,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             return new TodoListTemplateDto(todoList.Id, todoList.Name, todoList.ResetPolicy, todoList.Status, todoList.CreatedAt, todoList.UpdatedAt);
         }
 
-        async Task ITodoListTemplateService.DeleteTodoListAsync(int id)
+        public async Task DeleteTodoListAsync(int id)
         {
             var todoListToDelete = await _repository.GetTodoListTemplateByIdOrThrowAsync(id);
             if (todoListToDelete!.OwnerId != _userContext.UserId)
@@ -60,7 +60,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        async Task<TodoItemTemplateDto> ITodoListTemplateService.AddTodoItemTemplateAsync(int todoListTemplateId, AddTodoItemTemplateDto dto)
+        public async Task<TodoItemTemplateDto> AddTodoItemTemplateAsync(int todoListTemplateId, AddTodoItemTemplateDto dto)
         {
             var todoList = await _repository.GetTodoListTemplateByIdOrThrowAsync(todoListTemplateId, true);
             var todoItemTemplate = new TodoItemTemplate(todoListTemplateId, new TodoItemDescription(dto.Description));
@@ -69,14 +69,14 @@ namespace UniTodo.Modules.Todos.Application.Services
             return new TodoItemTemplateDto(todoItemTemplate.Id, todoItemTemplate.Description.Value, todoItemTemplate.CreatedAt, todoItemTemplate.UpdatedAt);
         }
 
-        async Task ITodoListTemplateService.DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId)
+        public async Task DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId)
         {
             var todoItemTemplateToDeleteParent = await _repository.GetTodoListTemplateByIdOrThrowAsync(todoListTemplateId, true);
             todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        async Task<IReadOnlyList<TodoItemTemplateDto>> ITodoListTemplateService.GetTodoItemTemplatesAsync(int todoListTemplateId)
+        public async Task<IReadOnlyList<TodoItemTemplateDto>> GetTodoItemTemplatesAsync(int todoListTemplateId)
         {
             var todoList = await _repository.GetTodoListTemplateByIdOrThrowAsync(todoListTemplateId, true);
 
@@ -86,14 +86,14 @@ namespace UniTodo.Modules.Todos.Application.Services
             return todoList.TodoItemTemplates.Select(t => new TodoItemTemplateDto(t.Id, t.Description.Value, t.CreatedAt, t.UpdatedAt)).ToList();
         }
 
-        async Task ITodoListTemplateService.ArchiveAsync(int id)
+        public async Task ArchiveAsync(int id)
         {
             var todoListToArchive = await _repository.GetTodoListTemplateByIdOrThrowAsync(id);
             todoListToArchive.Archive(_userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        async Task ITodoListTemplateService.MakeActiveAsync(int id)
+        public async Task MakeActiveAsync(int id)
         {
             var todoListToMakeActive = await _repository.GetTodoListTemplateByIdOrThrowAsync(id);
             todoListToMakeActive.MakeActive(_userContext.UserId);

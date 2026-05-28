@@ -6,18 +6,18 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    internal class TodoListTemplate : EntityBase
+    public class TodoListTemplate : EntityBase
     {
         private readonly List<TodoItemTemplate> _todoItemTemplates = new List<TodoItemTemplate>();
 
-        internal UserId OwnerId { get; private set; }
-        internal string Name { get; private set; }
-        internal ResetPolicy ResetPolicy { get; private set; }
-        internal TodoListStatus Status { get; private set; }
+        public UserId OwnerId { get; private set; }
+        public string Name { get; private set; }
+        public ResetPolicy ResetPolicy { get; private set; }
+        public TodoListStatus Status { get; private set; }
 
-        internal IReadOnlyCollection<TodoItemTemplate> TodoItemTemplates => _todoItemTemplates.AsReadOnly();
+        public IReadOnlyCollection<TodoItemTemplate> TodoItemTemplates => _todoItemTemplates.AsReadOnly();
 
-        internal TodoListTemplate(UserId ownerId, string name, ResetPolicy resetPolicy)
+        public TodoListTemplate(UserId ownerId, string name, ResetPolicy resetPolicy)
         {
             if (!ResetPolicy.IsDefined(resetPolicy))
                 throw new ArgumentOutOfRangeException($"{nameof(resetPolicy)} is not defined.");
@@ -28,7 +28,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Status = TodoListStatus.Active;
         }
 
-        internal void Archive(UserId actorUserId)
+        public void Archive(UserId actorUserId)
         {
             if (OwnerId != actorUserId)
                 throw new DomainNotAuthorizedException();
@@ -37,7 +37,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Status = TodoListStatus.Archived;
         }
 
-        internal void MakeActive(UserId actorUserId)
+        public void MakeActive(UserId actorUserId)
         {
             if (OwnerId != actorUserId)
                 throw new DomainNotAuthorizedException();
@@ -46,7 +46,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Status = TodoListStatus.Active;
         }
 
-        internal void AddTodoItemTemplate(TodoItemTemplate todoItemTemplate, UserId actorUserId)
+        public void AddTodoItemTemplate(TodoItemTemplate todoItemTemplate, UserId actorUserId)
         {
             if (OwnerId != actorUserId)
                 throw new DomainNotAuthorizedException();
@@ -55,7 +55,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             _todoItemTemplates.Add(todoItemTemplate);
         }
 
-        internal void Delete(int id, UserId actorId)
+        public void Delete(int id, UserId actorId)
         {
             if (OwnerId != actorId)
                 throw new DomainNotAuthorizedException();

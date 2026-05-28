@@ -2,7 +2,7 @@
 
 namespace UniTodo.Modules.Todos.Application.Interfaces
 {
-    internal interface ITodoListTemplateRepository : IRepository<TodoListTemplate>
+    public interface ITodoListTemplateRepository : IRepository<TodoListTemplate>
     {
         Task<bool> IsNameDuplicateAsync(string name, CancellationToken cancellationToken = default);
         Task<List<TodoListTemplate>> GetUserTodoListTemplatesAsync(Guid userId, CancellationToken cancellationToken = default);

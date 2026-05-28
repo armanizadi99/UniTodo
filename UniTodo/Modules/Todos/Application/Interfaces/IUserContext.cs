@@ -2,7 +2,7 @@
 
 namespace UniTodo.Modules.Todos.Application.Interfaces
 {
-    internal interface IUserContext
+    public interface IUserContext
     {
         UserId UserId { get; }
     }

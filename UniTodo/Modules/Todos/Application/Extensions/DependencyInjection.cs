@@ -7,8 +7,8 @@ namespace UniTodo.Modules.Todos.Application.Extensions
         internal static IServiceCollection AddTodoApplication(
         this IServiceCollection services)
         {
-            services.AddScoped<ITodoListTemplateService, TodoListTemplateService>();
-            services.AddScoped<ITodoListRunService, TodoListRunService>();
+            services.AddScoped<TodoListTemplateService>();
+            services.AddScoped<TodoListRunService>();
             return services;
         }
     }

@@ -11,9 +11,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [Authorize]
     public class TodoListTemplateController : ControllerBase
     {
-        private readonly ITodoListTemplateService _TodoListTemplateService;
+        private readonly TodoListTemplateService _TodoListTemplateService;
 
-        public TodoListTemplateController(ITodoListTemplateService todoListTemplateService)
+        public TodoListTemplateController(TodoListTemplateService todoListTemplateService)
         {
             _TodoListTemplateService = todoListTemplateService;
         }
