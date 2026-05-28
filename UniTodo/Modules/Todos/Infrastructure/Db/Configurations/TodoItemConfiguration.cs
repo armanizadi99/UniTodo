@@ -15,7 +15,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             builder.Property(e => e.RunId)
     .IsRequired();
 
-            builder.Property(e => e.description)
+            builder.Property(e => e.Description)
             .HasConversion(description => description.Value,
             value => new Domain.ValueObjects.TodoItemDescription(value))
             .IsRequired()

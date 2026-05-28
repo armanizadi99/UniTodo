@@ -1,9 +1,23 @@
 ﻿using UniTodo.Modules.Todos.Application.DTOs;
+using UniTodo.Modules.Todos.Application.Interfaces;
 
 namespace UniTodo.Modules.Todos.Application.Services
 {
-    public class TodoListRunService : ITodoListRunService
+    internal class TodoListRunService : ITodoListRunService
     {
+        private readonly ITodoListRunRepository _runRepository;
+        private readonly ITodoListTemplateRepository _templateRepository;
+        private readonly IUserContext _userContext;
+        private readonly IUnitOfWork _unitOfWork;
+
+public TodoListRunService( ITodoListRunRepository runRepository, ITodoListTemplateRepository templateRepository, IUserContext userContext, IUnitOfWork unitOfWork )
+        {
+        _runRepository = runRepository;
+        _templateRepository = templateRepository;
+        _userContext = userContext;
+        _unitOfWork = unitOfWork;
+        }
+
         Task<TodoListRunDto> ITodoListRunService.CreateTodoListRunFromTemplateAsync(int templateId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
