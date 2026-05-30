@@ -78,7 +78,7 @@ The project is strictly layered to decouple business logic from external concern
     ```bash
     dotnet run --project UniTodo
     ```
-    The API will be available at `https://localhost:5000` (or your configured port). You can access the Swagger UI at `/swagger/index.html`.
+    The API will be available at `https://localhost:5000` (or your configured port). You can access the Swagger UI at `/swagger`.
 
 ## 🧪 Testing
 The project includes unit tests for the Domain, Application, and Infrastructure layers.
