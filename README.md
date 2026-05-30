@@ -54,7 +54,7 @@ The project is strictly layered to decouple business logic from external concern
 ### Installation
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/UniTodo.git
+    git clone https://github.com/armanizadi99/UniTodo.git
     cd UniTodo
     ```
 
@@ -87,4 +87,4 @@ dotnet test
 ```
 
 ---
-Developed with ❤️ by [hamidreza izadi/armanizadi99]
+Developed with ❤️ by hamidreza izadi
