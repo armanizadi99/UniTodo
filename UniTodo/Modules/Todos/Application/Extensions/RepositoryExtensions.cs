@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.Linq.Expressions;
-using UniTodo.Modules.Todos.Application.Common;
-using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Domain.Common;
+using UniTodo.Modules.Todos.Application.Interfaces;
 
 namespace UniTodo.Modules.Todos.Application.Extensions
 {

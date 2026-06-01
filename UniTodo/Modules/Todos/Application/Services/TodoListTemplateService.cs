@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using UniTodo.Modules.Todos.Application.Common;
+using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Application.Interfaces;
-using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
 using UniTodo.Modules.Todos.Domain.Enums;
 using UniTodo.Modules.Todos.Domain.ValueObjects;

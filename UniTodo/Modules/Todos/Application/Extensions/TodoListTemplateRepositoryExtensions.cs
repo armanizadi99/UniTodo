@@ -1,4 +1,4 @@
-﻿using UniTodo.Modules.Todos.Application.Common;
+﻿using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Domain.Entities;
 
