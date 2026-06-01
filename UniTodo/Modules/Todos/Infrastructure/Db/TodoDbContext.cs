@@ -5,16 +5,16 @@ using UniTodo.Modules.Todos.Infrastructure.Db.Configurations;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db
 {
-    internal class TodoDbContext : DbContext
+    public class TodoDbContext : DbContext
     {
 
         public TodoDbContext(DbContextOptions<TodoDbContext> options)
         : base(options) { }
 
-        internal DbSet<TodoListTemplate> todoLists { get; set; }
-        internal DbSet<TodoItemTemplate> todoItemTemplates { get; set; }
-        internal DbSet<TodoListRun> todoListRuns { get; set; }
-        internal DbSet<TodoItem> todoItems { get; set; }
+        public DbSet<TodoListTemplate> todoLists { get; set; }
+        public DbSet<TodoItemTemplate> todoItemTemplates { get; set; }
+        public DbSet<TodoListRun> todoListRuns { get; set; }
+        public DbSet<TodoItem> todoItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

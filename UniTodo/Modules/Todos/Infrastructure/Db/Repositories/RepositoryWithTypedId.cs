@@ -7,7 +7,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
 {
-    internal class RepositoryWithTypedId<TEntity, TEntityId> : IRepositoryWithTypedId<TEntity, TEntityId>
+    public class RepositoryWithTypedId<TEntity, TEntityId> : IRepositoryWithTypedId<TEntity, TEntityId>
 where TEntity : EntityBase<TEntityId>
     {
         private readonly DbSet<TEntity> _dbSet;

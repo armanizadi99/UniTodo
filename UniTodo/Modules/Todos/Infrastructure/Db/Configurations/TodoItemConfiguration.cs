@@ -22,13 +22,18 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             .HasMaxLength(Constants.DescriptionMaxLength);
 
             builder.Property(e => e.Notes)
-            .HasConversion(notes => notes!.Value,
-            value => new Domain.ValueObjects.TodoItemNotes(value))
-            .IsRequired()
+            .HasConversion(notes => notes == null ? null : notes.Value,
+            value => value == null ? null : new Domain.ValueObjects.TodoItemNotes(value))
             .HasMaxLength(Constants.NotesMaxLength);
+
+            builder.Property(e => e.AsignedTo)
+            .HasConversion(id => id.HasValue ? (Guid?)id.Value.Value : (Guid?)null,
+            value => value.HasValue ? new Domain.ValueObjects.UserId(value.Value) : (Domain.ValueObjects.UserId?)null);
 
             builder.Property(e => e.IsCompleted)
             .IsRequired();
+
+            builder.Property(e => e.CompletedAt);
         }
     }
 }
