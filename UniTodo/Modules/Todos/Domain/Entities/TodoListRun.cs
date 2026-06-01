@@ -21,6 +21,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public IReadOnlyCollection<TodoItem> TodoItems => _todoItems.AsReadOnly();
         public IReadOnlyCollection<UserId> Members => _members.AsReadOnly();
 
+        private TodoListRun() { }
+
         public TodoListRun(string name, ResetPolicy resetPolicy, bool isShared, UserId ownerUserId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));

@@ -15,6 +15,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public TodoListRun Run { get; private set; } = null!;
 
+        private TodoItem() { }
+
         public TodoItem(TodoItemDescription description)
         {
             Description = description;
