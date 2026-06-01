@@ -2,11 +2,11 @@
 
 namespace UniTodo.Modules.Todos.Domain.ValueObjects
 {
-    internal record TodoItemNotes
+    public record TodoItemNotes
     {
-        internal string Value { get; init; }
+        public string Value { get; init; }
 
-        internal TodoItemNotes(string value)
+        public TodoItemNotes(string value)
         {
             if (string.IsNullOrEmpty(value))
                 throw new DomainArgumentException(nameof(TodoItemNotes), "Notes couldn't be empty or whitespace.");

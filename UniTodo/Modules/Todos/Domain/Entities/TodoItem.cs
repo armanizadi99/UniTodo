@@ -4,19 +4,63 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Domain.Entities
 {
-    internal class TodoItem : EntityBase
+    public class TodoItem : EntityBase
     {
-        internal int RunId { get; private set; }
-        internal TodoItemDescription Description { get; private set; }
-        internal bool IsCompleted { get; private set; }
-        internal DateTimeOffset? CompletedAt { get; private set; }
-        internal TodoItemNotes? Notes { get; private set; }
+        public int RunId { get; private set; }
+        public TodoItemDescription Description { get; private set; }
+        public bool IsCompleted { get; private set; }
+        public DateTimeOffset? CompletedAt { get; private set; }
+        public TodoItemNotes? Notes { get; private set; }
+        public UserId? AsignedTo { get; private set; }
 
-        internal TodoListRun Run { get; private set; } = null!;
+        public TodoListRun Run { get; private set; } = null!;
 
-internal TodoItem( TodoItemDescription description)
+        public TodoItem(TodoItemDescription description)
         {
-        Description = description;
+            Description = description;
+        }
+
+        public void MarkComplete(UserId actorId)
+        {
+            if (CompletedAt != null)
+                throw new DomainInvalidOperationException("This item is already marked complete.");
+            if (AsignedTo == null && actorId != Run.ownerId)
+                throw new DomainNotAuthorizedException();
+            if (AsignedTo != null && AsignedTo.Value != actorId)
+                throw new DomainNotAuthorizedException();
+            IsCompleted = true;
+            CompletedAt = DateTimeOffset.UtcNow;
+            }
+
+            public void MarkIncomplete(UserId actorId)
+            {
+            if (CompletedAt == null)
+                throw new DomainInvalidOperationException("This item is still incomplete.");
+            if (AsignedTo == null && actorId != Run.ownerId)
+                throw new DomainNotAuthorizedException();
+            if (AsignedTo != null && AsignedTo.Value != actorId)
+                throw new DomainNotAuthorizedException();
+            IsCompleted = false;
+            CompletedAt = null;
+            }
+
+            public void UpdateNotes(TodoItemNotes notes, UserId actorId)
+            {
+            if (AsignedTo == null && actorId != Run.ownerId)
+                throw new DomainNotAuthorizedException();
+            if (AsignedTo != null && AsignedTo.Value != actorId)
+                throw new DomainNotAuthorizedException();
+            Notes = string.IsNullOrEmpty(notes.Value) ? null : notes;
+        }
+
+        public void ChangeDescription(TodoItemDescription description)
+        {
+            Description = description;
+        }
+
+        public void SetAsignedTo(UserId asignedTo)
+        {
+            AsignedTo = asignedTo;
         }
     }
 }

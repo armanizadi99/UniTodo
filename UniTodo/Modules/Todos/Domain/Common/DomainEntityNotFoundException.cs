@@ -1,6 +1,4 @@
-﻿using UniTodo.Modules.Todos.Domain.Common;
-
-namespace UniTodo.Modules.Todos.Application.Common
+﻿namespace UniTodo.Modules.Todos.Domain.Common
 {
     internal class DomainEntityNotFoundException : DomainException
     {
