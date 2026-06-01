@@ -1,6 +1,10 @@
-﻿namespace UniTodo.Modules.Todos.Application.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace UniTodo.Modules.Todos.Application.DTOs
 {
     public class RemoveMemberFromTodoListRunDto
     {
+        [Required]
+        public Guid? UserId { get; set; } = null;
     }
 }
