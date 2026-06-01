@@ -2,7 +2,6 @@ using FluentAssertions;
 using FluentAssertions.Specialized;
 using NSubstitute;
 using System.Linq.Expressions;
-using UniTodo.Modules.Todos.Application.Common;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Application.Services;
