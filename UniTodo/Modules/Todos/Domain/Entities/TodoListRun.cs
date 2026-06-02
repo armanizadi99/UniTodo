@@ -95,6 +95,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
             if (!IsShared)
                 throw new DomainInvalidOperationException("This run is already private.");
+// All items that are asigned to a member must be asigned to nobody, all members except the owner must be removed. 
             IsShared = false;
         }
 
@@ -156,11 +157,13 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Guid AddMember(UserId userId, UserId actorId)
         {
-            if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
-            if (actorId != ownerId)
+        if (Status == TodoListRunStatus.Closed)
+            throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+        if (actorId != ownerId)
                 throw new DomainNotAuthorizedException();
-            if (_members.Any(m => m.Equals(userId)))
+        if (!IsShared)
+            throw new DomainInvalidOperationException("Couldn't add members to a private group.");
+        if (_members.Any(m => m.Equals(userId)))
                 throw new DomainDuplicateEntitiesException("this user is already a member of this run");
             _members.Add(userId);
             return userId.Value;
@@ -172,6 +175,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
             if (actorId != ownerId)
                 throw new DomainNotAuthorizedException();
+        if (userId == ownerId)
+            throw new DomainInvalidOperationException("Owner of a run couldn't be get removed.");
             if (!_members.Any(m => m.Equals(userId)))
                 throw new DomainInvalidOperationException("This user is not a member of this run.");
             _members.Remove(userId);
