@@ -62,8 +62,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public void AsignTo(UserId asignedTo)
         {
-if( IsCompleted)
-
+        if (IsCompleted)
+            throw new DomainInvalidOperationException("Couldn't asign a completed task.");
             AsignedTo = asignedTo;
         }
     }
