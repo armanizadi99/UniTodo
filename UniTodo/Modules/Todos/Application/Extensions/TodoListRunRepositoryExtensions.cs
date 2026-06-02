@@ -13,5 +13,14 @@ namespace UniTodo.Modules.Todos.Application.Extensions
                 throw new DomainEntityNotFoundException(nameof(TodoListRun), id);
             return run;
         }
+
+        public static async Task<TodoListRun> GetTodoListRunByIdOrThrowAsync( this ITodoListRunRepository repository, int id, int itemId, CancellationToken cancellationToken = default )
+        {
+        var run = await repository.GetTodoListRunByIdAsync(id, itemId, cancellationToken);
+        if (run is null)
+            throw new DomainEntityNotFoundException(nameof(TodoListRun), id);
+        return run;
+        }
     }
+}
 }
