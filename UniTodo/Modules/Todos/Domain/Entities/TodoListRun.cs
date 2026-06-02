@@ -55,12 +55,6 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("Items couldn't be added to a closed run.");
             if (_todoItems.Any(i => String.Equals(i.Description.Value, item.Description.Value, StringComparison.OrdinalIgnoreCase)))
                 throw new DomainDuplicateEntitiesException("No duplicate description could be in a todo list run.");
-
-            // Use reflection to set the private 'Run' property if needed, 
-            // but since it's in the same assembly/module we can just set it if we make it internal or use a trick.
-            // Actually, Run property is public.
-            typeof(TodoItem).GetProperty(nameof(TodoItem.Run))!.SetValue(item, this);
-
             _todoItems.Add(item);
         }
 
@@ -140,7 +134,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            item.SetAsignedTo(memberId);
+            item.AsignTo(memberId);
         }
 
         public void ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
