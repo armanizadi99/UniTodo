@@ -60,8 +60,10 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Description = description;
         }
 
-        public void SetAsignedTo(UserId asignedTo)
+        public void AsignTo(UserId asignedTo)
         {
+if( IsCompleted)
+
             AsignedTo = asignedTo;
         }
     }
