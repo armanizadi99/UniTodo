@@ -53,7 +53,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
         public async Task DeleteTodoItemFromTodoListRunAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.DeleteItem(todoItemId, _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -89,42 +89,42 @@ namespace UniTodo.Modules.Todos.Application.Services
 
         public async Task MakeTodoListRunPrivateAsync(int id, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(id, false, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(id, true, cancellationToken);
             run.MakePrivate(_userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task MarkTodoItemCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.MarkItemComplete(todoItemId, _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task MarkTodoItemIncompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.MarkItemIncomplete(todoItemId, _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task UpdateNotesForTodoItemAsync(int todoListRunId, int todoItemId, UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.UpdateNotes(todoItemId, new Domain.ValueObjects.TodoItemNotes(dto.Notes), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task AsignMemberToItemAsync(int todoListRunId, int todoItemId, AsignMemberToTodoItemDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.AsignItemToMember(todoItemId, new Domain.ValueObjects.UserId(dto.MemberId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task ChangeTodoItemDescriptionAsync(int todoListRunId, int todoItemId, ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
             run.ChangeItemDescription(todoItemId, new Domain.ValueObjects.TodoItemDescription(dto.Description), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
