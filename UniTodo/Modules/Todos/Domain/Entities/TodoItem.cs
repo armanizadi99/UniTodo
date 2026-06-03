@@ -10,6 +10,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public TodoItemDescription Description { get; private set; }
         public bool IsCompleted { get; private set; }
         public DateTimeOffset? CompletedAt { get; private set; }
+public UserId? CompletedBy {get; private set; }
         public TodoItemNotes? Notes { get; private set; }
         public UserId? AsignedTo { get; private set; }
 
@@ -32,6 +33,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainNotAuthorizedException();
             IsCompleted = true;
             CompletedAt = DateTimeOffset.UtcNow;
+        CompletedBy = actorId;
             }
 
             public void MarkIncomplete(UserId actorId)
@@ -44,6 +46,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainNotAuthorizedException();
             IsCompleted = false;
             CompletedAt = null;
+        CompletedBy = null;
             }
 
             public void UpdateNotes(TodoItemNotes notes, UserId actorId)
@@ -65,6 +68,11 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         if (IsCompleted)
             throw new DomainInvalidOperationException("Couldn't asign a completed task.");
             AsignedTo = asignedTo;
+        }
+
+public void AsignToNoone()
+{
+        AsignedTo = null;
         }
     }
 }

@@ -89,8 +89,12 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
             if (!IsShared)
                 throw new DomainInvalidOperationException("This run is already private.");
-// All items that are asigned to a member must be asigned to nobody, all members except the owner must be removed. 
-            IsShared = false;
+        _members.RemoveAll(m => !m.Equals(ownerId));
+        foreach (var item in _todoItems)
+        {
+        item.AsignToNoone();
+        }
+        IsShared = false;
         }
 
         public void MarkItemComplete(int itemId, UserId actorId)
@@ -173,7 +177,12 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             throw new DomainInvalidOperationException("Owner of a run couldn't be get removed.");
             if (!_members.Any(m => m.Equals(userId)))
                 throw new DomainInvalidOperationException("This user is not a member of this run.");
-            _members.Remove(userId);
+        foreach (var item in _todoItems)
+        {
+        if (item.AsignedTo == userId)
+            item.AsignToNoone();
+        }
+        _members.Remove(userId);
         }
     }
 }
