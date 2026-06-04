@@ -42,7 +42,8 @@ private void SetRun(TodoItem item, TodoListRun run)
             var act = () => new TodoListRun(name, ResetPolicy.None, false, _ownerId);
 
             // Assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().Throw<ArgumentException>()
+.WithParameterName("name");
         }
 
         [Fact]

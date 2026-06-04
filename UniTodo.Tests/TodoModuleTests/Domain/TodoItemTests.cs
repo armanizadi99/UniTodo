@@ -38,6 +38,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.Description.Should().Be(description);
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
+        item.CompletedBy.Should().BeNull();
             item.AsignedTo.Should().BeNull();
         }
 
