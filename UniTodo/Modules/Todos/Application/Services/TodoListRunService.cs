@@ -43,8 +43,6 @@ namespace UniTodo.Modules.Todos.Application.Services
         public async Task<TodoItemDto> AddTodoItemToTodoListRunAsync(int todoListRunId, AddTodoItemDto dto, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
-            if (run.ownerId != _userContext.UserId)
-                throw new DomainNotAuthorizedException();
             var item = new TodoItem(new Domain.ValueObjects.TodoItemDescription(dto.Description));
             run.AddTodoItem(item, _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
