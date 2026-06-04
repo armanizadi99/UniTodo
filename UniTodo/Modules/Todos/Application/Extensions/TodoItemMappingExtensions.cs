@@ -8,7 +8,7 @@ namespace UniTodo.Modules.Todos.Application.Extensions
     {
         public static TodoItemDto ToTodoItemDto(this TodoItem item)
         {
-            return new TodoItemDto(item.Id, item.Description.Value, item.CompletedAt, item.Notes?.Value, item.AsignedTo?.Value, item.CreatedAt, item.UpdatedAt);
+            return new TodoItemDto(item.Id, item.Description.Value, item.IsCompleted, item.CompletedAt, item.CompletedBy?.Value, item.Notes?.Value, item.AsignedTo?.Value, item.CreatedAt, item.UpdatedAt);
         }
     }
 }
