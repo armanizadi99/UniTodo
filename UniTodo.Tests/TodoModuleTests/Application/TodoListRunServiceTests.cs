@@ -62,14 +62,17 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task CreateTodoListRunFromTemplateAsync_WhenUserIsOwner_ShouldCreateRunAndReturnMappedDto()
         {
+            // Arrange
             var templateId = 1;
             var template = new TodoListTemplate(_currentUserId, "Template Name", ResetPolicy.Daily);
             template.AddTodoItemTemplate(new TodoItemTemplate(1, new TodoItemDescription("Item 1")), _currentUserId);
             
             _templateRepository.GetTodoListTemplateByIdAsync(templateId, true, Arg.Any<CancellationToken>()).Returns(template);
 
+            // Act
             var result = await _service.CreateTodoListRunFromTemplateAsync(templateId, CancellationToken.None);
 
+            // Assert
             result.Should().NotBeNull();
             result.Name.Should().Be(template.Name);
             result.ResetPolicy.Should().Be(template.ResetPolicy);
@@ -82,11 +85,13 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task CreateTodoListRunFromTemplateAsync_WhenUserIsNotOwner_ShouldThrowDomainNotAuthorizedException()
         {
+            // Arrange
             var templateId = 1;
             var otherUser = new UserId(Guid.NewGuid());
             var template = new TodoListTemplate(otherUser, "Other Template", ResetPolicy.Daily);
             _templateRepository.GetTodoListTemplateByIdAsync(templateId, true, Arg.Any<CancellationToken>()).Returns(template);
 
+            // Act & Assert
             await _service.Invoking(s => s.CreateTodoListRunFromTemplateAsync(templateId, CancellationToken.None))
                 .Should().ThrowAsync<DomainNotAuthorizedException>();
         }
@@ -94,8 +99,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task CreateTodoListRunFromTemplateAsync_WhenTemplateNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _templateRepository.GetTodoListTemplateByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListTemplate)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.CreateTodoListRunFromTemplateAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -105,10 +112,13 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task CreateTodoListRunAsync_WhenValidRequest_ShouldCreatePrivateRunAndReturnDto()
         {
+            // Arrange
             var dto = new CreateTodoListRunDto { Name = "New Run", ResetPolicy = ResetPolicy.Weekly };
 
+            // Act
             var result = await _service.CreateTodoListRunAsync(dto, CancellationToken.None);
 
+            // Assert
             result.Name.Should().Be(dto.Name);
             result.ResetPolicy.Should().Be(dto.ResetPolicy);
             result.IsShared.Should().BeFalse();
@@ -121,12 +131,15 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddTodoItemToTodoListRunAsync_WhenAuthorizedAndActive_ShouldAddItemAndReturnDto()
         {
+            // Arrange
             var run = CreateActiveRun();
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
             var dto = new AddTodoItemDto { Description = "New Item" };
 
+            // Act
             var result = await _service.AddTodoItemToTodoListRunAsync(1, dto, CancellationToken.None);
 
+            // Assert
             result.Description.Should().Be(dto.Description);
             run.TodoItems.Should().Contain(i => i.Description.Value == dto.Description);
             await _unitOfWork.Received(1).SaveChangesAsync();
@@ -135,8 +148,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddTodoItemToTodoListRunAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.AddTodoItemToTodoListRunAsync(1, new AddTodoItemDto { Description = "X" }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -144,10 +159,12 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddTodoItemToTodoListRunAsync_WhenRunIsClosed_ShouldPropagateDomainInvalidOperationException()
         {
+            // Arrange
             var run = CreateActiveRun();
             SetStatus(run, TodoListRunStatus.Closed);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.AddTodoItemToTodoListRunAsync(1, new AddTodoItemDto { Description = "X" }, CancellationToken.None))
                 .Should().ThrowAsync<DomainInvalidOperationException>();
         }
@@ -157,14 +174,17 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task DeleteTodoItemFromTodoListRunAsync_WhenAuthorizedAndExists_ShouldRemoveItemAndSave()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
             run.AddTodoItem(item, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.DeleteTodoItemFromTodoListRunAsync(1, 10, CancellationToken.None);
 
+            // Assert
             run.TodoItems.Should().NotContain(item);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -172,8 +192,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task DeleteTodoItemFromTodoListRunAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.DeleteTodoItemFromTodoListRunAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -181,9 +203,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task DeleteTodoItemFromTodoListRunAsync_WhenItemCorrelationFails_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             var runWithoutItem = CreateActiveRun();
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(runWithoutItem);
 
+            // Act & Assert
             await _service.Invoking(s => s.DeleteTodoItemFromTodoListRunAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>()
                 .WithMessage($"*'{nameof(TodoItem)}'*'10'*");
@@ -194,12 +218,15 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetTodoListRunItemsAsync_WhenUserIsMember_ShouldReturnMappedItems()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true, ownerId: new UserId(Guid.NewGuid()));
             run.AddMember(_currentUserId, run.ownerId);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             var result = await _service.GetTodoListRunItemsAsync(1, CancellationToken.None);
 
+            // Assert
             result.Should().NotBeNull();
             await _runRepository.Received(1).GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>());
         }
@@ -207,9 +234,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetTodoListRunItemsAsync_WhenUserIsNotMember_ShouldThrowDomainNotAuthorizedException()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: false, ownerId: new UserId(Guid.NewGuid()));
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.GetTodoListRunItemsAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainNotAuthorizedException>();
         }
@@ -217,8 +246,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetTodoListRunItemsAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.GetTodoListRunItemsAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -228,20 +259,25 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetTodoListRunMembersAsync_WhenUserIsMember_ShouldReturnMappedMembers()
         {
+            // Arrange
             var run = CreateActiveRun();
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             var result = await _service.GetTodoListRunMembersAsync(1, CancellationToken.None);
 
+            // Assert
             result.Should().Contain(m => m.UserId == _currentUserId.Value);
         }
 
         [Fact]
         public async Task GetTodoListRunMembersAsync_WhenUserIsNotMember_ShouldThrowDomainNotAuthorizedException()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: false, ownerId: new UserId(Guid.NewGuid()));
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.GetTodoListRunMembersAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainNotAuthorizedException>();
         }
@@ -249,8 +285,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetTodoListRunMembersAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.GetTodoListRunMembersAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -260,11 +298,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task GetUserActiveTodoRunsAsync_WhenCalled_ShouldReturnActiveRunsForCurrentUser()
         {
+            // Arrange
             var runs = new List<TodoListRun> { CreateActiveRun("Run 1") };
             _runRepository.GetUserActiveRunsAsync(_currentUserId.Value, Arg.Any<CancellationToken>()).Returns(runs);
 
+            // Act
             var result = await _service.GetUserActiveTodoRunsAsync(CancellationToken.None);
 
+            // Assert
             result.Should().HaveCount(1);
             result[0].Name.Should().Be("Run 1");
         }
@@ -274,11 +315,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MakeTodoListRunSharedAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: false);
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.MakeTodoListRunSharedAsync(1, CancellationToken.None);
 
+            // Assert
             run.IsShared.Should().BeTrue();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -286,8 +330,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MakeTodoListRunSharedAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.MakeTodoListRunSharedAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -297,11 +343,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MakeTodoListRunPrivateAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.MakeTodoListRunPrivateAsync(1, CancellationToken.None);
 
+            // Assert
             run.IsShared.Should().BeFalse();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -309,8 +358,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MakeTodoListRunPrivateAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.MakeTodoListRunPrivateAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -320,6 +371,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemCompleteAsync_WhenAuthorizedAndValid_ShouldMarkCompleteAndSave()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
@@ -327,8 +379,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             SetRun(item, run);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.MarkTodoItemCompleteAsync(1, 10, CancellationToken.None);
 
+            // Assert
             item.IsCompleted.Should().BeTrue();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -336,8 +390,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemCompleteAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.MarkTodoItemCompleteAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -345,9 +401,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemCompleteAsync_WhenItemCorrelationFails_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             var runWithoutItem = CreateActiveRun();
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(runWithoutItem);
 
+            // Act & Assert
             await _service.Invoking(s => s.MarkTodoItemCompleteAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -355,6 +413,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemCompleteAsync_WhenRunIsClosed_ShouldPropagateDomainInvalidOperationException()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
@@ -363,6 +422,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             SetStatus(run, TodoListRunStatus.Closed);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.MarkTodoItemCompleteAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainInvalidOperationException>();
         }
@@ -372,6 +432,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemIncompleteAsync_WhenAuthorizedAndValid_ShouldMarkIncompleteAndSave()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
@@ -380,8 +441,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             item.MarkComplete(_currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.MarkTodoItemIncompleteAsync(1, 10, CancellationToken.None);
 
+            // Assert
             item.IsCompleted.Should().BeFalse();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -389,8 +452,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemIncompleteAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.MarkTodoItemIncompleteAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -398,9 +463,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task MarkTodoItemIncompleteAsync_WhenItemCorrelationFails_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             var runWithoutItem = CreateActiveRun();
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(runWithoutItem);
 
+            // Act & Assert
             await _service.Invoking(s => s.MarkTodoItemIncompleteAsync(1, 10, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -410,6 +477,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task UpdateNotesForTodoItemAsync_WhenAuthorizedAndValid_ShouldUpdateNotesAndSave()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
@@ -417,8 +485,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             SetRun(item, run);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.UpdateNotesForTodoItemAsync(1, 10, new UpdateNotesForTodoItemDto { Notes = "New Notes" }, CancellationToken.None);
 
+            // Assert
             item.Notes?.Value.Should().Be("New Notes");
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -426,8 +496,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task UpdateNotesForTodoItemAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.UpdateNotesForTodoItemAsync(1, 10, new UpdateNotesForTodoItemDto { Notes = "X" }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -437,6 +509,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AsignMemberToItemAsync_WhenAuthorizedAndValid_ShouldAssignAndSave()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             var memberId = Guid.NewGuid();
             run.AddMember(new UserId(memberId), _currentUserId);
@@ -445,8 +518,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             run.AddTodoItem(item, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = memberId }, CancellationToken.None);
 
+            // Assert
             item.AsignedTo.Should().Be(new UserId(memberId));
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -454,8 +529,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AsignMemberToItemAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -463,12 +540,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AsignMemberToItemAsync_WhenMemberNotInRun_ShouldPropagateDomainInvalidOperationException()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             var item = new TodoItem(new TodoItemDescription("Item"));
             SetId(item, 10);
             run.AddTodoItem(item, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
                 .Should().ThrowAsync<DomainInvalidOperationException>();
         }
@@ -478,14 +557,17 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task ChangeTodoItemDescriptionAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
+            // Arrange
             var run = CreateActiveRun();
             var item = new TodoItem(new TodoItemDescription("Old"));
             SetId(item, 10);
             run.AddTodoItem(item, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.ChangeTodoItemDescriptionAsync(1, 10, new ChangeTodoItemDescriptionDto { Description = "New" }, CancellationToken.None);
 
+            // Assert
             item.Description.Value.Should().Be("New");
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -493,8 +575,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task ChangeTodoItemDescriptionAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.ChangeTodoItemDescriptionAsync(1, 10, new ChangeTodoItemDescriptionDto { Description = "X" }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -504,12 +588,15 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddMemberToTodoListRunAsync_WhenAuthorizedAndValid_ShouldAddAndReturnDto()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             var newMemberId = Guid.NewGuid();
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             var result = await _service.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = newMemberId }, CancellationToken.None);
 
+            // Assert
             result.UserId.Should().Be(newMemberId);
             run.Members.Should().Contain(new UserId(newMemberId));
             await _unitOfWork.Received(1).SaveChangesAsync();
@@ -518,8 +605,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddMemberToTodoListRunAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
@@ -527,11 +616,13 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task AddMemberToTodoListRunAsync_WhenUserIsAlreadyMember_ShouldPropagateDomainDuplicateEntitiesException()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             var existingMember = Guid.NewGuid();
             run.AddMember(new UserId(existingMember), _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act & Assert
             await _service.Invoking(s => s.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = existingMember }, CancellationToken.None))
                 .Should().ThrowAsync<DomainDuplicateEntitiesException>();
         }
@@ -541,13 +632,16 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task RemoveMemberFromTodoListRunAsync_WhenAuthorizedAndValid_ShouldRemoveAndSave()
         {
+            // Arrange
             var run = CreateActiveRun(isShared: true);
             var memberId = Guid.NewGuid();
             run.AddMember(new UserId(memberId), _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
+            // Act
             await _service.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = memberId }, CancellationToken.None);
 
+            // Assert
             run.Members.Should().NotContain(new UserId(memberId));
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
@@ -555,8 +649,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         [Fact]
         public async Task RemoveMemberFromTodoListRunAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
+            // Arrange
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
+            // Act & Assert
             await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
