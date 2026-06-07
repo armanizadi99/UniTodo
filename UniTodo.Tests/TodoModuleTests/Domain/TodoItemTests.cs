@@ -39,7 +39,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
         item.CompletedBy.Should().BeNull();
-            item.AsignedTo.Should().BeNull();
+            item.AssignedTo.Should().BeNull();
         }
 
         #region MarkComplete Tests
@@ -50,7 +50,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Act
             item.MarkComplete(_assignedUserId);
@@ -85,7 +85,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Act
             var act = () => item.MarkComplete(_ownerId);
@@ -116,7 +116,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Act
             var act = () => item.MarkComplete(_otherUserId);
@@ -150,7 +150,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
             item.MarkComplete(_assignedUserId);
 
             // Act
@@ -187,7 +187,7 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
             item.MarkComplete(_assignedUserId);
 
             // Act
@@ -220,7 +220,7 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
             item.MarkComplete(_assignedUserId);
 
             // Act
@@ -254,7 +254,7 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
             var notes = new TodoItemNotes("New Notes");
 
             // Act
@@ -287,7 +287,7 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Act
             var act = () => item.UpdateNotes(new TodoItemNotes("Notes"), _ownerId);
@@ -318,7 +318,7 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
             var run = CreateRun(_ownerId);
             SetRunOnItem(item, run);
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Act
             var act = () => item.UpdateNotes(new TodoItemNotes("Notes"), _otherUserId);
@@ -366,10 +366,10 @@ item.CompletedBy.Should().BeNull();
             var item = new TodoItem(new TodoItemDescription("Test"));
 
             // Act
-            item.AsignTo(_assignedUserId);
+            item.AssignTo(_assignedUserId);
 
             // Assert
-            item.AsignedTo.Should().Be(_assignedUserId);
+            item.AssignedTo.Should().Be(_assignedUserId);
         }
 
         [Fact]
@@ -382,7 +382,7 @@ item.CompletedBy.Should().BeNull();
             item.MarkComplete(_ownerId);
 
             // Act
-            var act = () => item.AsignTo(_assignedUserId);
+            var act = () => item.AssignTo(_assignedUserId);
 
             // Assert
             act.Should().Throw<DomainInvalidOperationException>();

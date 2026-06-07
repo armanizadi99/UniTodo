@@ -296,7 +296,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             // Assert
             run.IsShared.Should().BeFalse();
             run.Members.Should().HaveCount(1).And.Contain(_ownerId);
-            item.AsignedTo.Should().BeNull();
+            item.AssignedTo.Should().BeNull();
         }
 
         [Fact]
@@ -460,7 +460,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             run.AsignItemToMember(1, memberId, _ownerId);
 
             // Assert
-            item.AsignedTo.Should().Be(memberId);
+            item.AssignedTo.Should().Be(memberId);
         }
 
         [Fact]
@@ -578,7 +578,7 @@ private void SetRun(TodoItem item, TodoListRun run)
 
             // Assert
             run.Members.Should().NotContain(memberId);
-            item.AsignedTo.Should().BeNull();
+            item.AssignedTo.Should().BeNull();
         }
         #endregion
     }

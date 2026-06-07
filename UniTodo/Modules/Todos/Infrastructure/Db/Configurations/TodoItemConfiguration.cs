@@ -26,7 +26,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             value => value == null ? null : new Domain.ValueObjects.TodoItemNotes(value))
             .HasMaxLength(Constants.NotesMaxLength);
 
-            builder.Property(e => e.AsignedTo)
+            builder.Property(e => e.AssignedTo)
             .HasConversion(id => id.HasValue ? (Guid?)id.Value.Value : (Guid?)null,
             value => value.HasValue ? new Domain.ValueObjects.UserId(value.Value) : (Domain.ValueObjects.UserId?)null);
 

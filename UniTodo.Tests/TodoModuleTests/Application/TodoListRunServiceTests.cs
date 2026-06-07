@@ -562,7 +562,7 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
             await _service.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = memberId }, CancellationToken.None);
 
             // Assert
-            item.AsignedTo.Should().Be(new UserId(memberId));
+            item.AssignedTo.Should().Be(new UserId(memberId));
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 

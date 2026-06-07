@@ -12,7 +12,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public DateTimeOffset? CompletedAt { get; private set; }
 public UserId? CompletedBy {get; private set; }
         public TodoItemNotes? Notes { get; private set; }
-        public UserId? AsignedTo { get; private set; }
+        public UserId? AssignedTo { get; private set; }
 
         public TodoListRun Run { get; private set; } = null!;
 
@@ -27,9 +27,9 @@ public UserId? CompletedBy {get; private set; }
         {
             if (CompletedAt != null)
                 throw new DomainInvalidOperationException("This item is already marked complete.");
-            if (AsignedTo == null && actorId != Run.ownerId)
+            if (AssignedTo == null && actorId != Run.ownerId)
                 throw new DomainNotAuthorizedException();
-            if (AsignedTo != null && AsignedTo.Value != actorId)
+            if (AssignedTo != null && AssignedTo.Value != actorId)
                 throw new DomainNotAuthorizedException();
             IsCompleted = true;
             CompletedAt = DateTimeOffset.UtcNow;
@@ -40,9 +40,9 @@ public UserId? CompletedBy {get; private set; }
             {
             if (CompletedAt == null)
                 throw new DomainInvalidOperationException("This item is still incomplete.");
-            if (AsignedTo == null && actorId != Run.ownerId)
+            if (AssignedTo == null && actorId != Run.ownerId)
                 throw new DomainNotAuthorizedException();
-            if (AsignedTo != null && AsignedTo.Value != actorId)
+            if (AssignedTo != null && AssignedTo.Value != actorId)
                 throw new DomainNotAuthorizedException();
             IsCompleted = false;
             CompletedAt = null;
@@ -51,9 +51,9 @@ public UserId? CompletedBy {get; private set; }
 
             public void UpdateNotes(TodoItemNotes notes, UserId actorId)
             {
-            if (AsignedTo == null && actorId != Run.ownerId)
+            if (AssignedTo == null && actorId != Run.ownerId)
                 throw new DomainNotAuthorizedException();
-            if (AsignedTo != null && AsignedTo.Value != actorId)
+            if (AssignedTo != null && AssignedTo.Value != actorId)
                 throw new DomainNotAuthorizedException();
             Notes = string.IsNullOrEmpty(notes.Value) ? null : notes;
         }
@@ -63,16 +63,16 @@ public UserId? CompletedBy {get; private set; }
             Description = description;
         }
 
-        public void AsignTo(UserId asignedTo)
+        public void AssignTo(UserId assignedTo)
         {
         if (IsCompleted)
             throw new DomainInvalidOperationException("Couldn't asign a completed task.");
-            AsignedTo = asignedTo;
+            AssignedTo = assignedTo;
         }
 
-public void AsignToNoone()
+public void AssignToNoone()
 {
-        AsignedTo = null;
+        AssignedTo = null;
         }
     }
 }

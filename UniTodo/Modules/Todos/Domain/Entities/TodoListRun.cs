@@ -92,7 +92,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         _members.RemoveAll(m => !m.Equals(ownerId));
         foreach (var item in _todoItems)
         {
-        item.AsignToNoone();
+        item.AssignToNoone();
         }
         IsShared = false;
         }
@@ -138,7 +138,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            item.AsignTo(memberId);
+            item.AssignTo(memberId);
         }
 
         public void ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
@@ -179,8 +179,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("This user is not a member of this run.");
         foreach (var item in _todoItems)
         {
-        if (item.AsignedTo == userId)
-            item.AsignToNoone();
+        if (item.AssignedTo == userId)
+            item.AssignToNoone();
         }
         _members.Remove(userId);
         }
