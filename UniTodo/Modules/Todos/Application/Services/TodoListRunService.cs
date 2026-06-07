@@ -137,7 +137,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
         public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, RemoveMemberFromTodoListRunDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, false, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
             run.RemoveMember(new Domain.ValueObjects.UserId(dto.UserId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
