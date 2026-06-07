@@ -694,7 +694,7 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            await _service.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = memberId }, CancellationToken.None);
+            await _service.RemoveMemberFromTodoListRunAsync(1, memberId, CancellationToken.None);
 
             // Assert
             run.Members.Should().NotContain(new UserId(memberId));
@@ -708,7 +708,7 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act & Assert
-            await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
+            await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
@@ -721,7 +721,7 @@ public async Task RemoveMemberToTodoListRunAsync_ClosedRun_ShouldPropagateDomain
         _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
         // Act Assert
-        await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
+        await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None))
         .Should().ThrowAsync<DomainInvalidOperationException>()
         .WithMessage("A closed run couldn't get modified.");
         }

@@ -135,10 +135,10 @@ namespace UniTodo.Modules.Todos.Application.Services
             return new TodoListRunMemberDto(member);
         }
 
-        public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, RemoveMemberFromTodoListRunDto dto, CancellationToken cancellationToken)
+        public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, Guid memberId, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
-            run.RemoveMember(new Domain.ValueObjects.UserId(dto.UserId!.Value), _userContext.UserId);
+            run.RemoveMember(new Domain.ValueObjects.UserId(memberId), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
     }
