@@ -34,6 +34,10 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             .IsRequired();
 
             builder.Property(e => e.CompletedAt);
+
+        builder.Property(e => e.CompletedBy)
+.HasConversion(id => id.HasValue ? (Guid?)id.Value.Value : (Guid?)null,
+            value => value.HasValue ? new Domain.ValueObjects.UserId(value.Value) : (Domain.ValueObjects.UserId?)null);
         }
     }
 }
