@@ -127,18 +127,18 @@ namespace UniTodo.Modules.Todos.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<TodoListRunMemberDto> AddMemberToTodoListRunAsync(int todoListRunId, Guid userId, CancellationToken cancellationToken)
+        public async Task<TodoListRunMemberDto> AddMemberToTodoListRunAsync(int todoListRunId, AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, false, cancellationToken);
-            var member = run.AddMember(new Domain.ValueObjects.UserId(userId), _userContext.UserId);
+            var member = run.AddMember(new Domain.ValueObjects.UserId(dto.UserId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
             return new TodoListRunMemberDto(member);
         }
 
-        public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, Guid userId, CancellationToken cancellationToken)
+        public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, RemoveMemberFromTodoListRunDto dto, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
-            run.RemoveMember(new Domain.ValueObjects.UserId(userId), _userContext.UserId);
+            run.RemoveMember(new Domain.ValueObjects.UserId(dto.UserId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
     }
