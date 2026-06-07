@@ -113,10 +113,10 @@ namespace UniTodo.Modules.Todos.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task AsignMemberToItemAsync(int todoListRunId, int todoItemId, AsignMemberToTodoItemDto dto, CancellationToken cancellationToken)
+        public async Task AssignItemToMemberAsync(int todoListRunId, int todoItemId, AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, todoItemId, cancellationToken);
-            run.AsignItemToMember(todoItemId, new Domain.ValueObjects.UserId(dto.MemberId!.Value), _userContext.UserId);
+            run.AssignItemToMember(todoItemId, new Domain.ValueObjects.UserId(dto.MemberId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
         }
 

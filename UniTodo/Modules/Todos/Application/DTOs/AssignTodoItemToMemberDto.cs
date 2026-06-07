@@ -2,7 +2,7 @@
 
 namespace UniTodo.Modules.Todos.Application.DTOs
 {
-    public class AsignMemberToTodoItemDto
+    public class AssignTodoItemToMemberDto
     {
         [Required]
         public Guid? MemberId { get; set; } = null;

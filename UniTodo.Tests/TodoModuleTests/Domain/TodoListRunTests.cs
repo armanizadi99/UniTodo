@@ -288,7 +288,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             var item = new TodoItem(new TodoItemDescription("Test Item"));
             run.AddTodoItem(item, _ownerId);
             SetId(item, 1);
-            run.AsignItemToMember(1, memberId, _ownerId);
+            run.AssignItemToMember(1, memberId, _ownerId);
 
             // Act
             run.MakePrivate(_ownerId);
@@ -457,7 +457,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             SetId(item, 1);
 
             // Act
-            run.AsignItemToMember(1, memberId, _ownerId);
+            run.AssignItemToMember(1, memberId, _ownerId);
 
             // Assert
             item.AssignedTo.Should().Be(memberId);
@@ -474,7 +474,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             SetId(item, 1);
 
             // Act
-            var act = () => run.AsignItemToMember(1, notMemberId, _ownerId);
+            var act = () => run.AssignItemToMember(1, notMemberId, _ownerId);
 
             // Assert
             act.Should().Throw<DomainInvalidOperationException>();
@@ -571,7 +571,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             var item = new TodoItem(new TodoItemDescription("Test Item"));
             run.AddTodoItem(item, _ownerId);
             SetId(item, 1);
-            run.AsignItemToMember(1, memberId, _ownerId);
+            run.AssignItemToMember(1, memberId, _ownerId);
 
             // Act
             run.RemoveMember(memberId, _ownerId);

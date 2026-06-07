@@ -127,7 +127,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             item.UpdateNotes(notes, actorId);
         }
 
-        public void AsignItemToMember(int itemId, UserId memberId, UserId actorId)
+        public void AssignItemToMember(int itemId, UserId memberId, UserId actorId)
         {
             if (actorId != ownerId)
                 throw new DomainNotAuthorizedException();

@@ -559,7 +559,7 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            await _service.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = memberId }, CancellationToken.None);
+            await _service.AssignItemToMemberAsync(1, 10, new AssignTodoItemToMemberDto { MemberId = memberId }, CancellationToken.None);
 
             // Assert
             item.AssignedTo.Should().Be(new UserId(memberId));
@@ -573,7 +573,7 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act & Assert
-            await _service.Invoking(s => s.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
+            await _service.Invoking(s => s.AssignItemToMemberAsync(1, 10, new AssignTodoItemToMemberDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
@@ -588,7 +588,7 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
         // Act & Assert
-        await _service.Invoking(s => s.AsignMemberToItemAsync(1, 10, new AsignMemberToTodoItemDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
+        await _service.Invoking(s => s.AssignItemToMemberAsync(1, 10, new AssignTodoItemToMemberDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
             .Should().ThrowAsync<DomainInvalidOperationException>()
 .WithMessage("An item couldn't get asigned to someone that is not a member of the run.");
         }

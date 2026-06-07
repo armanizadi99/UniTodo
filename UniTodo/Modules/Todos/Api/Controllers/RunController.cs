@@ -56,7 +56,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return Ok();
         }
 
-        [HttpPost("{runId:int:min(1)}/items/add")]
+        [HttpPost("{runId:int:min(1)}/items")]
         public async Task<IActionResult> AddItemToRunAsync( [FromRoute] int runId, [FromBody] AddTodoItemDto dto, CancellationToken cancellationToken )
         {
         var result = await _service.AddTodoItemToTodoListRunAsync(runId, dto, cancellationToken);
@@ -64,7 +64,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return Ok(result);
         }
 
-        [HttpDelete("{runId:int:min(1)}/items/delete/{itemId:int:min(1)}")]
+        [HttpDelete("{runId:int:min(1)}/items/{itemId:int:min(1)}")]
         public async Task<IActionResult> DeleteItemFromRunAsync( [FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken )
         {
         await _service.DeleteTodoItemFromTodoListRunAsync(runId, itemId, cancellationToken);
@@ -72,10 +72,10 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-        [HttpPost("{runId:int:min(1)}/members/add/{userId:guid}")]
-        public async Task<IActionResult> AdMemberToRunAsync( [FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken )
+        [HttpPost("{runId:int:min(1)}/members")]
+        public async Task<IActionResult> AdMemberToRunAsync( [FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken )
         {
-        var result = await _service.AddMemberToTodoListRunAsync(runId, userId, cancellationToken);
+        var result = await _service.AddMemberToTodoListRunAsync(runId, dto, cancellationToken);
 
         return Ok(result);
         }
@@ -96,7 +96,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return Ok(result);
         }
 
-        [HttpPost("{runId:int:min(1)}/makeShared")]
+        [HttpPost("{runId:int:min(1)}/make-shared")]
         public async Task<IActionResult> MakeRunSharedAsync( [FromRoute] int runId, CancellationToken cancellationToken )
         {
         await _service.MakeTodoListRunSharedAsync(runId, cancellationToken);
@@ -104,7 +104,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-        [HttpPost("{runId:int:min(1)}/makePrivate")]
+        [HttpPost("{runId:int:min(1)}/make-private")]
         public async Task<IActionResult> MakeRunPrivateAsync( [FromRoute] int runId, CancellationToken cancellationToken )
         {
         await _service.MakeTodoListRunPrivateAsync(runId, cancellationToken);
@@ -112,7 +112,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-        [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/markComplete")]
+        [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/mark-complete")]
         public async Task<IActionResult> MarkRunItemCompleteAsync( [FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken )
         {
         await _service.MarkTodoItemCompleteAsync(runId, itemId, cancellationToken);
@@ -120,7 +120,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-        [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/markIncomplete")]
+        [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/mark-incomplete")]
         public async Task<IActionResult> MarkRunItemIncomplete( [FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken )
         {
         await _service.MarkTodoItemIncompleteAsync(runId, itemId, cancellationToken);
@@ -128,7 +128,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-[HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/updateNotes")]
+[HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/update-notes")]
 public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
 {
         await _service.UpdateNotesForTodoItemAsync(runId, itemId, dto, cancellationToken);
@@ -136,7 +136,7 @@ public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [Fr
         return NoContent();
         }
 
-        [HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/changeDescription")]
+        [HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/change-description")]
 public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
 {
         await _service.ChangeTodoItemDescriptionAsync(runId, itemId, dto, cancellationToken);
@@ -145,9 +145,9 @@ return NoContent();
         }
 
         [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/assign-to")]
-public async Task<IActionResult> AssignRunItemToUserAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] AsignMemberToTodoItemDto dto, CancellationToken cancellationToken)
+public async Task<IActionResult> AssignRunItemToUserAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
 {
-        await _service.AsignMemberToItemAsync(runId, itemId, dto, cancellationToken);
+        await _service.AssignItemToMemberAsync(runId, itemId, dto, cancellationToken);
 
         return NoContent();
         }
