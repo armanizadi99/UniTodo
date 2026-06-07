@@ -21,7 +21,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
     .HasMaxLength(Constants.DescriptionMaxLength)
     .UseCollation("NOCASE");
 
-            builder.HasIndex(e => e.Description)
+            builder.HasIndex(e => new {e.Description, e.TodoListId})
             .IsUnique();
 
         }
