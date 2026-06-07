@@ -34,12 +34,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return Ok(result);
         }
 
-        [HttpPost("CreateFromTemplate/{templateId:int:min(1)}")]
+        [HttpPost("from-template/{templateId:int:min(1)}")]
         public async Task<IActionResult> CreateRunFromTemplateAsync( [FromRoute] int templateId, CancellationToken cancellationToken )
         {
         var result = await _service.CreateTodoListRunFromTemplateAsync(templateId, cancellationToken);
 
-        return CreatedAtRoute("GetRunById", new { Id = result.Id }, result);
+        return CreatedAtRoute("GetRunById", new { runId = result.Id }, result);
         }
 
         [HttpGet("{runId:int:min(1)}/items")]
@@ -73,14 +73,14 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpPost("{runId:int:min(1)}/members")]
-        public async Task<IActionResult> AdMemberToRunAsync( [FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken )
+        public async Task<IActionResult> AddMemberToRunAsync( [FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken )
         {
         var result = await _service.AddMemberToTodoListRunAsync(runId, dto, cancellationToken);
 
         return Ok(result);
         }
 
-        [HttpDelete("{runId:int:min(1)}/members/remove/{userId:guid}")]
+        [HttpDelete("{runId:int:min(1)}/members/{userId:guid}")]
         public async Task<IActionResult> RemoveMemberFromRunAsync( [FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken )
         {
         await _service.RemoveMemberFromTodoListRunAsync(runId, userId, cancellationToken);
