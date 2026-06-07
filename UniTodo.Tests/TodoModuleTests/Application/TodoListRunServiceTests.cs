@@ -691,7 +691,7 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
             var run = CreateActiveRun(isShared: true);
             var memberId = Guid.NewGuid();
             run.AddMember(new UserId(memberId), _currentUserId);
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             await _service.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = memberId }, CancellationToken.None);
@@ -705,7 +705,7 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
         public async Task RemoveMemberFromTodoListRunAsync_WhenRunNotFound_ShouldThrowDomainEntityNotFoundException()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act & Assert
             await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
@@ -718,7 +718,7 @@ public async Task RemoveMemberToTodoListRunAsync_ClosedRun_ShouldPropagateDomain
         // Arrange
         var run = CreateActiveRun();
         SetStatus(run, TodoListRunStatus.Closed);
-        _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+        _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
         // Act Assert
         await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, new RemoveMemberFromTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
