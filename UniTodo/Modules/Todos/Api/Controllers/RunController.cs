@@ -128,7 +128,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         return NoContent();
         }
 
-[HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/update-notes")]
+[HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/update-notes")]
 public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
 {
         await _service.UpdateNotesForTodoItemAsync(runId, itemId, dto, cancellationToken);
@@ -136,7 +136,7 @@ public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [Fr
         return NoContent();
         }
 
-        [HttpPatch("{runId:int:min(1)}/items/{itemId:int:min(1)}/change-description")]
+        [HttpPost("{runId:int:min(1)}/items/{itemId:int:min(1)}/change-description")]
 public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
 {
         await _service.ChangeTodoItemDescriptionAsync(runId, itemId, dto, cancellationToken);
