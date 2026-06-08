@@ -7,13 +7,13 @@ using UniTodo.Modules.Todos.Application.Services;
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/templates")]
     [Authorize]
-    public class TodoListTemplateController : ControllerBase
+    public class TemplateController : ControllerBase
     {
         private readonly TodoListTemplateService _TodoListTemplateService;
 
-        public TodoListTemplateController(TodoListTemplateService todoListTemplateService)
+        public TemplateController(TodoListTemplateService todoListTemplateService)
         {
             _TodoListTemplateService = todoListTemplateService;
         }
@@ -49,7 +49,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("{todoListTemplateId:int:min(1)}/AddTodoItemTemplate")]
+        [HttpPost("{todoListTemplateId:int:min(1)}/item-templates/")]
         public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto)
         {
             var result = await _TodoListTemplateService.AddTodoItemTemplateAsync(todoListTemplateId, dto);
@@ -57,7 +57,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{TodoListTemplateId:int:min(1)}/DeleteTodoItemTemplate/{TodoItemTemplateId:int}")]
+        [HttpDelete("{TodoListTemplateId:int:min(1)}/template-items/{TodoItemTemplateId:int}")]
         public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId)
         {
             await _TodoListTemplateService.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId);
@@ -65,7 +65,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return NoContent();
         }
 
-        [HttpGet("{TodoListTemplateId:int:min(1)}/GetTodoItemTemplates")]
+        [HttpGet("{TodoListTemplateId:int:min(1)}/item-templates")]
         public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId)
         {
             var result = await _TodoListTemplateService.GetTodoItemTemplatesAsync(todoListTemplateId);
