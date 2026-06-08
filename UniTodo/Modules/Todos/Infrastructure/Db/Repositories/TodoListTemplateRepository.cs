@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Domain.Entities;
+using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
 {
@@ -20,7 +21,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
 
         async Task<List<TodoListTemplate>> ITodoListTemplateRepository.GetUserTodoListTemplatesAsync(Guid userId, CancellationToken cancellationToken)
         {
-            return await _dbSet.Where(e => e.OwnerId.Value == userId).ToListAsync();
+            return await _dbSet.Where(e => e.OwnerId     == new UserId(userId)).ToListAsync();
         }
 
         async Task<TodoListTemplate?> ITodoListTemplateRepository.GetTodoListTemplateByIdAsync(int id, bool includeTodoItemTemplates, CancellationToken cancellationToken)
