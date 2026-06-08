@@ -65,7 +65,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return NoContent();
         }
 
-        [HttpGet("{TodoListTemplateId:int:min(1)}/item-templates")]
+        [HttpGet("{todoListTemplateId:int:min(1)}/item-templates")]
         public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId)
         {
             var result = await _TodoListTemplateService.GetTodoItemTemplatesAsync(todoListTemplateId);
