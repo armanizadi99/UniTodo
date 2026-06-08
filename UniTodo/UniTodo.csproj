@@ -21,11 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.15" />
-    <PackageReference Include="openiddict.aspnetcore" Version="7.5.0" />
-    <PackageReference Include="openiddict.entityframeworkcore" Version="7.5.0" />
-    <PackageReference Include="openiddict.quartz" Version="7.5.0" />
-    <PackageReference Include="quartz.extensions.hosting" Version="3.18.1" />
-    <PackageReference Include="swashbuckle.aspnetcore" Version="10.1.7" />
+    <PackageReference Include="swashbuckle.aspnetcore" Version="10.2.1" />
   </ItemGroup>
 
 </Project>
