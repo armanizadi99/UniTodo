@@ -27,41 +27,45 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Status = TodoListStatus.Active;
         }
 
-        public void Archive(UserId actorUserId)
+        public Result Archive(UserId actorUserId)
         {
-            if (OwnerId != actorUserId)
-                throw new DomainNotAuthorizedException();
+        if (OwnerId != actorUserId)
+            return DomainError.NotAuthorized();
             if (Status == TodoListStatus.Archived)
-                throw new DomainInvalidOperationException("This todo list is already archived.");
+                return DomainError.InvalidOperation("This todo list is already archived.");
             Status = TodoListStatus.Archived;
+        return Result.Success();
         }
 
-        public void MakeActive(UserId actorUserId)
+        public Result MakeActive(UserId actorUserId)
         {
-            if (OwnerId != actorUserId)
-                throw new DomainNotAuthorizedException();
+        if (OwnerId != actorUserId)
+            return DomainError.NotAuthorized(); ;
             if (Status == TodoListStatus.Active)
-                throw new DomainInvalidOperationException("This todo list is already active.");
+                return DomainError.InvalidOperation("This todo list is already active.");
             Status = TodoListStatus.Active;
+return Result.Success();
         }
 
-        public void AddTodoItemTemplate(TodoItemTemplate todoItemTemplate, UserId actorUserId)
+        public Result AddTodoItemTemplate(TodoItemTemplate todoItemTemplate, UserId actorUserId)
         {
             if (OwnerId != actorUserId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (TodoItemTemplates.Any(e => e.Description.Value.Equals(todoItemTemplate.Description.Value, StringComparison.OrdinalIgnoreCase)))
-                throw new DomainDuplicateEntitiesException("No duplicate descriptions allowed in a TodoList.");
+                return DomainError.DuplicateEntities("No duplicate descriptions allowed in a TodoList.");
             _todoItemTemplates.Add(todoItemTemplate);
+return Result.Success();
         }
 
-        public void Delete(int id, UserId actorId)
+        public Result Delete(int id, UserId actorId)
         {
-            if (OwnerId != actorId)
-                throw new DomainNotAuthorizedException();
+        if (OwnerId != actorId)
+            return DomainError.NotAuthorized();
             var todoItemTemplate = _todoItemTemplates.Where(t => t.Id == id).FirstOrDefault();
             if (todoItemTemplate is null)
-                throw new DomainEntityNotFoundException("TodoItemTemplate doesn't exist", id);
+                return DomainError.EntityNotFound(nameof(TodoItemTemplate), id);
             _todoItemTemplates.Remove(todoItemTemplate);
+return Result.Success();
         }
     }
 }

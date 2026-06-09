@@ -9,7 +9,7 @@ namespace UniTodo.Modules.Todos.Domain.ValueObjects
         public UserId(Guid value)
         {
             if (value == Guid.Empty)
-                throw new DomainArgumentException(nameof(UserId), "UserId couldn't be empty.");
+                throw new ArgumentException(nameof(UserId), "UserId couldn't be empty.");
             Value = value;
         }
     }

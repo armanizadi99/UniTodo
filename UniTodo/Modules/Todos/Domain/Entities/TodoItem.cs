@@ -23,56 +23,62 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Description = description;
         }
 
-        public void MarkComplete(UserId actorId)
+        public Result MarkComplete(UserId actorId)
         {
             if (CompletedAt != null)
-                throw new DomainInvalidOperationException("This item is already marked complete.");
+                return DomainError.InvalidOperation("This item is already marked complete.");
             if (AssignedTo == null && actorId != Run.ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (AssignedTo != null && AssignedTo.Value != actorId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             IsCompleted = true;
             CompletedAt = DateTimeOffset.UtcNow;
             CompletedBy = actorId;
+        return Result.Success();
         }
 
-        public void MarkIncomplete(UserId actorId)
+        public Result MarkIncomplete(UserId actorId)
         {
             if (CompletedAt == null)
-                throw new DomainInvalidOperationException("This item is still incomplete.");
+                return DomainError.InvalidOperation("This item is still incomplete.");
             if (AssignedTo == null && actorId != Run.ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (AssignedTo != null && AssignedTo.Value != actorId)
-                throw new DomainNotAuthorizedException();
-            IsCompleted = false;
+            return DomainError.NotAuthorized();
+        IsCompleted = false;
             CompletedAt = null;
             CompletedBy = null;
+return Result.Success();
         }
 
-        public void UpdateNotes(TodoItemNotes notes, UserId actorId)
+        public Result UpdateNotes(TodoItemNotes notes, UserId actorId)
         {
             if (AssignedTo == null && actorId != Run.ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (AssignedTo != null && AssignedTo.Value != actorId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             Notes = string.IsNullOrEmpty(notes.Value) ? null : notes;
+return Result.Success();
         }
 
-        public void ChangeDescription(TodoItemDescription description)
+        public Result ChangeDescription(TodoItemDescription description)
         {
             Description = description;
+        return Result.Success();
         }
 
-        public void AssignTo(UserId assignedTo)
+        public Result AssignTo(UserId assignedTo)
         {
             if (IsCompleted)
-                throw new DomainInvalidOperationException("Couldn't asign a completed task.");
+                return DomainError.InvalidOperation("Couldn't asign a completed task.");
             AssignedTo = assignedTo;
+return Result.Success();
         }
 
-        public void AssignToNoone()
+        public Result AssignToNoone()
         {
             AssignedTo = null;
+return Result.Success();
         }
     }
 }

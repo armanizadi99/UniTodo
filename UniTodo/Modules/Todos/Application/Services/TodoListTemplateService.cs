@@ -70,7 +70,9 @@ namespace UniTodo.Modules.Todos.Application.Services
 if (todoList == null)
             return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
         var todoItemTemplate = new TodoItemTemplate(todoListTemplateId, new TodoItemDescription(dto.Description));
-            todoList.AddTodoItemTemplate(todoItemTemplate, _userContext.UserId);
+            var result = todoList.AddTodoItemTemplate(todoItemTemplate, _userContext.UserId);
+        if (!result.IsSuccess)
+            return Result<TodoItemTemplateDto>.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
             return new TodoItemTemplateDto(todoItemTemplate.Id, todoItemTemplate.Description.Value, todoItemTemplate.CreatedAt, todoItemTemplate.UpdatedAt);
         }
@@ -80,7 +82,9 @@ if (todoList == null)
             var todoItemTemplateToDeleteParent = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
 if(todoItemTemplateToDeleteParent == null)
             return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
-        todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
+        var result = todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
         return Result.Success();
         }
@@ -100,7 +104,9 @@ if (todoList == null)
             var todoListToArchive = await _repository.GetTodoListTemplateByIdAsync(id);
 if( todoListToArchive == null)
             return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
-        todoListToArchive.Archive(_userContext.UserId);
+        var result = todoListToArchive.Archive(_userContext.UserId);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
         return Result.Success();
         }
@@ -110,7 +116,9 @@ if( todoListToArchive == null)
             var todoListToMakeActive = await _repository.GetTodoListTemplateByIdAsync(id);
 if(todoListToMakeActive == null)
             return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
-        todoListToMakeActive.MakeActive(_userContext.UserId);
+        var result = todoListToMakeActive.MakeActive(_userContext.UserId);
+if(!result.IsSuccess)
+return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
 return Result.Success();
         }

@@ -37,153 +37,181 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             IsShared = isShared;
         }
 
-        public static TodoListRun CreateRunFromTodoItemTemplates(IEnumerable<TodoItemTemplate> itemTemplates, string name, ResetPolicy resetPolicy, bool isShared, UserId ownerUserId)
+        public static Result<TodoListRun> CreateRunFromTodoItemTemplates(IEnumerable<TodoItemTemplate> itemTemplates, string name, ResetPolicy resetPolicy, bool isShared, UserId ownerUserId)
         {
             var todoListRun = new TodoListRun(name, resetPolicy, isShared, ownerUserId);
             foreach (var template in itemTemplates)
             {
-                todoListRun.AddTodoItem(new TodoItem(template.Description), ownerUserId);
+                var result = todoListRun.AddTodoItem(new TodoItem(template.Description), ownerUserId);
+        if (!result.IsSuccess)
+            return Result<TodoListRun>.Failure(result.Error);
             }
             return todoListRun;
         }
 
-        public void AddTodoItem(TodoItem item, UserId actorUserId)
+        public Result AddTodoItem(TodoItem item, UserId actorUserId)
         {
-            if (actorUserId != ownerId)
-                throw new DomainNotAuthorizedException();
+        if (actorUserId != ownerId)
+            return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("Items couldn't be added to a closed run.");
+                return DomainError.InvalidOperation("Items couldn't be added to a closed run.");
             if (_todoItems.Any(i => String.Equals(i.Description.Value, item.Description.Value, StringComparison.OrdinalIgnoreCase)))
-                throw new DomainDuplicateEntitiesException("No duplicate description could be in a todo list run.");
+                return DomainError.DuplicateEntities("No duplicate description could be in a todo list run.");
             _todoItems.Add(item);
+        return Result.Success();
         }
 
-        public void DeleteItem(int itemId, UserId actorId)
+        public Result DeleteItem(int itemId, UserId actorId)
         {
-            if (ownerId != actorId)
-                throw new DomainNotAuthorizedException();
+        if (ownerId != actorId)
+            return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("Items couldn't be deleted from a closed run.");
+                return DomainError.InvalidOperation("Items couldn't be deleted from a closed run.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item == null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             _todoItems.Remove(item);
+        return Result.Success();
         }
 
-        public void MakeShared(UserId actorUserId)
+        public Result MakeShared(UserId actorUserId)
         {
             if (actorUserId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (IsShared)
-                throw new DomainInvalidOperationException("This run is already shared.");
+                return DomainError.InvalidOperation("This run is already shared.");
             IsShared = true;
+        return Result.Success();
         }
 
-        public void MakePrivate(UserId actorUserId)
+        public Result MakePrivate(UserId actorUserId)
         {
             if (actorUserId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (!IsShared)
-                throw new DomainInvalidOperationException("This run is already private.");
+                return DomainError.InvalidOperation("This run is already private.");
             _members.RemoveAll(m => !m.UserId.Equals(ownerId));
             foreach (var item in _todoItems)
             {
-                item.AssignToNoone();
+                var result = item.AssignToNoone();
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
             }
             IsShared = false;
+        return Result.Success();
         }
 
-        public void MarkItemComplete(int itemId, UserId actorId)
+        public Result MarkItemComplete(int itemId, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var itemToMarkComplete = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (itemToMarkComplete is null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            itemToMarkComplete.MarkComplete(actorId);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
+            var result = itemToMarkComplete.MarkComplete(actorId);
+if(!result.IsSuccess)
+return Result.Failure(result.Error);
+        return Result.Success();
         }
 
-        public void MarkItemIncomplete(int itemId, UserId actorId)
+        public Result MarkItemIncomplete(int itemId, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var itemToMarkIncomplete = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (itemToMarkIncomplete is null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            itemToMarkIncomplete.MarkIncomplete(actorId);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
+            var result = itemToMarkIncomplete.MarkIncomplete(actorId);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
+        return Result.Success();
         }
 
-        public void UpdateNotes(int itemId, TodoItemNotes notes, UserId actorId)
+        public Result UpdateNotes(int itemId, TodoItemNotes notes, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            item.UpdateNotes(notes, actorId);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
+            var result = item.UpdateNotes(notes, actorId);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
+        return Result.Success();
         }
 
-        public void AssignItemToMember(int itemId, UserId memberId, UserId actorId)
+        public Result AssignItemToMember(int itemId, UserId memberId, UserId actorId)
         {
             if (actorId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (!_members.Any(m => m.UserId.Equals(memberId)))
-                throw new DomainInvalidOperationException("An item couldn't get asigned to someone that is not a member of the run.");
+                return DomainError.InvalidOperation("An item couldn't get asigned to someone that is not a member of the run.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            item.AssignTo(memberId);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
+            var result = item.AssignTo(memberId);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
+return Result.Success();
         }
 
-        public void ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
+        public Result  ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
         {
             if (actorId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
-                throw new DomainEntityNotFoundException(nameof(TodoItem), itemId);
-            item.ChangeDescription(description);
+                return DomainError.EntityNotFound(nameof(TodoItem), itemId);
+            var result = item.ChangeDescription(description);
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
+return Result.Success();
         }
 
-        public RunMember AddMember(UserId userId, UserId actorId)
+        public Result<RunMember> AddMember(UserId userId, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (actorId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (!IsShared)
-                throw new DomainInvalidOperationException("Couldn't add members to a private group.");
+                return DomainError.InvalidOperation("Couldn't add members to a private group.");
             if (_members.Any(m => m.UserId.Equals(userId)))
-                throw new DomainDuplicateEntitiesException("this user is already a member of this run");
+                return DomainError.DuplicateEntities("this user is already a member of this run");
         var member = new RunMember(userId);
             _members.Add(member);
             return member;
         }
 
-        public void RemoveMember(UserId userId, UserId actorId)
+        public Result RemoveMember(UserId userId, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
-                throw new DomainInvalidOperationException("A closed run couldn't get modified.");
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (actorId != ownerId)
-                throw new DomainNotAuthorizedException();
+                return DomainError.NotAuthorized();
             if (userId == ownerId)
-                throw new DomainInvalidOperationException("Owner of a run couldn't be get removed.");
+                return DomainError.InvalidOperation("Owner of a run couldn't be get removed.");
             if (!_members.Any(m => m.UserId.Equals(userId)))
-                throw new DomainInvalidOperationException("This user is not a member of this run.");
+                return DomainError.InvalidOperation("This user is not a member of this run.");
             foreach (var item in _todoItems)
             {
-                if (item.AssignedTo == userId)
-                    item.AssignToNoone();
+        if (item.AssignedTo == userId)
+        {
+        var result = item.AssignToNoone();
+        if (!result.IsSuccess)
+            return Result.Failure(result.Error);
+        }
             }
             _members.RemoveAll(m =>  m.UserId.Equals(userId));
+        return Result.Success();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace UniTodo.Modules.Todos.Infrastructure
                 _userId = new UserId(userId);
             }
             else
-                throw new DomainInvalidOperationException("User is Either not authenticated, or something went wrong in the api.");
+                throw new Exception("User is Either not authenticated, or something went wrong in the api.");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace UniTodo.Modules.Todos.Domain.ValueObjects
         public TodoItemNotes(string value)
         {
             if (value.Length > Constants.NotesMaxLength)
-                throw new DomainArgumentException(nameof(TodoItemNotes), $"Notes couldn't be longer than {Constants.NotesMaxLength} characters");
+                throw new ArgumentException(nameof(TodoItemNotes), $"Notes couldn't be longer than {Constants.NotesMaxLength} characters");
 
             Value = value;
         }

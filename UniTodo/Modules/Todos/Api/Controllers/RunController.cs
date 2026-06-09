@@ -38,7 +38,6 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         public async Task<IActionResult> CreateRunFromTemplateAsync([FromRoute] int templateId, CancellationToken cancellationToken)
         {
             var result = await _service.CreateTodoListRunFromTemplateAsync(templateId, cancellationToken);
-
             return CreatedAtRoute("GetRunById", new { runId = result.Id }, result);
         }
 
