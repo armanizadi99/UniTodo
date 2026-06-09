@@ -20,19 +20,23 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
             if (includeItems)
                 query = query.Include(i => i.TodoItems);
 
+        query = query.Include(i => i.Members);
+
             return await query.FirstOrDefaultAsync(e => e.Id == id);
         }
 
         async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByIdAsync(int id, int itemId, CancellationToken cancellationToken)
         {
             return await _dbSet.Include(i => i.TodoItems.Where(item => item.Id == itemId))
+.Include(i => i.Members)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
         async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetUserActiveRunsAsync(Guid userId, CancellationToken cancellationToken)
         {
-            return await _dbSet.Where(e => e.Status == Domain.Enums.TodoListRunStatus.Active)
-    .Where(e => e.Members.Select(m => m).Contains(new Domain.ValueObjects.UserId(userId)))
+            return await _dbSet.Include(i => i.Members)
+.Where(e => e.Status == Domain.Enums.TodoListRunStatus.Active)
+    .Where(e => e.Members.Select(m => m.UserId).Contains(new Domain.ValueObjects.UserId(userId)))
     .ToListAsync(cancellationToken);
         }
     }

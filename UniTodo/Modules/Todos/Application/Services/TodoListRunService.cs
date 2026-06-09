@@ -59,7 +59,7 @@ namespace UniTodo.Modules.Todos.Application.Services
         public async Task<IReadOnlyList<TodoItemDto>> GetTodoListRunItemsAsync(int todoListRunId, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
-            if (!run.Members.Any(m => m == _userContext.UserId))
+            if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 throw new DomainNotAuthorizedException();
             return run.TodoItems.Select(i => i.ToTodoItemDto()).ToList();
         }
@@ -67,9 +67,9 @@ namespace UniTodo.Modules.Todos.Application.Services
         public async Task<IReadOnlyList<TodoListRunMemberDto>> GetTodoListRunMembersAsync(int todoListRunId, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, true, cancellationToken);
-            if (!run.Members.Any(m => m == _userContext.UserId))
+            if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 throw new DomainNotAuthorizedException();
-            return run.Members.Select(m => new TodoListRunMemberDto(m.Value)).ToList();
+            return run.Members.Select(m => m.ToDto()).ToList();
         }
 
         public async Task<IReadOnlyList<TodoListRunDto>> GetUserActiveTodoRunsAsync(CancellationToken cancellationToken)
@@ -132,7 +132,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             var run = await _runRepository.GetTodoListRunByIdOrThrowAsync(todoListRunId, false, cancellationToken);
             var member = run.AddMember(new Domain.ValueObjects.UserId(dto.UserId!.Value), _userContext.UserId);
             await _unitOfWork.SaveChangesAsync();
-            return new TodoListRunMemberDto(member);
+            return member.ToDto();
         }
 
         public async Task RemoveMemberFromTodoListRunAsync(int todoListRunId, Guid memberId, CancellationToken cancellationToken)

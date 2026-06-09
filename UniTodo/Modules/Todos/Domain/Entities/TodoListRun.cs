@@ -8,7 +8,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
     public class TodoListRun : EntityBase
     {
         private readonly List<TodoItem> _todoItems = new List<TodoItem>();
-        private readonly List<UserId> _members = new List<UserId>();
+        private readonly List<RunMember> _members = new List<RunMember>();
 
         public Guid RunId { get; private set; }
         public ResetPolicy ResetPolicy { get; private set; }
@@ -19,7 +19,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public bool IsShared { get; private set; }
 
         public IReadOnlyCollection<TodoItem> TodoItems => _todoItems.AsReadOnly();
-        public IReadOnlyCollection<UserId> Members => _members.AsReadOnly();
+        public IReadOnlyCollection<RunMember> Members => _members.AsReadOnly();
 
         private TodoListRun() { }
 
@@ -31,7 +31,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Name = name;
             ResetPolicy = resetPolicy;
             ownerId = ownerUserId;
-            _members.Add(ownerId);
+            _members.Add(new RunMember(ownerId));
             RunId = Guid.NewGuid();
             Status = TodoListRunStatus.Active;
             IsShared = isShared;
@@ -89,7 +89,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
             if (!IsShared)
                 throw new DomainInvalidOperationException("This run is already private.");
-            _members.RemoveAll(m => !m.Equals(ownerId));
+            _members.RemoveAll(m => !m.UserId.Equals(ownerId));
             foreach (var item in _todoItems)
             {
                 item.AssignToNoone();
@@ -133,7 +133,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainNotAuthorizedException();
             if (Status == TodoListRunStatus.Closed)
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
-            if (!_members.Any(m => m.Equals(memberId)))
+            if (!_members.Any(m => m.UserId.Equals(memberId)))
                 throw new DomainInvalidOperationException("An item couldn't get asigned to someone that is not a member of the run.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
@@ -153,7 +153,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             item.ChangeDescription(description);
         }
 
-        public Guid AddMember(UserId userId, UserId actorId)
+        public RunMember AddMember(UserId userId, UserId actorId)
         {
             if (Status == TodoListRunStatus.Closed)
                 throw new DomainInvalidOperationException("A closed run couldn't get modified.");
@@ -161,10 +161,11 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainNotAuthorizedException();
             if (!IsShared)
                 throw new DomainInvalidOperationException("Couldn't add members to a private group.");
-            if (_members.Any(m => m.Equals(userId)))
+            if (_members.Any(m => m.UserId.Equals(userId)))
                 throw new DomainDuplicateEntitiesException("this user is already a member of this run");
-            _members.Add(userId);
-            return userId.Value;
+        var member = new RunMember(userId);
+            _members.Add(member);
+            return member;
         }
 
         public void RemoveMember(UserId userId, UserId actorId)
@@ -175,14 +176,14 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 throw new DomainNotAuthorizedException();
             if (userId == ownerId)
                 throw new DomainInvalidOperationException("Owner of a run couldn't be get removed.");
-            if (!_members.Any(m => m.Equals(userId)))
+            if (!_members.Any(m => m.UserId.Equals(userId)))
                 throw new DomainInvalidOperationException("This user is not a member of this run.");
             foreach (var item in _todoItems)
             {
                 if (item.AssignedTo == userId)
                     item.AssignToNoone();
             }
-            _members.Remove(userId);
+            _members.RemoveAll(m =>  m.UserId.Equals(userId));
         }
     }
 }

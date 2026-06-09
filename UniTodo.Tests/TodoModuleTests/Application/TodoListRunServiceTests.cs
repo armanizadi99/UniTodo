@@ -653,7 +653,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
 
             // Assert
             result.UserId.Should().Be(newMemberId);
-            run.Members.Should().Contain(new UserId(newMemberId));
+        run.Members.Should().Contain(m => m.UserId.Value == newMemberId);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
@@ -697,7 +697,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             await _service.RemoveMemberFromTodoListRunAsync(1, memberId, CancellationToken.None);
 
             // Assert
-            run.Members.Should().NotContain(new UserId(memberId));
+            run.Members.Should().NotContain(m => m.UserId.Value ==  memberId);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 

@@ -75,7 +75,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.ownerId.Should().Be(_ownerId);
             run.Status.Should().Be(TodoListRunStatus.Active);
             run.RunId.Should().NotBeEmpty();
-            run.Members.Should().Contain(_ownerId);
+            run.Members.Should().Contain(m => m.UserId == _ownerId);
         }
         #endregion
 
@@ -295,7 +295,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
 
             // Assert
             run.IsShared.Should().BeFalse();
-            run.Members.Should().HaveCount(1).And.Contain(_ownerId);
+            run.Members.Should().HaveCount(1).And.Contain(m => m.UserId == _ownerId);
             item.AssignedTo.Should().BeNull();
         }
 
@@ -529,7 +529,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.AddMember(memberId, _ownerId);
 
             // Assert
-            run.Members.Should().Contain(memberId);
+            run.Members.Should().Contain(m => m.UserId == memberId);
         }
 
         [Fact]
@@ -577,7 +577,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.RemoveMember(memberId, _ownerId);
 
             // Assert
-            run.Members.Should().NotContain(memberId);
+            run.Members.Should().NotContain(m => m.UserId == memberId);
             item.AssignedTo.Should().BeNull();
         }
         #endregion
