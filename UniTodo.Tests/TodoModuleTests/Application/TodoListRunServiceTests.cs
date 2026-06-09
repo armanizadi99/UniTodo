@@ -33,7 +33,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _service = new TodoListRunService(_runRepository, _templateRepository, _userContext, _unitOfWork);
         }
 
-       #region Helpers
+        #region Helpers
         private void SetId<T>(T entity, int id) where T : EntityBase<int>
         {
             typeof(EntityBase<int>).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
@@ -58,7 +58,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
         #endregion
 
-       #region CreateTodoListRunFromTemplateAsync
+        #region CreateTodoListRunFromTemplateAsync
         [Fact]
         public async Task CreateTodoListRunFromTemplateAsync_WhenUserIsOwner_ShouldCreateRunAndReturnMappedDto()
         {
@@ -66,7 +66,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var templateId = 1;
             var template = new TodoListTemplate(_currentUserId, "Template Name", ResetPolicy.Daily);
             template.AddTodoItemTemplate(new TodoItemTemplate(1, new TodoItemDescription("Item 1")), _currentUserId);
-            
+
             _templateRepository.GetTodoListTemplateByIdAsync(templateId, true, Arg.Any<CancellationToken>()).Returns(template);
 
             // Act
@@ -106,9 +106,9 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             await _service.Invoking(s => s.CreateTodoListRunFromTemplateAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
-#endregion
+        #endregion
 
-       #region CreateTodoListRunAsync
+        #region CreateTodoListRunAsync
         [Fact]
         public async Task CreateTodoListRunAsync_WhenValidRequest_ShouldCreatePrivateRunAndReturnDto()
         {
@@ -127,7 +127,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
         #endregion
 
-       #region AddTodoItemToTodoListRunAsync
+        #region AddTodoItemToTodoListRunAsync
         [Fact]
         public async Task AddTodoItemToTodoListRunAsync_WhenAuthorizedAndActive_ShouldAddItemAndReturnDto()
         {
@@ -164,14 +164,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             SetStatus(run, TodoListRunStatus.Closed);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act & Assert
-        await _service.Invoking(s => s.AddTodoItemToTodoListRunAsync(1, new AddTodoItemDto { Description = "X" }, CancellationToken.None))
-            .Should().ThrowAsync<DomainInvalidOperationException>()
-.WithMessage("Items couldn't be added to a closed run.");
+            // Act & Assert
+            await _service.Invoking(s => s.AddTodoItemToTodoListRunAsync(1, new AddTodoItemDto { Description = "X" }, CancellationToken.None))
+                .Should().ThrowAsync<DomainInvalidOperationException>()
+    .WithMessage("Items couldn't be added to a closed run.");
         }
         #endregion
 
-       #region DeleteTodoItemFromTodoListRunAsync
+        #region DeleteTodoItemFromTodoListRunAsync
         [Fact]
         public async Task DeleteTodoItemFromTodoListRunAsync_WhenAuthorizedAndExists_ShouldRemoveItemAndSave()
         {
@@ -215,14 +215,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
         #endregion
 
-       #region GetTodoListRunItemsAsync
+        #region GetTodoListRunItemsAsync
         [Fact]
         public async Task GetTodoListRunItemsAsync_WhenUserIsMember_ShouldReturnMappedItems()
         {
             // Arrange
             var run = CreateActiveRun(isShared: true, ownerId: new UserId(Guid.NewGuid()));
             run.AddMember(_currentUserId, run.ownerId);
-        run.AddTodoItem(new TodoItem(new TodoItemDescription("description")),  run.ownerId);
+            run.AddTodoItem(new TodoItem(new TodoItemDescription("description")), run.ownerId);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
@@ -230,8 +230,8 @@ namespace UniTodo.Tests.TodoModuleTests.Application
 
             // Assert
             result.Should().NotBeNull();
-        result.Should().HaveCount(1)
-        .And.Contain(i => i.Description == "description");
+            result.Should().HaveCount(1)
+            .And.Contain(i => i.Description == "description");
             await _runRepository.Received(1).GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>());
         }
 
@@ -259,23 +259,23 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
         #endregion
 
-       #region GetTodoListRunMembersAsync
+        #region GetTodoListRunMembersAsync
         [Fact]
         public async Task GetTodoListRunMembersAsync_WhenUserIsMember_ShouldReturnMappedMembers()
         {
             // Arrange
             var run = CreateActiveRun(isShared: true);
-var otherUserId = new UserId(Guid.NewGuid());
-        run.AddMember(otherUserId, _currentUserId);
+            var otherUserId = new UserId(Guid.NewGuid());
+            run.AddMember(otherUserId, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             var result = await _service.GetTodoListRunMembersAsync(1, CancellationToken.None);
 
-        // Assert
-        result.Should().HaveCount(2)
-.And.Contain(m => m.UserId == _currentUserId.Value)
-.And.Contain(m => m.UserId == otherUserId.Value);
+            // Assert
+            result.Should().HaveCount(2)
+    .And.Contain(m => m.UserId == _currentUserId.Value)
+    .And.Contain(m => m.UserId == otherUserId.Value);
         }
 
         [Fact]
@@ -302,7 +302,7 @@ var otherUserId = new UserId(Guid.NewGuid());
         }
         #endregion
 
-       #region GetUserActiveTodoRunsAsync
+        #region GetUserActiveTodoRunsAsync
         [Fact]
         public async Task GetUserActiveTodoRunsAsync_WhenCalled_ShouldReturnActiveRunsForCurrentUser()
         {
@@ -319,7 +319,7 @@ var otherUserId = new UserId(Guid.NewGuid());
         }
         #endregion
 
-       #region MakeTodoListRunSharedAsync
+        #region MakeTodoListRunSharedAsync
         [Fact]
         public async Task MakeTodoListRunSharedAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
@@ -345,22 +345,22 @@ var otherUserId = new UserId(Guid.NewGuid());
             await _service.Invoking(s => s.MakeTodoListRunSharedAsync(1, CancellationToken.None))
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
-[Fact]
-public async Task MakeTodoListRunSharedAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
-{
-        // Arrange
-        var run = CreateActiveRun(isShared: false);
-        SetStatus(run, TodoListRunStatus.Closed);
-        _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+        [Fact]
+        public async Task MakeTodoListRunSharedAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
+        {
+            // Arrange
+            var run = CreateActiveRun(isShared: false);
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act Assert
-        await _service.Invoking(s => s.MakeTodoListRunSharedAsync(1, CancellationToken.None))
-.Should().ThrowAsync<DomainInvalidOperationException>()
-.WithMessage("A closed run couldn't get modified.");
+            // Act Assert
+            await _service.Invoking(s => s.MakeTodoListRunSharedAsync(1, CancellationToken.None))
+    .Should().ThrowAsync<DomainInvalidOperationException>()
+    .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
 
-       #region MakeTodoListRunPrivateAsync
+        #region MakeTodoListRunPrivateAsync
         [Fact]
         public async Task MakeTodoListRunPrivateAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
@@ -387,22 +387,22 @@ public async Task MakeTodoListRunSharedAsync_ClosedRun_ShouldPropagateDomainInva
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
-[Fact]
-public async Task MakeTodoListRunPrivateAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
-{
-// Arrange
-var run = CreateActiveRun(isShared: false);
-        SetStatus(run, TodoListRunStatus.Closed);
-        _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+        [Fact]
+        public async Task MakeTodoListRunPrivateAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
+        {
+            // Arrange
+            var run = CreateActiveRun(isShared: false);
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act Assert
-        await _service.Invoking(s => s.MakeTodoListRunPrivateAsync(1, CancellationToken.None))
-        .Should().ThrowAsync<DomainInvalidOperationException>()
-        .WithMessage("A closed run couldn't get modified.");
+            // Act Assert
+            await _service.Invoking(s => s.MakeTodoListRunPrivateAsync(1, CancellationToken.None))
+            .Should().ThrowAsync<DomainInvalidOperationException>()
+            .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
 
-       #region MarkTodoItemCompleteAsync
+        #region MarkTodoItemCompleteAsync
         [Fact]
         public async Task MarkTodoItemCompleteAsync_WhenAuthorizedAndValid_ShouldMarkCompleteAndSave()
         {
@@ -452,7 +452,7 @@ var run = CreateActiveRun(isShared: false);
         }
         #endregion
 
-       #region MarkTodoItemIncompleteAsync
+        #region MarkTodoItemIncompleteAsync
         [Fact]
         public async Task MarkTodoItemIncompleteAsync_WhenAuthorizedAndValid_ShouldMarkIncompleteAndSave()
         {
@@ -489,7 +489,7 @@ var run = CreateActiveRun(isShared: false);
         {
             // Arrange
             var runWithoutItem = CreateActiveRun();
-        SetStatus(runWithoutItem, TodoListRunStatus.Closed);
+            SetStatus(runWithoutItem, TodoListRunStatus.Closed);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(runWithoutItem);
 
             // Act & Assert
@@ -499,7 +499,7 @@ var run = CreateActiveRun(isShared: false);
         }
         #endregion
 
-       #region UpdateNotesForTodoItemAsync
+        #region UpdateNotesForTodoItemAsync
         [Fact]
         public async Task UpdateNotesForTodoItemAsync_WhenAuthorizedAndValid_ShouldUpdateNotesAndSave()
         {
@@ -530,22 +530,22 @@ var run = CreateActiveRun(isShared: false);
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
-[Fact]
-public async Task UpdateNotesForTodoItemAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
-{
-        // Arrange
-        var run = CreateActiveRun();
-        SetStatus(run, TodoListRunStatus.Closed);
-_runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
+        [Fact]
+        public async Task UpdateNotesForTodoItemAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act Assert 
-        await _service.Invoking(s => s.UpdateNotesForTodoItemAsync(1, 10, new UpdateNotesForTodoItemDto { Notes = "new notes" }, CancellationToken.None))
-        .Should().ThrowAsync<DomainInvalidOperationException>()
-        .WithMessage("A closed run couldn't get modified.");
+            // Act Assert 
+            await _service.Invoking(s => s.UpdateNotesForTodoItemAsync(1, 10, new UpdateNotesForTodoItemDto { Notes = "new notes" }, CancellationToken.None))
+            .Should().ThrowAsync<DomainInvalidOperationException>()
+            .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
 
-       #region AsignMemberToItemAsync
+        #region AsignMemberToItemAsync
         [Fact]
         public async Task AsignMemberToItemAsync_WhenAuthorizedAndValid_ShouldAssignAndSave()
         {
@@ -587,14 +587,14 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
             run.AddTodoItem(item, _currentUserId);
             _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act & Assert
-        await _service.Invoking(s => s.AssignItemToMemberAsync(1, 10, new AssignTodoItemToMemberDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
-            .Should().ThrowAsync<DomainInvalidOperationException>()
-.WithMessage("An item couldn't get asigned to someone that is not a member of the run.");
+            // Act & Assert
+            await _service.Invoking(s => s.AssignItemToMemberAsync(1, 10, new AssignTodoItemToMemberDto { MemberId = Guid.NewGuid() }, CancellationToken.None))
+                .Should().ThrowAsync<DomainInvalidOperationException>()
+    .WithMessage("An item couldn't get asigned to someone that is not a member of the run.");
         }
         #endregion
 
-       #region ChangeTodoItemDescriptionAsync
+        #region ChangeTodoItemDescriptionAsync
         [Fact]
         public async Task ChangeTodoItemDescriptionAsync_WhenAuthorizedAndValid_ShouldUpdateAndSave()
         {
@@ -624,22 +624,22 @@ _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Retu
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
-[Fact]
-public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
-{
-        // Arrange
-        var run = CreateActiveRun();
-        SetStatus(run, TodoListRunStatus.Closed);
-        _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
+        [Fact]
+        public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetTodoListRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act Assert
-        await _service.Invoking(s => s.ChangeTodoItemDescriptionAsync(1, 10, new ChangeTodoItemDescriptionDto { Description = "new desc" }, CancellationToken.None))
-        .Should().ThrowAsync<DomainInvalidOperationException>()
-        .WithMessage("A closed run couldn't get modified.");
+            // Act Assert
+            await _service.Invoking(s => s.ChangeTodoItemDescriptionAsync(1, 10, new ChangeTodoItemDescriptionDto { Description = "new desc" }, CancellationToken.None))
+            .Should().ThrowAsync<DomainInvalidOperationException>()
+            .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
 
-       #region AddMemberToTodoListRunAsync
+        #region AddMemberToTodoListRunAsync
         [Fact]
         public async Task AddMemberToTodoListRunAsync_WhenAuthorizedAndValid_ShouldAddAndReturnDto()
         {
@@ -673,17 +673,17 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
         {
             // Arrange
             var run = CreateActiveRun();
-        SetStatus(run, TodoListRunStatus.Closed);
+            SetStatus(run, TodoListRunStatus.Closed);
             _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act & Assert
-        await _service.Invoking(s => s.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
-            .Should().ThrowAsync<DomainInvalidOperationException>()
-.WithMessage("A closed run couldn't get modified.");
+            // Act & Assert
+            await _service.Invoking(s => s.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None))
+                .Should().ThrowAsync<DomainInvalidOperationException>()
+    .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
 
-       #region RemoveMemberFromTodoListRunAsync
+        #region RemoveMemberFromTodoListRunAsync
         [Fact]
         public async Task RemoveMemberFromTodoListRunAsync_WhenAuthorizedAndValid_ShouldRemoveAndSave()
         {
@@ -712,18 +712,18 @@ public async Task ChangeTodoItemDescriptionAsync_ClosedRun_ShouldPropagateDomain
                 .Should().ThrowAsync<DomainEntityNotFoundException>();
         }
 
-[Fact]
-public async Task RemoveMemberToTodoListRunAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
-{
-        // Arrange
-        var run = CreateActiveRun();
-        SetStatus(run, TodoListRunStatus.Closed);
-        _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+        [Fact]
+        public async Task RemoveMemberToTodoListRunAsync_ClosedRun_ShouldPropagateDomainInvalidOperationException()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
-        // Act Assert
-        await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None))
-        .Should().ThrowAsync<DomainInvalidOperationException>()
-        .WithMessage("A closed run couldn't get modified.");
+            // Act Assert
+            await _service.Invoking(s => s.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None))
+            .Should().ThrowAsync<DomainInvalidOperationException>()
+            .WithMessage("A closed run couldn't get modified.");
         }
         #endregion
     }

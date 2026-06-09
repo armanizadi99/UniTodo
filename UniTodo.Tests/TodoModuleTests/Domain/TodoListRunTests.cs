@@ -25,10 +25,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             field?.SetValue(entity, id);
         }
 
-private void SetRun(TodoItem item, TodoListRun run)
-{
-        var field = typeof(TodoItem).GetField("<Run>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
-        field?.SetValue(item, run);
+        private void SetRun(TodoItem item, TodoListRun run)
+        {
+            var field = typeof(TodoItem).GetField("<Run>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
+            field?.SetValue(item, run);
         }
 
         #region Constructor Tests
@@ -36,7 +36,7 @@ private void SetRun(TodoItem item, TodoListRun run)
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public void Constructor_WhenNameIsNullOrEmptyOrWhitespace_ShouldThrowArgumentException(string name)
+        public void Constructor_WhenNameIsNullOrEmptyOrWhitespace_ShouldThrowArgumentException(string? name)
         {
             // Act
             var act = () => new TodoListRun(name, ResetPolicy.None, false, _ownerId);
@@ -52,9 +52,9 @@ private void SetRun(TodoItem item, TodoListRun run)
             // Act
             var act = () => new TodoListRun("Test", (ResetPolicy)999, false, _ownerId);
 
-        // Assert
-        act.Should().Throw<ArgumentException>()
-.WithParameterName("resetPolicy");
+            // Assert
+            act.Should().Throw<ArgumentException>()
+    .WithParameterName("resetPolicy");
         }
 
         [Fact]
@@ -348,7 +348,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var item = new TodoItem(new TodoItemDescription("Test Item"));
             run.AddTodoItem(item, _ownerId);
-        SetRun(item, run);
+            SetRun(item, run);
             SetId(item, 1);
 
             // Act
@@ -382,7 +382,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var item = new TodoItem(new TodoItemDescription("Test Item"));
             run.AddTodoItem(item, _ownerId);
-        SetRun(item, run);
+            SetRun(item, run);
             SetId(item, 1);
             run.MarkItemComplete(1, _ownerId);
 
@@ -402,7 +402,7 @@ private void SetRun(TodoItem item, TodoListRun run)
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var item = new TodoItem(new TodoItemDescription("Test Item"));
             run.AddTodoItem(item, _ownerId);
-        SetRun(item, run);
+            SetRun(item, run);
             SetId(item, 1);
             var notes = new TodoItemNotes("New Notes");
 

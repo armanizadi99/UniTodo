@@ -38,7 +38,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.Description.Should().Be(description);
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
-        item.CompletedBy.Should().BeNull();
+            item.CompletedBy.Should().BeNull();
             item.AssignedTo.Should().BeNull();
         }
 
@@ -58,7 +58,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             item.IsCompleted.Should().BeTrue();
             item.CompletedAt.Should().NotBeNull();
-        item.CompletedBy.Should().Be(_assignedUserId);
+            item.CompletedBy.Should().Be(_assignedUserId);
         }
 
         [Fact]
@@ -74,8 +74,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
 
             // Assert
             item.IsCompleted.Should().BeTrue();
-        item.CompletedAt.Should().NotBeNull();
-        item.CompletedBy.Should().Be(_ownerId);
+            item.CompletedAt.Should().NotBeNull();
+            item.CompletedBy.Should().Be(_ownerId);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
-        item.CompletedBy.Should().BeNull();
+            item.CompletedBy.Should().BeNull();
         }
 
         [Fact]
@@ -176,8 +176,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
 
             // Assert
             item.IsCompleted.Should().BeFalse();
-item.CompletedAt.Should().BeNull();
-item.CompletedBy.Should().BeNull();
+            item.CompletedAt.Should().BeNull();
+            item.CompletedBy.Should().BeNull();
         }
 
         [Fact]

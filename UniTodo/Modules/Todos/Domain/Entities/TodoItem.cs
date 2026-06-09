@@ -10,7 +10,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public TodoItemDescription Description { get; private set; }
         public bool IsCompleted { get; private set; }
         public DateTimeOffset? CompletedAt { get; private set; }
-public UserId? CompletedBy {get; private set; }
+        public UserId? CompletedBy { get; private set; }
         public TodoItemNotes? Notes { get; private set; }
         public UserId? AssignedTo { get; private set; }
 
@@ -33,11 +33,11 @@ public UserId? CompletedBy {get; private set; }
                 throw new DomainNotAuthorizedException();
             IsCompleted = true;
             CompletedAt = DateTimeOffset.UtcNow;
-        CompletedBy = actorId;
-            }
+            CompletedBy = actorId;
+        }
 
-            public void MarkIncomplete(UserId actorId)
-            {
+        public void MarkIncomplete(UserId actorId)
+        {
             if (CompletedAt == null)
                 throw new DomainInvalidOperationException("This item is still incomplete.");
             if (AssignedTo == null && actorId != Run.ownerId)
@@ -46,11 +46,11 @@ public UserId? CompletedBy {get; private set; }
                 throw new DomainNotAuthorizedException();
             IsCompleted = false;
             CompletedAt = null;
-        CompletedBy = null;
-            }
+            CompletedBy = null;
+        }
 
-            public void UpdateNotes(TodoItemNotes notes, UserId actorId)
-            {
+        public void UpdateNotes(TodoItemNotes notes, UserId actorId)
+        {
             if (AssignedTo == null && actorId != Run.ownerId)
                 throw new DomainNotAuthorizedException();
             if (AssignedTo != null && AssignedTo.Value != actorId)
@@ -65,14 +65,14 @@ public UserId? CompletedBy {get; private set; }
 
         public void AssignTo(UserId assignedTo)
         {
-        if (IsCompleted)
-            throw new DomainInvalidOperationException("Couldn't asign a completed task.");
+            if (IsCompleted)
+                throw new DomainInvalidOperationException("Couldn't asign a completed task.");
             AssignedTo = assignedTo;
         }
 
-public void AssignToNoone()
-{
-        AssignedTo = null;
+        public void AssignToNoone()
+        {
+            AssignedTo = null;
         }
     }
 }

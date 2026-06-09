@@ -23,10 +23,10 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
             return await query.FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByIdAsync( int id, int itemId, CancellationToken cancellationToken )
+        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByIdAsync(int id, int itemId, CancellationToken cancellationToken)
         {
-        return await _dbSet.Include(i => i.TodoItems.Where(item => item.Id == itemId))
-        .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            return await _dbSet.Include(i => i.TodoItems.Where(item => item.Id == itemId))
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
         async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetUserActiveRunsAsync(Guid userId, CancellationToken cancellationToken)
