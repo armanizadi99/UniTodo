@@ -36,15 +36,20 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 
             builder.Property(e => e.ClosedAt);
 
-        builder.Property(e => e.Members)
-        .UsePropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasMany(e => e.TodoItems)
             .WithOne(e => e.Run)
             .HasForeignKey(e => e.RunId);
 
+        builder.HasMany(e => e.Members)
+        .WithOne(e => e.Run)
+        .HasForeignKey(e => e.RunId);
+
             builder.Navigation(nameof(TodoListRun.TodoItems))
                     .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+builder.Navigation(nameof(TodoListRun.Members))
+.UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

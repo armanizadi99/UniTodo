@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
+using UniTodo.Modules.Todos.Domain.ValueObjects;
 using UniTodo.Modules.Todos.Infrastructure.Db.Configurations;
+using UniTodo.Modules.Todos.Infrastructure.Db.Converters;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db
 {
@@ -23,6 +25,16 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
             modelBuilder.ApplyConfiguration(new TodoListRunConfiguration());
             modelBuilder.ApplyConfiguration(new TodoItemTemplateConfiguration());
             modelBuilder.ApplyConfiguration(new TodoItemConfiguration());
+        modelBuilder.ApplyConfiguration(new RunMemberConfiguration());
+        }
+
+protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+{
+base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder
+        .Properties<UserId>()
+        .HaveConversion<UserIdConverter>();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
