@@ -36,17 +36,8 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 
             builder.Property(e => e.ClosedAt);
 
-            builder.Property(e => e.Members)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v.Select(m => m.Value), (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions)null!)!
-                        .Select(g => new UserId(g)).ToList(),
-                    new ValueComparer<IReadOnlyCollection<UserId>>(
-                        (c1, c2) => c1!.SequenceEqual(c2!),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => (IReadOnlyCollection<UserId>)c.ToList()))
-                .HasColumnName("Members")
-                .HasColumnType("TEXT");
+        builder.Property(e => e.Members)
+        .UsePropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasMany(e => e.TodoItems)
             .WithOne(e => e.Run)

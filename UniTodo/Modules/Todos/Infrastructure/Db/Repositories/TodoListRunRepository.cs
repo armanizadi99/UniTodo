@@ -32,7 +32,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
         async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetUserActiveRunsAsync(Guid userId, CancellationToken cancellationToken)
         {
             return await _dbSet.Where(e => e.Status == Domain.Enums.TodoListRunStatus.Active)
-    .Where(e => e.Members.Select(m => m.Value).Contains(userId))
+    .Where(e => e.Members.Select(m => m).Contains(new Domain.ValueObjects.UserId(userId)))
     .ToListAsync(cancellationToken);
         }
     }
