@@ -33,7 +33,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         [Fact]
-        public async Task CreateTodoListTemplateAsync_ShouldCreateAndReturnDto()
+        public async Task CreateTodoListTemplateAsync_ShouldCreateAndReturnSuccessWithDto()
         {
             // Arrange
             var dto = new CreateTodoListTemplateDto { Name = "New List", ResetPolicy = ResetPolicy.Daily };
@@ -42,16 +42,17 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var result = await _service.CreateTodoListTemplateAsync(dto);
 
             // Assert
-            result.Should().NotBeNull();
-            result.name.Should().Be(dto.Name);
-            result.ResetPolicy.Should().Be(dto.ResetPolicy.Value);
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value.name.Should().Be(dto.Name);
+            result.Value.ResetPolicy.Should().Be(dto.ResetPolicy.Value);
 
             await _repository.Received(1).AddAsync(Arg.Any<TodoListTemplate>());
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task GetUserTodoListsAsync_ShouldReturnListsForCurrentUser()
+        public async Task GetUserTodoListsAsync_ShouldReturnSuccessWithListsForCurrentUser()
         {
             // Arrange
             var todoLists = new List<TodoListTemplate>
@@ -66,13 +67,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var result = await _service.GetUserTodoListsAsync();
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().Contain(r => r.name == "List 1");
-            result.Should().Contain(r => r.name == "List 2");
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(2);
+            result.Value.Should().Contain(r => r.name == "List 1");
+            result.Value.Should().Contain(r => r.name == "List 2");
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_ShouldReturnDto_WhenFoundAndAuthorized()
+        public async Task GetTodoListTemplateByIdAsync_ShouldReturnSuccessWithDto_WhenFoundAndAuthorized()
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "Test List", ResetPolicy.Daily);
@@ -83,24 +85,28 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var result = await _service.GetTodoListTemplateByIdAsync(1);
 
             // Assert
-            result.Should().NotBeNull();
-            result.name.Should().Be("Test List");
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value.name.Should().Be("Test List");
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_ShouldThrowNotFound_WhenIdDoesNotExist()
+        public async Task GetTodoListTemplateByIdAsync_ShouldReturnEntityNotFoundError_WhenIdDoesNotExist()
         {
             // Arrange
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 99))
                 .Returns((TodoListTemplate)null!);
 
-            // Act & Assert
-            await _service.Invoking(s => s.GetTodoListTemplateByIdAsync(99))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.GetTodoListTemplateByIdAsync(99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_ShouldThrowNotAuthorized_WhenNotOwner()
+        public async Task GetTodoListTemplateByIdAsync_ShouldReturnNotAuthorizedError_WhenNotOwner()
         {
             // Arrange
             var otherUserId = new UserId(Guid.NewGuid());
@@ -108,27 +114,32 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
                 .Returns(todoList);
 
-            // Act & Assert
-            await _service.Invoking(s => s.GetTodoListTemplateByIdAsync(1))
-                .Should().ThrowAsync<DomainNotAuthorizedException>();
+            // Act
+            var result = await _service.GetTodoListTemplateByIdAsync(1);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public async Task CreateTodoListTemplateAsync_ShouldThrowDuplicateName_WhenNameAlreadyExistsCaseInsensitive()
+        public async Task CreateTodoListTemplateAsync_ShouldReturnDuplicateEntitiesError_WhenNameAlreadyExistsCaseInsensitive()
         {
             // Arrange
             var dto = new CreateTodoListTemplateDto { Name = "New Unique List", ResetPolicy = ResetPolicy.Daily };
-            var existingList = new TodoListTemplate(_currentUserId, "Existing List", ResetPolicy.Daily);
             _repository.IsNameDuplicateAsync(Arg.Is<string>(s => s == dto.Name))
     .Returns(true);
 
-            // Act & Assert
-            await _service.Invoking(s => s.CreateTodoListTemplateAsync(dto))
-                .Should().ThrowAsync<DomainDuplicateEntitiesException>();
+            // Act
+            var result = await _service.CreateTodoListTemplateAsync(dto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
         }
 
         [Fact]
-        public async Task DeleteTodoListAsync_ShouldDelete_WhenFoundAndAuthorized()
+        public async Task DeleteTodoListAsync_ShouldDeleteAndReturnSuccess_WhenFoundAndAuthorized()
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "To Delete", ResetPolicy.Daily);
@@ -136,15 +147,16 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 .Returns(todoList);
 
             // Act
-            await _service.DeleteTodoListAsync(1);
+            var result = await _service.DeleteTodoListAsync(1);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             _repository.Received(1).Remove(todoList);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task DeleteTodoListAsync_ShouldThrowNotAuthorized_WhenNotOwner()
+        public async Task DeleteTodoListAsync_ShouldReturnNotAuthorizedError_WhenNotOwner()
         {
             // Arrange
             var otherUserId = new UserId(Guid.NewGuid());
@@ -152,13 +164,16 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
                 .Returns(todoList);
 
-            // Act & Assert
-            await _service.Invoking(s => s.DeleteTodoListAsync(1))
-                .Should().ThrowAsync<DomainNotAuthorizedException>();
+            // Act
+            var result = await _service.DeleteTodoListAsync(1);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public async Task ArchiveAsync_ShouldArchiveAndSave_WhenFoundAndAuthorized()
+        public async Task ArchiveAsync_ShouldArchiveAndSaveAndReturnSuccess_WhenFoundAndAuthorized()
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "To Archive", ResetPolicy.Daily);
@@ -166,27 +181,31 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 .Returns(todoList);
 
             // Act
-            await _service.ArchiveAsync(1);
+            var result = await _service.ArchiveAsync(1);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.Status.Should().Be(TodoListStatus.Archived);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task ArchiveAsync_ShouldThrowNotFound_WhenIdDoesNotExist()
+        public async Task ArchiveAsync_ShouldReturnEntityNotFoundError_WhenIdDoesNotExist()
         {
             // Arrange
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 99))
                 .Returns((TodoListTemplate)null!);
 
-            // Act & Assert
-            await _service.Invoking(s => s.ArchiveAsync(99))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.ArchiveAsync(99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public async Task MakeActiveAsync_ShouldMakeActiveAndSave_WhenFoundAndAuthorized()
+        public async Task MakeActiveAsync_ShouldMakeActiveAndSaveAndReturnSuccess_WhenFoundAndAuthorized()
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "To Activate", ResetPolicy.Daily);
@@ -195,23 +214,27 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 .Returns(todoList);
 
             // Act
-            await _service.MakeActiveAsync(1);
+            var result = await _service.MakeActiveAsync(1);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.Status.Should().Be(TodoListStatus.Active);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task MakeActiveAsync_ShouldThrowNotFound_WhenIdDoesNotExist()
+        public async Task MakeActiveAsync_ShouldReturnEntityNotFoundError_WhenIdDoesNotExist()
         {
             // Arrange
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 99))
                             .Returns((TodoListTemplate)null!);
 
-            // Act & Assert
-            await _service.Invoking(s => s.MakeActiveAsync(99))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.MakeActiveAsync(99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
@@ -228,13 +251,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var result = await _service.AddTodoItemTemplateAsync(todoListId, dto);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.TodoItemTemplates.Should().HaveCount(1);
-            result.Description.Should().Be(dto.Description);
+            result.Value.Description.Should().Be(dto.Description);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task AddTodoItemTemplateAsync_ShouldThrow_WhenUserIsNotOwner()
+        public async Task AddTodoItemTemplateAsync_ShouldReturnNotAuthorizedError_WhenUserIsNotOwner()
         {
             // Arrange
             var otherUserId = new UserId(Guid.NewGuid());
@@ -245,27 +269,31 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var dto = new AddTodoItemTemplateDto { Description = "Task 1" };
 
             // Act
-            var act = () => _service.AddTodoItemTemplateAsync(todoListId, dto);
+            var result = await _service.AddTodoItemTemplateAsync(todoListId, dto);
 
             // Assert
-            await act.Should().ThrowAsync<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public async Task AddTodoItemTemplateAsync_ShouldThrowNotFound_WhenTodoListDoesNotExist()
+        public async Task AddTodoItemTemplateAsync_ShouldReturnEntityNotFoundError_WhenTodoListDoesNotExist()
         {
             // Arrange
             var dto = new AddTodoItemTemplateDto { Description = "Task 1" };
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 99))
                 .Returns((TodoListTemplate)null!);
 
-            // Act & Assert
-            await _service.Invoking(s => s.AddTodoItemTemplateAsync(99, dto))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.AddTodoItemTemplateAsync(99, dto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public async Task DeleteTodoItemTemplateAsync_ShouldDeleteAndSave_WhenFoundAndAuthorized()
+        public async Task DeleteTodoItemTemplateAsync_ShouldDeleteAndSaveAndReturnSuccess_WhenFoundAndAuthorized()
         {
             // Arrange
             var todoListTemplateId = 1;
@@ -280,15 +308,16 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 .Returns(todoList);
 
             // Act
-            await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId);
+            var result = await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.TodoItemTemplates.Should().HaveCount(0);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
         [Fact]
-        public async Task DeleteTodoItemTemplateAsync_ShouldThrowNotAuthorized_WhenNotOwner()
+        public async Task DeleteTodoItemTemplateAsync_ShouldReturnNotAuthorizedError_WhenNotOwner()
         {
             // Arrange
             var otherUserId = new UserId(Guid.NewGuid());
@@ -301,38 +330,47 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1), Arg.Any<bool>())
                 .Returns(todoList);
 
-            // Act & Assert
-            await _service.Invoking(s => s.DeleteTodoItemTemplateAsync(1, 1))
-                .Should().ThrowAsync<DomainNotAuthorizedException>();
+            // Act
+            var result = await _service.DeleteTodoItemTemplateAsync(1, 1);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public async Task DeleteTodoItemTemplateAsync_ShouldThrowNotFound_WhenTodoItemTemplateIdDoesNotExist()
+        public async Task DeleteTodoItemTemplateAsync_ShouldReturnEntityNotFoundError_WhenTodoItemTemplateIdDoesNotExist()
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "list1", ResetPolicy.Daily);
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
                 .Returns(todoList);
 
-            // Act & Assert
-            await _service.Invoking(s => s.DeleteTodoItemTemplateAsync(1, 99))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.DeleteTodoItemTemplateAsync(1, 99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public async Task DeleteTodoItemTemplateAsync_ShouldThrowNotFound_WhenTodoListTemplateIdDoesNotExist()
+        public async Task DeleteTodoItemTemplateAsync_ShouldReturnEntityNotFoundError_WhenTodoListTemplateIdDoesNotExist()
         {
             // Arrange
             _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
                 .Returns((TodoListTemplate)null!);
 
-            // Act & Assert
-            await _service.Invoking(s => s.DeleteTodoItemTemplateAsync(1, 99))
-                .Should().ThrowAsync<DomainEntityNotFoundException>();
+            // Act
+            var result = await _service.DeleteTodoItemTemplateAsync(1, 99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public async Task AddTodoItemTemplateAsync_ShouldThrowDuplicate_WhenDuplicateDescriptionExists_CaseInsensitive()
+        public async Task AddTodoItemTemplateAsync_ShouldReturnDuplicateEntitiesError_WhenDuplicateDescriptionExists_CaseInsensitive()
         {
             // Arrange
             var todoListId = 1;
@@ -343,9 +381,12 @@ namespace UniTodo.Tests.TodoModuleTests.Application
 
             var dto = new AddTodoItemTemplateDto { Description = "existing TASK" };
 
-            // Act & Assert
-            await _service.Invoking(s => s.AddTodoItemTemplateAsync(todoListId, dto))
-                .Should().ThrowAsync<DomainDuplicateEntitiesException>();
+            // Act
+            var result = await _service.AddTodoItemTemplateAsync(todoListId, dto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
         }
     }
 }

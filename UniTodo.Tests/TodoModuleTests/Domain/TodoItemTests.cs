@@ -42,9 +42,9 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignedTo.Should().BeNull();
         }
 
-        #region MarkComplete Tests
+       #region MarkComplete Tests
         [Fact]
-        public void MarkComplete_WhenAssignedToUser_ShouldMarkComplete()
+        public void MarkComplete_WhenAssignedToUser_ShouldMarkCompleteAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -53,16 +53,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignTo(_assignedUserId);
 
             // Act
-            item.MarkComplete(_assignedUserId);
+            var result = item.MarkComplete(_assignedUserId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeTrue();
             item.CompletedAt.Should().NotBeNull();
             item.CompletedBy.Should().Be(_assignedUserId);
         }
 
         [Fact]
-        public void MarkComplete_WhenAssignedToNobodyAndActorIsOwner_ShouldMarkComplete()
+        public void MarkComplete_WhenAssignedToNobodyAndActorIsOwner_ShouldMarkCompleteAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -70,16 +71,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetRunOnItem(item, run);
 
             // Act
-            item.MarkComplete(_ownerId);
+            var result = item.MarkComplete(_ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeTrue();
             item.CompletedAt.Should().NotBeNull();
             item.CompletedBy.Should().Be(_ownerId);
         }
 
         [Fact]
-        public void MarkComplete_WhenAssignedToOtherUserAndActorIsOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkComplete_WhenAssignedToOtherUserAndActorIsOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -88,14 +90,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignTo(_assignedUserId);
 
             // Act
-            var act = () => item.MarkComplete(_ownerId);
+            var result = item.MarkComplete(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkComplete_WhenAssignedToNobodyAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkComplete_WhenAssignedToNobodyAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -103,14 +106,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetRunOnItem(item, run);
 
             // Act
-            var act = () => item.MarkComplete(_otherUserId);
+            var result = item.MarkComplete(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkComplete_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkComplete_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -119,14 +123,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignTo(_assignedUserId);
 
             // Act
-            var act = () => item.MarkComplete(_otherUserId);
+            var result = item.MarkComplete(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkComplete_WhenAlreadyCompleted_ShouldThrowDomainInvalidOperationException()
+        public void MarkComplete_WhenAlreadyCompleted_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -135,16 +140,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_ownerId);
 
             // Act
-            var act = () => item.MarkComplete(_ownerId);
+            var result = item.MarkComplete(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region MarkIncomplete Tests
         [Fact]
-        public void MarkIncomplete_WhenAssignedToUser_ShouldMarkIncomplete()
+        public void MarkIncomplete_WhenAssignedToUser_ShouldMarkIncompleteAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -154,16 +160,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_assignedUserId);
 
             // Act
-            item.MarkIncomplete(_assignedUserId);
+            var result = item.MarkIncomplete(_assignedUserId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
             item.CompletedBy.Should().BeNull();
         }
 
         [Fact]
-        public void MarkIncomplete_WhenAssignedToNobodyAndActorIsOwner_ShouldMarkIncomplete()
+        public void MarkIncomplete_WhenAssignedToNobodyAndActorIsOwner_ShouldMarkIncompleteAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -172,16 +179,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_ownerId);
 
             // Act
-            item.MarkIncomplete(_ownerId);
+            var result = item.MarkIncomplete(_ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeFalse();
             item.CompletedAt.Should().BeNull();
             item.CompletedBy.Should().BeNull();
         }
 
         [Fact]
-        public void MarkIncomplete_WhenAssignedToOtherUserAndActorIsOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkIncomplete_WhenAssignedToOtherUserAndActorIsOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -191,14 +199,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_assignedUserId);
 
             // Act
-            var act = () => item.MarkIncomplete(_ownerId);
+            var result = item.MarkIncomplete(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkIncomplete_WhenAssignedToNobodyAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkIncomplete_WhenAssignedToNobodyAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -207,14 +216,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_ownerId);
 
             // Act
-            var act = () => item.MarkIncomplete(_otherUserId);
+            var result = item.MarkIncomplete(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkIncomplete_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MarkIncomplete_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -224,14 +234,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_assignedUserId);
 
             // Act
-            var act = () => item.MarkIncomplete(_otherUserId);
+            var result = item.MarkIncomplete(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MarkIncomplete_WhenAlreadyIncomplete_ShouldThrowDomainInvalidOperationException()
+        public void MarkIncomplete_WhenAlreadyIncomplete_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -239,16 +250,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetRunOnItem(item, run);
 
             // Act
-            var act = () => item.MarkIncomplete(_ownerId);
+            var result = item.MarkIncomplete(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region UpdateNotes Tests
         [Fact]
-        public void UpdateNotes_WhenAssignedToUser_ShouldUpdateNotes()
+        public void UpdateNotes_WhenAssignedToUser_ShouldUpdateNotesAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -258,14 +270,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var notes = new TodoItemNotes("New Notes");
 
             // Act
-            item.UpdateNotes(notes, _assignedUserId);
+            var result = item.UpdateNotes(notes, _assignedUserId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.Notes.Should().Be(notes);
         }
 
         [Fact]
-        public void UpdateNotes_WhenAssignedToNobodyAndActorIsOwner_ShouldUpdateNotes()
+        public void UpdateNotes_WhenAssignedToNobodyAndActorIsOwner_ShouldUpdateNotesAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -274,14 +287,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var notes = new TodoItemNotes("New Notes");
 
             // Act
-            item.UpdateNotes(notes, _ownerId);
+            var result = item.UpdateNotes(notes, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.Notes.Should().Be(notes);
         }
 
         [Fact]
-        public void UpdateNotes_WhenAssignedToOtherUserAndActorIsOwner_ShouldThrowDomainNotAuthorizedException()
+        public void UpdateNotes_WhenAssignedToOtherUserAndActorIsOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -290,14 +304,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignTo(_assignedUserId);
 
             // Act
-            var act = () => item.UpdateNotes(new TodoItemNotes("Notes"), _ownerId);
+            var result = item.UpdateNotes(new TodoItemNotes("Notes"), _ownerId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void UpdateNotes_WhenAssignedToNobodyAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void UpdateNotes_WhenAssignedToNobodyAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -305,14 +320,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetRunOnItem(item, run);
 
             // Act
-            var act = () => item.UpdateNotes(new TodoItemNotes("Notes"), _otherUserId);
+            var result = item.UpdateNotes(new TodoItemNotes("Notes"), _otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void UpdateNotes_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void UpdateNotes_WhenAssignedToOtherUserAndActorIsNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -321,14 +337,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignTo(_assignedUserId);
 
             // Act
-            var act = () => item.UpdateNotes(new TodoItemNotes("Notes"), _otherUserId);
+            var result = item.UpdateNotes(new TodoItemNotes("Notes"), _otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void UpdateNotes_WhenAuthorizedAndNotesEmptyString_ShouldSetNotesToNull()
+        public void UpdateNotes_WhenAuthorizedAndNotesEmptyString_ShouldSetNotesToNullAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -337,9 +354,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var notes = new TodoItemNotes("");
 
             // Act
-            item.UpdateNotes(notes, _ownerId);
+            var result = item.UpdateNotes(notes, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.Notes.Should().BeNull();
         }
         #endregion
@@ -360,20 +378,21 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
 
         #region SetAsignedTo Tests
         [Fact]
-        public void SetAsignedTo_WhenIncomplete_ShouldSetAssignedTo()
+        public void SetAsignedTo_WhenIncomplete_ShouldSetAssignedToAndReturnSuccess()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
 
             // Act
-            item.AssignTo(_assignedUserId);
+            var result = item.AssignTo(_assignedUserId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.AssignedTo.Should().Be(_assignedUserId);
         }
 
         [Fact]
-        public void SetAsignedTo_WhenComplete_ShouldThrowDomainInvalidOperationException()
+        public void SetAsignedTo_WhenComplete_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var item = new TodoItem(new TodoItemDescription("Test"));
@@ -382,10 +401,11 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.MarkComplete(_ownerId);
 
             // Act
-            var act = () => item.AssignTo(_assignedUserId);
+            var result = item.AssignTo(_assignedUserId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
     }

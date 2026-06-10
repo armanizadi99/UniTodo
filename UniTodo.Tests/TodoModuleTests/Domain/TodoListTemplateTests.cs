@@ -28,21 +28,22 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
 
         [Fact]
-        public void Archive_ShouldChangeStatusToArchived()
+        public void Archive_ShouldChangeStatusToArchivedAndReturnSuccess()
         {
             // Arrange
             var ownerId = new UserId(Guid.NewGuid());
             var todoList = new TodoListTemplate(ownerId, "Test List", ResetPolicy.Daily);
 
             // Act
-            todoList.Archive(ownerId);
+            var result = todoList.Archive(ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.Status.Should().Be(TodoListStatus.Archived);
         }
 
         [Fact]
-        public void Archive_ShouldThrowException_WhenActorIsNotOwner()
+        public void Archive_ShouldReturnNotAuthorizedError_WhenActorIsNotOwner()
         {
             // Arrange
             var ownerId = new UserId(Guid.NewGuid());
@@ -50,14 +51,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var todoList = new TodoListTemplate(ownerId, "Test List", ResetPolicy.Daily);
 
             // Act
-            var act = () => todoList.Archive(otherUserId);
+            var result = todoList.Archive(otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MakeActive_ShouldChangeStatusToActive()
+        public void MakeActive_ShouldChangeStatusToActiveAndReturnSuccess()
         {
             // Arrange
             var ownerId = new UserId(Guid.NewGuid());
@@ -65,9 +67,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             todoList.Archive(ownerId);
 
             // Act
-            todoList.MakeActive(ownerId);
+            var result = todoList.MakeActive(ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             todoList.Status.Should().Be(TodoListStatus.Active);
         }
     }

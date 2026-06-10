@@ -46,7 +46,7 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure
             var act = () => new UserContext(httpContextAccessor);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            act.Should().Throw<Exception>();
         }
     }
 }

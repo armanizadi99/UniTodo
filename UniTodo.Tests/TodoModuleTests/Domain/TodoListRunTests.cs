@@ -39,7 +39,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void Constructor_WhenNameIsNullOrEmptyOrWhitespace_ShouldThrowArgumentException(string? name)
         {
             // Act
-            var act = () => new TodoListRun(name, ResetPolicy.None, false, _ownerId);
+            var act = () => new TodoListRun(name!, ResetPolicy.None, false, _ownerId);
 
             // Assert
             act.Should().Throw<ArgumentException>()
@@ -80,7 +80,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         #endregion
 
         [Fact]
-        public void CreateRunFromTodoItemTemplates_WithValidParameters_ShouldCreateRunAndItems()
+        public void CreateRunFromTodoItemTemplates_WithValidParameters_ShouldCreateRunAndItemsAndReturnSuccess()
         {
             // Arrange
             var templates = new List<TodoItemTemplate>
@@ -90,31 +90,33 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             };
 
             // Act
-            var run = TodoListRun.CreateRunFromTodoItemTemplates(templates, "Template Run", ResetPolicy.None, false, _ownerId);
+            var result = TodoListRun.CreateRunFromTodoItemTemplates(templates, "Template Run", ResetPolicy.None, false, _ownerId);
 
             // Assert
-            run.TodoItems.Should().HaveCount(2);
-            run.TodoItems.Should().Contain(i => i.Description.Value == "Item 1");
-            run.TodoItems.Should().Contain(i => i.Description.Value == "Item 2");
+            result.IsSuccess.Should().BeTrue();
+            result.Value.TodoItems.Should().HaveCount(2);
+            result.Value.TodoItems.Should().Contain(i => i.Description.Value == "Item 1");
+            result.Value.TodoItems.Should().Contain(i => i.Description.Value == "Item 2");
         }
 
         #region AddTodoItem Tests
         [Fact]
-        public void AddTodoItem_WhenAuthorizedAndActive_ShouldAddItem()
+        public void AddTodoItem_WhenAuthorizedAndActive_ShouldAddItemAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var item = new TodoItem(new TodoItemDescription("Test Item"));
 
             // Act
-            run.AddTodoItem(item, _ownerId);
+            var result = run.AddTodoItem(item, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.TodoItems.Should().Contain(item);
         }
 
         [Fact]
-        public void AddTodoItem_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void AddTodoItem_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -122,28 +124,31 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.AddTodoItem(item, _ownerId);
+            var result = run.AddTodoItem(item, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("Items couldn't be added to a closed run.");
         }
 
         [Fact]
-        public void AddTodoItem_WhenNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void AddTodoItem_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var item = new TodoItem(new TodoItemDescription("Test Item"));
 
             // Act
-            var act = () => run.AddTodoItem(item, _otherUserId);
+            var result = run.AddTodoItem(item, _otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void AddTodoItem_WhenDuplicateDescription_ShouldThrowDomainDuplicateEntitiesException()
+        public void AddTodoItem_WhenDuplicateDescription_ShouldReturnDuplicateEntitiesError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -151,16 +156,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var duplicateItem = new TodoItem(new TodoItemDescription("test item"));
 
             // Act
-            var act = () => run.AddTodoItem(duplicateItem, _ownerId);
+            var result = run.AddTodoItem(duplicateItem, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainDuplicateEntitiesException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
         }
         #endregion
 
         #region DeleteItem Tests
         [Fact]
-        public void DeleteItem_WhenExistingAndAuthorized_ShouldRemoveItem()
+        public void DeleteItem_WhenExistingAndAuthorized_ShouldRemoveItemAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -169,27 +175,29 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetId(item, 1);
 
             // Act
-            run.DeleteItem(1, _ownerId);
+            var result = run.DeleteItem(1, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.TodoItems.Should().NotContain(item);
         }
 
         [Fact]
-        public void DeleteItem_WhenNonExisting_ShouldThrowDomainEntityNotFoundException()
+        public void DeleteItem_WhenNonExisting_ShouldReturnEntityNotFoundError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
 
             // Act
-            var act = () => run.DeleteItem(999, _ownerId);
+            var result = run.DeleteItem(999, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainEntityNotFoundException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
 
         [Fact]
-        public void DeleteItem_WhenNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void DeleteItem_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -198,14 +206,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetId(item, 1);
 
             // Act
-            var act = () => run.DeleteItem(1, _otherUserId);
+            var result = run.DeleteItem(1, _otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void DeleteItem_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void DeleteItem_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -215,71 +224,76 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.DeleteItem(1, _ownerId);
+            var result = run.DeleteItem(1, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region MakeShared Tests
         [Fact]
-        public void MakeShared_WhenOwner_ShouldMakeShared()
+        public void MakeShared_WhenOwner_ShouldMakeSharedAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
 
             // Act
-            run.MakeShared(_ownerId);
+            var result = run.MakeShared(_ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.IsShared.Should().BeTrue();
         }
 
         [Fact]
-        public void MakeShared_WhenNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MakeShared_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
 
             // Act
-            var act = () => run.MakeShared(_otherUserId);
+            var result = run.MakeShared(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
 
         [Fact]
-        public void MakeShared_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void MakeShared_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.MakeShared(_ownerId);
+            var result = run.MakeShared(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void MakeShared_WhenAlreadyShared_ShouldThrowDomainInvalidOperationException()
+        public void MakeShared_WhenAlreadyShared_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
 
             // Act
-            var act = () => run.MakeShared(_ownerId);
+            var result = run.MakeShared(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region MakePrivate Tests
         [Fact]
-        public void MakePrivate_WhenSharedAndOwner_ShouldMakePrivateAndCleanup()
+        public void MakePrivate_WhenSharedAndOwner_ShouldMakePrivateAndCleanupAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
@@ -291,58 +305,62 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.AssignItemToMember(1, memberId, _ownerId);
 
             // Act
-            run.MakePrivate(_ownerId);
+            var result = run.MakePrivate(_ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.IsShared.Should().BeFalse();
             run.Members.Should().HaveCount(1).And.Contain(m => m.UserId == _ownerId);
             item.AssignedTo.Should().BeNull();
         }
 
         [Fact]
-        public void MakePrivate_WhenAlreadyPrivate_ShouldThrowDomainInvalidOperationException()
+        public void MakePrivate_WhenAlreadyPrivate_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
 
             // Act
-            var act = () => run.MakePrivate(_ownerId);
+            var result = run.MakePrivate(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void MakePrivate_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void MakePrivate_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.MakePrivate(_ownerId);
+            var result = run.MakePrivate(_ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void MakePrivate_WhenNotOwner_ShouldThrowDomainNotAuthorizedException()
+        public void MakePrivate_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
 
             // Act
-            var act = () => run.MakePrivate(_otherUserId);
+            var result = run.MakePrivate(_otherUserId);
 
             // Assert
-            act.Should().Throw<DomainNotAuthorizedException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 
         #region MarkItemComplete/Incomplete Tests
         [Fact]
-        public void MarkItemComplete_WhenAuthorized_ShouldMarkComplete()
+        public void MarkItemComplete_WhenAuthorized_ShouldMarkCompleteAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -352,14 +370,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetId(item, 1);
 
             // Act
-            run.MarkItemComplete(1, _ownerId);
+            var result = run.MarkItemComplete(1, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeTrue();
         }
 
         [Fact]
-        public void MarkItemComplete_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void MarkItemComplete_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -369,14 +388,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.MarkItemComplete(1, _ownerId);
+            var result = run.MarkItemComplete(1, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void MarkItemIncomplete_WhenAuthorized_ShouldMarkIncomplete()
+        public void MarkItemIncomplete_WhenAuthorized_ShouldMarkIncompleteAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -387,16 +407,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.MarkItemComplete(1, _ownerId);
 
             // Act
-            run.MarkItemIncomplete(1, _ownerId);
+            var result = run.MarkItemIncomplete(1, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeFalse();
         }
         #endregion
 
         #region UpdateNotes Tests
         [Fact]
-        public void UpdateNotes_WhenAuthorized_ShouldUpdateNotes()
+        public void UpdateNotes_WhenAuthorized_ShouldUpdateNotesAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -407,14 +428,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var notes = new TodoItemNotes("New Notes");
 
             // Act
-            run.UpdateNotes(1, notes, _ownerId);
+            var result = run.UpdateNotes(1, notes, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.Notes.Should().Be(notes);
         }
 
         [Fact]
-        public void UpdateNotes_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void UpdateNotes_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -424,29 +446,31 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.UpdateNotes(1, new TodoItemNotes("Notes"), _ownerId);
+            var result = run.UpdateNotes(1, new TodoItemNotes("Notes"), _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void UpdateNotes_WhenNonExistingItem_ShouldThrowDomainEntityNotFoundException()
+        public void UpdateNotes_WhenNonExistingItem_ShouldReturnEntityNotFoundError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
 
             // Act
-            var act = () => run.UpdateNotes(999, new TodoItemNotes("Notes"), _ownerId);
+            var result = run.UpdateNotes(999, new TodoItemNotes("Notes"), _ownerId);
 
             // Assert
-            act.Should().Throw<DomainEntityNotFoundException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
         #endregion
 
         #region AsignItemToMember Tests
         [Fact]
-        public void AsignItemToMember_WhenAuthorized_ShouldAssign()
+        public void AsignItemToMember_WhenAuthorized_ShouldAssignAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
@@ -457,14 +481,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetId(item, 1);
 
             // Act
-            run.AssignItemToMember(1, memberId, _ownerId);
+            var result = run.AssignItemToMember(1, memberId, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.AssignedTo.Should().Be(memberId);
         }
 
         [Fact]
-        public void AsignItemToMember_WhenUserNotMember_ShouldThrowDomainInvalidOperationException()
+        public void AsignItemToMember_WhenUserNotMember_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
@@ -474,16 +499,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetId(item, 1);
 
             // Act
-            var act = () => run.AssignItemToMember(1, notMemberId, _ownerId);
+            var result = run.AssignItemToMember(1, notMemberId, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region ChangeItemDescription Tests
         [Fact]
-        public void ChangeItemDescription_WhenAuthorized_ShouldUpdateDescription()
+        public void ChangeItemDescription_WhenAuthorized_ShouldUpdateDescriptionAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -493,14 +519,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var newDesc = new TodoItemDescription("New Description");
 
             // Act
-            run.ChangeItemDescription(1, newDesc, _ownerId);
+            var result = run.ChangeItemDescription(1, newDesc, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             item.Description.Should().Be(newDesc);
         }
 
         [Fact]
-        public void ChangeItemDescription_WhenClosed_ShouldThrowDomainInvalidOperationException()
+        public void ChangeItemDescription_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
@@ -510,30 +537,32 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             SetStatus(run, TodoListRunStatus.Closed);
 
             // Act
-            var act = () => run.ChangeItemDescription(1, new TodoItemDescription("New"), _ownerId);
+            var result = run.ChangeItemDescription(1, new TodoItemDescription("New"), _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
         #endregion
 
         #region AddMember/RemoveMember Tests
         [Fact]
-        public void AddMember_WhenAuthorizedAndShared_ShouldAddMember()
+        public void AddMember_WhenAuthorizedAndShared_ShouldAddMemberAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
             var memberId = new UserId(Guid.NewGuid());
 
             // Act
-            run.AddMember(memberId, _ownerId);
+            var result = run.AddMember(memberId, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.Members.Should().Contain(m => m.UserId == memberId);
         }
 
         [Fact]
-        public void AddMember_WhenAlreadyMember_ShouldThrowDomainDuplicateEntitiesException()
+        public void AddMember_WhenAlreadyMember_ShouldReturnDuplicateEntitiesError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
@@ -541,28 +570,30 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.AddMember(memberId, _ownerId);
 
             // Act
-            var act = () => run.AddMember(memberId, _ownerId);
+            var result = run.AddMember(memberId, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainDuplicateEntitiesException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
         }
 
         [Fact]
-        public void AddMember_WhenNotShared_ShouldThrowDomainInvalidOperationException()
+        public void AddMember_WhenNotShared_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
             var memberId = new UserId(Guid.NewGuid());
 
             // Act
-            var act = () => run.AddMember(memberId, _ownerId);
+            var result = run.AddMember(memberId, _ownerId);
 
             // Assert
-            act.Should().Throw<DomainInvalidOperationException>();
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
         }
 
         [Fact]
-        public void RemoveMember_WhenAuthorized_ShouldRemoveMemberAndUnassignTasks()
+        public void RemoveMember_WhenAuthorized_ShouldRemoveMemberAndUnassignTasksAndReturnSuccess()
         {
             // Arrange
             var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
@@ -574,9 +605,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.AssignItemToMember(1, memberId, _ownerId);
 
             // Act
-            run.RemoveMember(memberId, _ownerId);
+            var result = run.RemoveMember(memberId, _ownerId);
 
             // Assert
+            result.IsSuccess.Should().BeTrue();
             run.Members.Should().NotContain(m => m.UserId == memberId);
             item.AssignedTo.Should().BeNull();
         }
