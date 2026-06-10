@@ -95,6 +95,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -111,6 +112,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -128,6 +130,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -145,6 +148,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("This item is already marked complete.");
         }
         #endregion
 
@@ -204,6 +208,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -221,6 +226,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -239,6 +245,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -255,6 +262,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("This item is still incomplete.");
         }
         #endregion
 
@@ -309,6 +317,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -325,6 +334,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -342,6 +352,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -406,6 +417,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("Couldn't asign a completed task.");
         }
         #endregion
     }

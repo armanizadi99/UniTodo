@@ -103,6 +103,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
         }
 
         [Fact]
@@ -120,6 +121,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -136,6 +138,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("This TodoListTemplate already exists.");
         }
 
         [Fact]
@@ -170,6 +173,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -202,6 +206,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
         }
 
         [Fact]
@@ -235,6 +240,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
         }
 
         [Fact]
@@ -274,6 +280,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -290,6 +297,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
         }
 
         [Fact]
@@ -336,6 +344,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -343,7 +352,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             var todoList = new TodoListTemplate(_currentUserId, "list1", ResetPolicy.Daily);
-            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
+            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1), Arg.Any<bool>())
                 .Returns(todoList);
 
             // Act
@@ -352,13 +361,14 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoItemTemplate' with id 99' is not found.");
         }
 
         [Fact]
         public async Task DeleteTodoItemTemplateAsync_ShouldReturnEntityNotFoundError_WhenTodoListTemplateIdDoesNotExist()
         {
             // Arrange
-            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
+            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1), Arg.Any<bool>())
                 .Returns((TodoListTemplate)null!);
 
             // Act
@@ -367,6 +377,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 1' is not found.");
         }
 
         [Fact]
@@ -387,6 +398,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("No duplicate descriptions allowed in a TodoList.");
         }
     }
 }

@@ -145,6 +145,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -161,6 +162,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("No duplicate description could be in a todo list run.");
         }
         #endregion
 
@@ -194,6 +196,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoItem' with id 999' is not found.");
         }
 
         [Fact]
@@ -211,6 +214,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -229,6 +233,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("Items couldn't be deleted from a closed run.");
         }
         #endregion
 
@@ -259,6 +264,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
 
         [Fact]
@@ -274,6 +280,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
 
         [Fact]
@@ -288,6 +295,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("This run is already shared.");
         }
         #endregion
 
@@ -326,6 +334,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("This run is already private.");
         }
 
         [Fact]
@@ -341,6 +350,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
 
         [Fact]
@@ -355,6 +365,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            result.Error.Message.Should().Be("");
         }
         #endregion
 
@@ -393,6 +404,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
 
         [Fact]
@@ -451,6 +463,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
 
         [Fact]
@@ -465,6 +478,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoItem' with id 999' is not found.");
         }
         #endregion
 
@@ -504,6 +518,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("An item couldn't get asigned to someone that is not a member of the run.");
         }
         #endregion
 
@@ -542,6 +557,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
         #endregion
 
@@ -575,6 +591,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("this user is already a member of this run");
         }
 
         [Fact]
@@ -590,6 +607,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("Couldn't add members to a private group.");
         }
 
         [Fact]
