@@ -1,4 +1,5 @@
-﻿using UniTodo.Modules.Todos.Application.Services;
+﻿using UniTodo.Modules.Todos.Application.BackgroundServices;
+using UniTodo.Modules.Todos.Application.Services;
 
 namespace UniTodo.Modules.Todos.Application.Extensions
 {
@@ -9,6 +10,8 @@ namespace UniTodo.Modules.Todos.Application.Extensions
         {
             services.AddScoped<TodoListTemplateService>();
             services.AddScoped<TodoListRunService>();
+        services.AddHostedService<ResetPolicyJob>();
+
             return services;
         }
     }
