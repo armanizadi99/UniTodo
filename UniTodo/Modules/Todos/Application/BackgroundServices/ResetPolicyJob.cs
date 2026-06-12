@@ -5,30 +5,30 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
 {
     public class ResetPolicyJob : BackgroundService
     {
-private readonly ITodoListRunRepository _repository;
+        private readonly ITodoListRunRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
 
-public ResetPolicyJob(ITodoListRunRepository repository, IUnitOfWork unitOfWork)
-{
-_repository = repository;
-_unitOfWork = unitOfWork;
-        }
-        protected override async Task ExecuteAsync( CancellationToken stoppingToken )
+        public ResetPolicyJob(ITodoListRunRepository repository, IUnitOfWork unitOfWork)
         {
-        while (true)
+            _repository = repository;
+            _unitOfWork = unitOfWork;
+        }
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-        await Task.Delay(1000, stoppingToken);
-        var runsDueForReset = await _repository.GetRunsDueForResetAsync(stoppingToken);
-        foreach (var run in runsDueForReset)
-        {
-        var result = run.Reset();
-if(result.IsSuccess)
-{
-        await _repository.AddAsync(result.Value);
-        await _unitOfWork.SaveChangesAsync();
-        }
-        }
-        }
+            while (true)
+            {
+                await Task.Delay(1000, stoppingToken);
+                var runsDueForReset = await _repository.GetRunsDueForResetAsync(stoppingToken);
+                foreach (var run in runsDueForReset)
+                {
+                    var result = run.Reset();
+                    if (result.IsSuccess)
+                    {
+                        await _repository.AddAsync(result.Value);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                }
+            }
         }
     }
 }

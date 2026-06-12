@@ -740,7 +740,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.UserId.Should().Be(newMemberId);
-        run.Members.Should().Contain(m => m.UserId.Value == newMemberId);
+            run.Members.Should().Contain(m => m.UserId.Value == newMemberId);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
@@ -791,7 +791,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            run.Members.Should().NotContain(m => m.UserId.Value ==  memberId);
+            run.Members.Should().NotContain(m => m.UserId.Value == memberId);
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 

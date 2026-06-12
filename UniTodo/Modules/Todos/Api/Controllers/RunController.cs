@@ -49,9 +49,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpGet("{runId:int:min(1)}", Name = "GetRunById")]
-        public async Task<IActionResult> GetRunByIdAsync( [FromRoute] int runId, CancellationToken cancellationToken )
+        public async Task<IActionResult> GetRunByIdAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
-        return Ok();
+            return Ok();
         }
 
         [HttpPost("{runId:int:min(1)}/make-shared")]

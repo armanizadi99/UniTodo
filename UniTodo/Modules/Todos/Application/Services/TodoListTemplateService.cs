@@ -34,10 +34,10 @@ namespace UniTodo.Modules.Todos.Application.Services
         public async Task<Result<TodoListTemplateDto>> GetTodoListTemplateByIdAsync(int id)
         {
             var todoListTemplate = await _repository.GetTodoListTemplateByIdAsync(id);
-        if (todoListTemplate == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
-        if (todoListTemplate.OwnerId != _userContext.UserId)
-            return DomainError.NotAuthorized();
+            if (todoListTemplate == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
+            if (todoListTemplate.OwnerId != _userContext.UserId)
+                return DomainError.NotAuthorized();
             return new TodoListTemplateDto(todoListTemplate.Id, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
         }
 
@@ -55,24 +55,24 @@ namespace UniTodo.Modules.Todos.Application.Services
         public async Task<Result> DeleteTodoListAsync(int id)
         {
             var todoListToDelete = await _repository.GetTodoListTemplateByIdAsync(id);
-        if (todoListToDelete == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
+            if (todoListToDelete == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
             if (todoListToDelete!.OwnerId != _userContext.UserId)
                 return DomainError.NotAuthorized();
             _repository.Remove(todoListToDelete);
             await _unitOfWork.SaveChangesAsync();
-        return Result.Success();
+            return Result.Success();
         }
 
         public async Task<Result<TodoItemTemplateDto>> AddTodoItemTemplateAsync(int todoListTemplateId, AddTodoItemTemplateDto dto)
         {
             var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
-if (todoList == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
-        var todoItemTemplate = new TodoItemTemplate(todoListTemplateId, new TodoItemDescription(dto.Description));
+            if (todoList == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
+            var todoItemTemplate = new TodoItemTemplate(todoListTemplateId, new TodoItemDescription(dto.Description));
             var result = todoList.AddTodoItemTemplate(todoItemTemplate, _userContext.UserId);
-        if (!result.IsSuccess)
-            return Result<TodoItemTemplateDto>.Failure(result.Error);
+            if (!result.IsSuccess)
+                return Result<TodoItemTemplateDto>.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
             return new TodoItemTemplateDto(todoItemTemplate.Id, todoItemTemplate.Description.Value, todoItemTemplate.CreatedAt, todoItemTemplate.UpdatedAt);
         }
@@ -80,47 +80,47 @@ if (todoList == null)
         public async Task<Result> DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId)
         {
             var todoItemTemplateToDeleteParent = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
-if(todoItemTemplateToDeleteParent == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
-        var result = todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
+            if (todoItemTemplateToDeleteParent == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
+            var result = todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
-        return Result.Success();
+            return Result.Success();
         }
 
         public async Task<Result<IReadOnlyList<TodoItemTemplateDto>>> GetTodoItemTemplatesAsync(int todoListTemplateId)
         {
             var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
-if (todoList == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
-        if (todoList.OwnerId != _userContext.UserId)
-            return DomainError.NotAuthorized();
+            if (todoList == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
+            if (todoList.OwnerId != _userContext.UserId)
+                return DomainError.NotAuthorized();
             return todoList.TodoItemTemplates.Select(t => new TodoItemTemplateDto(t.Id, t.Description.Value, t.CreatedAt, t.UpdatedAt)).ToList();
         }
 
         public async Task<Result> ArchiveAsync(int id)
         {
             var todoListToArchive = await _repository.GetTodoListTemplateByIdAsync(id);
-if( todoListToArchive == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
-        var result = todoListToArchive.Archive(_userContext.UserId);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
+            if (todoListToArchive == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
+            var result = todoListToArchive.Archive(_userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
-        return Result.Success();
+            return Result.Success();
         }
 
         public async Task<Result> MakeActiveAsync(int id)
         {
             var todoListToMakeActive = await _repository.GetTodoListTemplateByIdAsync(id);
-if(todoListToMakeActive == null)
-            return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
-        var result = todoListToMakeActive.MakeActive(_userContext.UserId);
-if(!result.IsSuccess)
-return Result.Failure(result.Error);
+            if (todoListToMakeActive == null)
+                return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
+            var result = todoListToMakeActive.MakeActive(_userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
-return Result.Success();
+            return Result.Success();
         }
     }
 }

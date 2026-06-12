@@ -25,16 +25,16 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
             modelBuilder.ApplyConfiguration(new TodoListRunConfiguration());
             modelBuilder.ApplyConfiguration(new TodoItemTemplateConfiguration());
             modelBuilder.ApplyConfiguration(new TodoItemConfiguration());
-        modelBuilder.ApplyConfiguration(new RunMemberConfiguration());
+            modelBuilder.ApplyConfiguration(new RunMemberConfiguration());
         }
 
-protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-{
-base.ConfigureConventions(configurationBuilder);
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureConventions(configurationBuilder);
 
-        configurationBuilder
-        .Properties<UserId>()
-        .HaveConversion<UserIdConverter>();
+            configurationBuilder
+            .Properties<UserId>()
+            .HaveConversion<UserIdConverter>();
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken ct = default)

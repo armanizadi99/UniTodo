@@ -29,22 +29,22 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result Archive(UserId actorUserId)
         {
-        if (OwnerId != actorUserId)
-            return DomainError.NotAuthorized();
+            if (OwnerId != actorUserId)
+                return DomainError.NotAuthorized();
             if (Status == TodoListStatus.Archived)
                 return DomainError.InvalidOperation("This todo list is already archived.");
             Status = TodoListStatus.Archived;
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result MakeActive(UserId actorUserId)
         {
-        if (OwnerId != actorUserId)
-            return DomainError.NotAuthorized(); ;
+            if (OwnerId != actorUserId)
+                return DomainError.NotAuthorized(); ;
             if (Status == TodoListStatus.Active)
                 return DomainError.InvalidOperation("This todo list is already active.");
             Status = TodoListStatus.Active;
-return Result.Success();
+            return Result.Success();
         }
 
         public Result AddTodoItemTemplate(TodoItemTemplate todoItemTemplate, UserId actorUserId)
@@ -54,18 +54,18 @@ return Result.Success();
             if (TodoItemTemplates.Any(e => e.Description.Value.Equals(todoItemTemplate.Description.Value, StringComparison.OrdinalIgnoreCase)))
                 return DomainError.DuplicateEntities("No duplicate descriptions allowed in a TodoList.");
             _todoItemTemplates.Add(todoItemTemplate);
-return Result.Success();
+            return Result.Success();
         }
 
         public Result Delete(int id, UserId actorId)
         {
-        if (OwnerId != actorId)
-            return DomainError.NotAuthorized();
+            if (OwnerId != actorId)
+                return DomainError.NotAuthorized();
             var todoItemTemplate = _todoItemTemplates.Where(t => t.Id == id).FirstOrDefault();
             if (todoItemTemplate is null)
                 return DomainError.EntityNotFound(nameof(TodoItemTemplate), id);
             _todoItemTemplates.Remove(todoItemTemplate);
-return Result.Success();
+            return Result.Success();
         }
     }
 }

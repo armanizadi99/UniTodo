@@ -42,7 +42,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             item.AssignedTo.Should().BeNull();
         }
 
-       #region MarkComplete Tests
+        #region MarkComplete Tests
         [Fact]
         public void MarkComplete_WhenAssignedToUser_ShouldMarkCompleteAndReturnSuccess()
         {

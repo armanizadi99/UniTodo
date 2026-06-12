@@ -2,10 +2,10 @@
 {
     public enum DomainErrorCodes
     {
-EntityNotFound,
-NotAuthorized,
-InvalidOperation,
-DuplicateEntities,
+        EntityNotFound,
+        NotAuthorized,
+        InvalidOperation,
+        DuplicateEntities,
 
     }
 }

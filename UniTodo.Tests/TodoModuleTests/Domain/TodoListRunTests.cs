@@ -228,7 +228,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeTrue();
             run.Status.Should().Be(TodoListRunStatus.Closed);
-            
+
             var newRun = result.Value;
             newRun.Name.Should().Be(run.Name);
             newRun.ResetPolicy.Should().Be(run.ResetPolicy);
@@ -237,7 +237,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             newRun.Members.Should().HaveCount(2);
             newRun.Members.Should().Contain(m => m.UserId == memberId);
             newRun.TodoItems.Should().HaveCount(1);
-            
+
             var newItem = newRun.TodoItems.First();
             newItem.Description.Value.Should().Be("Item 1");
             newItem.IsCompleted.Should().BeFalse();

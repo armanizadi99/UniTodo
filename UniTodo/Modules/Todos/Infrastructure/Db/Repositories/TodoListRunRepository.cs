@@ -20,7 +20,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
             if (includeItems)
                 query = query.Include(i => i.TodoItems);
 
-        query = query.Include(i => i.Members);
+            query = query.Include(i => i.Members);
 
             return await query.FirstOrDefaultAsync(e => e.Id == id);
         }

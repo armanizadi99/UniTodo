@@ -34,7 +34,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             IsCompleted = true;
             CompletedAt = DateTimeOffset.UtcNow;
             CompletedBy = actorId;
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result MarkIncomplete(UserId actorId)
@@ -44,11 +44,11 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (AssignedTo == null && actorId != Run.ownerId)
                 return DomainError.NotAuthorized();
             if (AssignedTo != null && AssignedTo.Value != actorId)
-            return DomainError.NotAuthorized();
-        IsCompleted = false;
+                return DomainError.NotAuthorized();
+            IsCompleted = false;
             CompletedAt = null;
             CompletedBy = null;
-return Result.Success();
+            return Result.Success();
         }
 
         public Result UpdateNotes(TodoItemNotes notes, UserId actorId)
@@ -58,13 +58,13 @@ return Result.Success();
             if (AssignedTo != null && AssignedTo.Value != actorId)
                 return DomainError.NotAuthorized();
             Notes = string.IsNullOrEmpty(notes.Value) ? null : notes;
-return Result.Success();
+            return Result.Success();
         }
 
         public Result ChangeDescription(TodoItemDescription description)
         {
             Description = description;
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result AssignTo(UserId assignedTo)
@@ -72,13 +72,13 @@ return Result.Success();
             if (IsCompleted)
                 return DomainError.InvalidOperation("Couldn't asign a completed task.");
             AssignedTo = assignedTo;
-return Result.Success();
+            return Result.Success();
         }
 
         public Result AssignToNoone()
         {
             AssignedTo = null;
-return Result.Success();
+            return Result.Success();
         }
     }
 }

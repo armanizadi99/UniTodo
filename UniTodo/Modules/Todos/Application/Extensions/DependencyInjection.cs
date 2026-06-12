@@ -10,7 +10,7 @@ namespace UniTodo.Modules.Todos.Application.Extensions
         {
             services.AddScoped<TodoListTemplateService>();
             services.AddScoped<TodoListRunService>();
-        services.AddHostedService<ResetPolicyJob>();
+            services.AddHostedService<ResetPolicyJob>();
 
             return services;
         }

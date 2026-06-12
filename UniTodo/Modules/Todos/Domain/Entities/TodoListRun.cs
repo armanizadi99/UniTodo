@@ -130,35 +130,35 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             foreach (var template in itemTemplates)
             {
                 var result = todoListRun.AddTodoItem(new TodoItem(template.Description), ownerUserId);
-        if (!result.IsSuccess)
-            return Result<TodoListRun>.Failure(result.Error);
+                if (!result.IsSuccess)
+                    return Result<TodoListRun>.Failure(result.Error);
             }
             return todoListRun;
         }
 
         public Result AddTodoItem(TodoItem item, UserId actorUserId)
         {
-        if (actorUserId != ownerId)
-            return DomainError.NotAuthorized();
+            if (actorUserId != ownerId)
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be added to a closed run.");
             if (_todoItems.Any(i => String.Equals(i.Description.Value, item.Description.Value, StringComparison.OrdinalIgnoreCase)))
                 return DomainError.DuplicateEntities("No duplicate description could be in a todo list run.");
             _todoItems.Add(item);
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result DeleteItem(int itemId, UserId actorId)
         {
-        if (ownerId != actorId)
-            return DomainError.NotAuthorized();
+            if (ownerId != actorId)
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be deleted from a closed run.");
             var item = _todoItems.FirstOrDefault(i => i.Id == itemId);
             if (item == null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             _todoItems.Remove(item);
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result MakeShared(UserId actorUserId)
@@ -170,7 +170,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (IsShared)
                 return DomainError.InvalidOperation("This run is already shared.");
             IsShared = true;
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result MakePrivate(UserId actorUserId)
@@ -185,11 +185,11 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             foreach (var item in _todoItems)
             {
                 var result = item.AssignToNoone();
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
+                if (!result.IsSuccess)
+                    return Result.Failure(result.Error);
             }
             IsShared = false;
-        return Result.Success();
+            return Result.Success();
         }
 
         public Result MarkItemComplete(int itemId, UserId actorId)
@@ -200,9 +200,9 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (itemToMarkComplete is null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             var result = itemToMarkComplete.MarkComplete(actorId);
-if(!result.IsSuccess)
-return Result.Failure(result.Error);
-        return Result.Success();
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            return Result.Success();
         }
 
         public Result MarkItemIncomplete(int itemId, UserId actorId)
@@ -213,9 +213,9 @@ return Result.Failure(result.Error);
             if (itemToMarkIncomplete is null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             var result = itemToMarkIncomplete.MarkIncomplete(actorId);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
-        return Result.Success();
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            return Result.Success();
         }
 
         public Result UpdateNotes(int itemId, TodoItemNotes notes, UserId actorId)
@@ -226,9 +226,9 @@ return Result.Failure(result.Error);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             var result = item.UpdateNotes(notes, actorId);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
-        return Result.Success();
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            return Result.Success();
         }
 
         public Result AssignItemToMember(int itemId, UserId memberId, UserId actorId)
@@ -243,12 +243,12 @@ return Result.Failure(result.Error);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             var result = item.AssignTo(memberId);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
-return Result.Success();
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            return Result.Success();
         }
 
-        public Result  ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
+        public Result ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
         {
             if (actorId != ownerId)
                 return DomainError.NotAuthorized();
@@ -258,9 +258,9 @@ return Result.Success();
             if (item is null)
                 return DomainError.EntityNotFound(nameof(TodoItem), itemId);
             var result = item.ChangeDescription(description);
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
-return Result.Success();
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            return Result.Success();
         }
 
         public Result<RunMember> AddMember(UserId userId, UserId actorId)
@@ -273,7 +273,7 @@ return Result.Success();
                 return DomainError.InvalidOperation("Couldn't add members to a private group.");
             if (_members.Any(m => m.UserId.Equals(userId)))
                 return DomainError.DuplicateEntities("this user is already a member of this run");
-        var member = new RunMember(userId);
+            var member = new RunMember(userId);
             _members.Add(member);
             return member;
         }
@@ -290,15 +290,15 @@ return Result.Success();
                 return DomainError.InvalidOperation("This user is not a member of this run.");
             foreach (var item in _todoItems)
             {
-        if (item.AssignedTo == userId)
-        {
-        var result = item.AssignToNoone();
-        if (!result.IsSuccess)
-            return Result.Failure(result.Error);
-        }
+                if (item.AssignedTo == userId)
+                {
+                    var result = item.AssignToNoone();
+                    if (!result.IsSuccess)
+                        return Result.Failure(result.Error);
+                }
             }
-            _members.RemoveAll(m =>  m.UserId.Equals(userId));
-        return Result.Success();
+            _members.RemoveAll(m => m.UserId.Equals(userId));
+            return Result.Success();
         }
     }
 }

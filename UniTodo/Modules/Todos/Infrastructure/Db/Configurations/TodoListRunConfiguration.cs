@@ -41,15 +41,15 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             .WithOne(e => e.Run)
             .HasForeignKey(e => e.RunId);
 
-        builder.HasMany(e => e.Members)
-        .WithOne(e => e.Run)
-        .HasForeignKey(e => e.RunId);
+            builder.HasMany(e => e.Members)
+            .WithOne(e => e.Run)
+            .HasForeignKey(e => e.RunId);
 
             builder.Navigation(nameof(TodoListRun.TodoItems))
                     .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-builder.Navigation(nameof(TodoListRun.Members))
-.UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.Navigation(nameof(TodoListRun.Members))
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
