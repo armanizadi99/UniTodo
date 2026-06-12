@@ -16,6 +16,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public UserId ownerId { get; private set; }
         public TodoListRunStatus Status { get; private set; }
         public DateTimeOffset? ClosedAt { get; private set; }
+        public DateTimeOffset? ResetsAt { get; private set; }
         public bool IsShared { get; private set; }
 
         public IReadOnlyCollection<TodoItem> TodoItems => _todoItems.AsReadOnly();
@@ -29,12 +30,98 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (!ResetPolicy.IsDefined(resetPolicy))
                 throw new ArgumentException("Provided value is undefined.", nameof(resetPolicy));
             Name = name;
-            ResetPolicy = resetPolicy;
             ownerId = ownerUserId;
             _members.Add(new RunMember(ownerId));
             RunId = Guid.NewGuid();
             Status = TodoListRunStatus.Active;
             IsShared = isShared;
+            SetResetPolicy(resetPolicy);
+        }
+
+        public Result UpdateResetPolicy(ResetPolicy newPolicy, UserId actorId)
+        {
+            if (actorId != ownerId)
+                return DomainError.NotAuthorized();
+            if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run's policy cannot be updated.");
+
+            SetResetPolicy(newPolicy);
+            return Result.Success();
+        }
+
+        private void SetResetPolicy(ResetPolicy newPolicy)
+        {
+            ResetPolicy = newPolicy;
+            var now = DateTimeOffset.UtcNow;
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+            ResetsAt = ResetPolicy switch
+            {
+                ResetPolicy.Daily => today.AddDays(1),
+                ResetPolicy.Weekly => GetNextSaturday(today),
+                ResetPolicy.Monthly => new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, now.Offset).AddMonths(1),
+                _ => null
+            };
+        }
+
+        private DateTimeOffset GetNextSaturday(DateTimeOffset today)
+        {
+            int daysUntilSaturday = ((int)DayOfWeek.Saturday - (int)today.DayOfWeek + 7) % 7;
+            if (daysUntilSaturday == 0) daysUntilSaturday = 7;
+            return today.AddDays(daysUntilSaturday);
+        }
+
+        public Result Close(UserId actorId)
+        {
+            if (actorId != ownerId)
+                return DomainError.NotAuthorized();
+            if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("The run is already closed.");
+
+            Status = TodoListRunStatus.Closed;
+            ClosedAt = DateTimeOffset.UtcNow;
+            return Result.Success();
+        }
+
+        public Result<TodoListRun> Reset(UserId actorId)
+        {
+            if (actorId != ownerId)
+                return DomainError.NotAuthorized();
+            return ResetInternal();
+        }
+
+        public Result<TodoListRun> Reset()
+        {
+            return ResetInternal();
+        }
+
+        private Result<TodoListRun> ResetInternal()
+        {
+            if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run cannot be reset.");
+
+            if (ResetPolicy != ResetPolicy.None)
+            {
+                if (DateTimeOffset.UtcNow < ResetsAt)
+                    return DomainError.InvalidOperation("The run cannot be reset before the scheduled time.");
+            }
+
+            Status = TodoListRunStatus.Closed;
+            ClosedAt = DateTimeOffset.UtcNow;
+
+            var newRun = new TodoListRun(Name, ResetPolicy, IsShared, ownerId);
+
+            foreach (var member in _members)
+            {
+                if (member.UserId != ownerId)
+                    newRun._members.Add(new RunMember(member.UserId));
+            }
+
+            foreach (var item in _todoItems)
+            {
+                newRun._todoItems.Add(new TodoItem(item.Description));
+            }
+
+            return newRun;
         }
 
         public static Result<TodoListRun> CreateRunFromTodoItemTemplates(IEnumerable<TodoItemTemplate> itemTemplates, string name, ResetPolicy resetPolicy, bool isShared, UserId ownerUserId)

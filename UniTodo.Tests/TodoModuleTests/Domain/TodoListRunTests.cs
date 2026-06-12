@@ -31,6 +31,12 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             field?.SetValue(item, run);
         }
 
+        private void SetResetsAt(TodoListRun run, DateTimeOffset? resetsAt)
+        {
+            var field = typeof(TodoListRun).GetField("<ResetsAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
+            field?.SetValue(run, resetsAt);
+        }
+
         #region Constructor Tests
         [Theory]
         [InlineData(null)]
@@ -76,6 +82,242 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.Status.Should().Be(TodoListRunStatus.Active);
             run.RunId.Should().NotBeEmpty();
             run.Members.Should().Contain(m => m.UserId == _ownerId);
+            run.ResetsAt.Should().NotBeNull();
+        }
+        #endregion
+
+        #region Close Tests
+        [Fact]
+        public void Close_WhenOwner_ShouldSetStatusToClosedAndReturnSuccess()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.Close(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+            run.ClosedAt.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void Close_WhenNotOwner_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.Close(_otherUserId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void Close_WhenAlreadyClosed_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+            run.Close(_ownerId);
+
+            // Act
+            var result = run.Close(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("The run is already closed.");
+        }
+        #endregion
+
+        #region UpdateResetPolicy Tests
+        [Fact]
+        public void UpdateResetPolicy_WhenOwner_ShouldUpdatePolicyAndResetsAtAndReturnSuccess()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.UpdateResetPolicy(ResetPolicy.Daily, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.ResetPolicy.Should().Be(ResetPolicy.Daily);
+            run.ResetsAt.Should().NotBeNull();
+            run.ResetsAt.Value.TimeOfDay.Should().Be(TimeSpan.Zero);
+        }
+
+        [Fact]
+        public void UpdateResetPolicy_WhenNotOwner_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.UpdateResetPolicy(ResetPolicy.Daily, _otherUserId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateResetPolicy_WhenClosed_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+            run.Close(_ownerId);
+
+            // Act
+            var result = run.UpdateResetPolicy(ResetPolicy.Daily, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run's policy cannot be updated.");
+        }
+
+        [Theory]
+        [InlineData(ResetPolicy.None)]
+        [InlineData(ResetPolicy.Daily)]
+        [InlineData(ResetPolicy.Weekly)]
+        [InlineData(ResetPolicy.Monthly)]
+        public void UpdateResetPolicy_ResetsAt_ShouldBeCalculatedCorrectlyBasedOnPolicy(ResetPolicy policy)
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.UpdateResetPolicy(policy, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            if (policy == ResetPolicy.None)
+            {
+                run.ResetsAt.Should().BeNull();
+            }
+            else
+            {
+                run.ResetsAt.Should().BeAfter(DateTimeOffset.UtcNow);
+                if (policy == ResetPolicy.Daily)
+                    run.ResetsAt.Value.TimeOfDay.Should().Be(TimeSpan.Zero);
+                if (policy == ResetPolicy.Weekly)
+                    run.ResetsAt.Value.DayOfWeek.Should().Be(DayOfWeek.Saturday);
+                if (policy == ResetPolicy.Monthly)
+                    run.ResetsAt.Value.Day.Should().Be(1);
+            }
+        }
+        #endregion
+        #region Reset Tests
+        [Fact]
+        public void Reset_WhenPolicyIsNone_ShouldResetAndReturnNewRun()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, true, _ownerId);
+            var item = new TodoItem(new TodoItemDescription("Item 1"));
+            run.AddTodoItem(item, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+            
+            var newRun = result.Value;
+            newRun.Name.Should().Be(run.Name);
+            newRun.ResetPolicy.Should().Be(run.ResetPolicy);
+            newRun.IsShared.Should().Be(run.IsShared);
+            newRun.ownerId.Should().Be(run.ownerId);
+            newRun.Members.Should().HaveCount(2);
+            newRun.Members.Should().Contain(m => m.UserId == memberId);
+            newRun.TodoItems.Should().HaveCount(1);
+            
+            var newItem = newRun.TodoItems.First();
+            newItem.Description.Value.Should().Be("Item 1");
+            newItem.IsCompleted.Should().BeFalse();
+            newItem.Notes.Should().BeNull();
+            newItem.AssignedTo.Should().BeNull();
+        }
+
+        [Fact]
+        public void Reset_Parameterless_ShouldResetWithoutAuthorizationCheck()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.Reset();
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+        }
+
+        [Fact]
+        public void Reset_WhenNotOwner_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.Reset(_otherUserId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void Reset_WhenBeforeScheduledTime_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.Daily, false, _ownerId);
+            // ResetsAt is set to tomorrow 0:00
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("The run cannot be reset before the scheduled time.");
+        }
+
+        [Fact]
+        public void Reset_WhenAfterScheduledTime_ShouldResetAndReturnNewRun()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.Daily, false, _ownerId);
+            SetResetsAt(run, DateTimeOffset.UtcNow.AddMinutes(-1));
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+        }
+
+        [Fact]
+        public void Reset_WhenClosed_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new TodoListRun("Test", ResetPolicy.None, false, _ownerId);
+            run.Close(_ownerId);
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run cannot be reset.");
         }
         #endregion
 
