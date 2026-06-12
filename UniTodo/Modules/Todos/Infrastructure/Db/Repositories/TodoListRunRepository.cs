@@ -39,5 +39,17 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
     .Where(e => e.Members.Select(m => m.UserId).Contains(new Domain.ValueObjects.UserId(userId)))
     .ToListAsync(cancellationToken);
         }
+
+        async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetRunsDueForResetAsync(CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .Include(r => r.TodoItems)
+                .Include(r => r.Members)
+                .Where(r => r.Status == Domain.Enums.TodoListRunStatus.Active &&
+                            r.ResetPolicy != Domain.Enums.ResetPolicy.None &&
+                            r.ResetsAt != null &&
+                            r.ResetsAt <= DateTimeOffset.UtcNow)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
