@@ -5,28 +5,45 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
 {
     public class ResetPolicyJob : BackgroundService
     {
-        private readonly ITodoListRunRepository _repository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public ResetPolicyJob(ITodoListRunRepository repository, IUnitOfWork unitOfWork)
+        public ResetPolicyJob(IServiceScopeFactory scopeFactory)
         {
-            _repository = repository;
-            _unitOfWork = unitOfWork;
+            _scopeFactory = scopeFactory;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(1000, stoppingToken);
-                var runsDueForReset = await _repository.GetRunsDueForResetAsync(stoppingToken);
-                foreach (var run in runsDueForReset)
+                try
                 {
-                    var result = run.Reset();
-                    if (result.IsSuccess)
+                    using (var scope = _scopeFactory.CreateScope())
                     {
-                        await _repository.AddAsync(result.Value);
-                        await _unitOfWork.SaveChangesAsync();
+                        var repository = scope.ServiceProvider.GetRequiredService<ITodoListRunRepository>();
+                        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                        var runsDueForReset = await repository.GetRunsDueForResetAsync(stoppingToken);
+                        foreach (var run in runsDueForReset)
+                        {
+                            var result = run.Reset();
+                            if (result.IsSuccess)
+                                await repository.AddAsync(result.Value);
+                        }
+                        await unitOfWork.SaveChangesAsync();
                     }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    //I later have to log, no logging support yet.
+                }
+                try
+                {
+                    await Task.Delay(1000, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // app is shutting down, we'll break
+                    break;
                 }
             }
         }
