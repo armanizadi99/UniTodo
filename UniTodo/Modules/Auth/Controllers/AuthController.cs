@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using UniTodo.Modules.Auth.DB;
 using UniTodo.Modules.Auth.Dtos;
+using UniTodo.Modules.Auth.Services;
 
 namespace UniTodo.Modules.Auth.Controllers
 {
@@ -14,10 +15,12 @@ namespace UniTodo.Modules.Auth.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly JwtTokenCreater _tokenCreater;
 
-        public AuthController(UserManager<ApplicationUser> userManager)
+        public AuthController(UserManager<ApplicationUser> userManager, JwtTokenCreater tokenCreater)
         {
             _userManager = userManager;
+_tokenCreater = tokenCreater;
         }
 
         [HttpPost("register")]
@@ -65,41 +68,13 @@ namespace UniTodo.Modules.Auth.Controllers
                 });
             }
 
-            var token = CreateJwtToken(user);
+            var token = _tokenCreater.CreateJwtToken(user);
 
             return Ok(new
             {
                 Token = token,
                 Email = user.Email
             });
-        }
-
-        private string CreateJwtToken(ApplicationUser user)
-        {
-            var secretKey = Encoding.UTF8.GetBytes("thisisjut a fucking temp passwword I'll change it later, I just need to test something right now. Hardcoding such a code in my codebase might not be a big security issue because this code is running on a server trusted server, but well, because other parts of the applications might require it or well gonna right the rest.");
-            var claims = new[]
-            {
-new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-new Claim(JwtRegisteredClaimNames.Email, user?.Email ?? ""),
-new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-            var key = new SymmetricSecurityKey(secretKey);
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(2000),
-                SigningCredentials = credentials,
-                Issuer = "my own app",
-                Audience = "for my todo app"
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
         }
     }
 }
