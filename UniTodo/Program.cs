@@ -58,6 +58,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseHttpLogging();
+
 app.MapControllers();
 app.MapTodoEndpoints();
 

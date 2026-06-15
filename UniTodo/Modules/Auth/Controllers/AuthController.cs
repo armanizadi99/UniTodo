@@ -20,7 +20,7 @@ namespace UniTodo.Modules.Auth.Controllers
         public AuthController(UserManager<ApplicationUser> userManager, JwtTokenCreater tokenCreater)
         {
             _userManager = userManager;
-_tokenCreater = tokenCreater;
+            _tokenCreater = tokenCreater;
         }
 
         [HttpPost("register")]

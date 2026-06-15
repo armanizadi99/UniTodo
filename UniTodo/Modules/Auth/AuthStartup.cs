@@ -24,36 +24,36 @@ namespace UniTodo.Modules.Auth
                     .AddEntityFrameworkStores<AuthDbContext>()
                     .AddDefaultTokenProviders();
 
-        var settings = new JwtSettings();
-moduleConfiguration
-.GetSection(nameof(JwtSettings))
-.Bind(settings);
-        if (string.IsNullOrWhiteSpace(settings.SecretSigningKey))
-            throw new InvalidOperationException("Secret signing key is required.");
-      
-        services.AddSingleton(settings);
+            var settings = new JwtSettings();
+            moduleConfiguration
+            .GetSection(nameof(JwtSettings))
+            .Bind(settings);
+            if (string.IsNullOrWhiteSpace(settings.SecretSigningKey))
+                throw new InvalidOperationException("Secret signing key is required.");
 
-        services.AddAuthentication(options =>
-        {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidAudience = settings.Audience,
-            ValidateAudience = true,
-            ValidIssuer = settings.Issuer,
-            ValidateIssuer = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretSigningKey))
-        };
-        });
+            services.AddSingleton(settings);
 
-        services.AddSingleton<JwtTokenCreater>();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidAudience = settings.Audience,
+                    ValidateAudience = true,
+                    ValidIssuer = settings.Issuer,
+                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretSigningKey))
+                };
+            });
 
-        return services;
+            services.AddSingleton<JwtTokenCreater>();
+
+            return services;
         }
     }
 }
