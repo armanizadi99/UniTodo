@@ -6,14 +6,17 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
     public class ResetPolicyJob : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<ResetPolicyJob> _logger;
 
-        public ResetPolicyJob(IServiceScopeFactory scopeFactory)
+        public ResetPolicyJob(IServiceScopeFactory scopeFactory, ILogger<ResetPolicyJob> logger)
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Reset policy job is started.");
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -26,15 +29,20 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
                         foreach (var run in runsDueForReset)
                         {
                             var result = run.Reset();
-                            if (result.IsSuccess)
-                                await repository.AddAsync(result.Value);
+                            if (!result.IsSuccess)
+                            {
+                                _logger.LogWarning(message: "Failed to reset run {@}. Error: {@error}", run, result.Error);
+                                continue;
+                            }
+                            await repository.AddAsync(result.Value);
+                            _logger.LogInformation("Reset run {@run}. The new run is {@result.Value}", run, result.Value);
                         }
                         await unitOfWork.SaveChangesAsync();
                     }
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    //I later have to log, no logging support yet.
+                    _logger.LogWarning(exception: ex, message: "Exception thrown.");
                 }
                 try
                 {
@@ -46,6 +54,7 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
                     break;
                 }
             }
+            _logger.LogInformation("exiting job");
         }
     }
 }

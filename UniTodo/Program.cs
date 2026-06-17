@@ -28,7 +28,7 @@ try
         options.JsonSerializerOptions.Converters
     .Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
     });
-builder.Services.AddHttpLogging();
+    builder.Services.AddHttpLogging();
     builder.Services.AddTodoModule(builder.Configuration.GetSection("TodoModule"));
     builder.Services.AddAuthModule(builder.Configuration.GetSection("AuthModule"));
 
@@ -70,7 +70,7 @@ new List<string>()
     app.UseAuthorization();
 
     app.UseSerilogRequestLogging();
-app.UseHttpLogging();
+    app.UseHttpLogging();
 
     app.MapControllers();
     app.MapTodoEndpoints();

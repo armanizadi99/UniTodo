@@ -10,6 +10,9 @@ using UniTodo.Modules.Todos.Infrastructure.Db.Repositories;
 using NSubstitute.ExceptionExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
+using NSubstitute.ReceivedExtensions;
 
 namespace UniTodo.Tests.TodoModuleTests.Application
 {
@@ -17,6 +20,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
     {
         private readonly ITodoListRunRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ResetPolicyJob> _logger;
         private readonly ResetPolicyJob _job;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IServiceScope _scope;
@@ -27,6 +31,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             _unitOfWork = Substitute.For<IUnitOfWork>();
             _repository = Substitute.For<ITodoListRunRepository>();
+            _logger = Substitute.For<ILogger<ResetPolicyJob>>();
             _scopeFactory = Substitute.For<IServiceScopeFactory>();
             _scope = Substitute.For<IServiceScope>();
             _serviceProvider = Substitute.For<IServiceProvider>();
@@ -34,7 +39,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _serviceProvider.GetService(typeof(ITodoListRunRepository)).Returns(_repository);
             _scope.ServiceProvider.Returns(_serviceProvider);
             _scopeFactory.CreateScope().Returns(_scope);
-            _job = new ResetPolicyJob(_scopeFactory);
+            _job = new ResetPolicyJob(_scopeFactory, _logger);
         }
         private void setResetsAt(TodoListRun run, DateTimeOffset? date)
         {
@@ -85,6 +90,12 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 _job.ExecuteTask.Should().NotBeNull();
                 _job.ExecuteTask!.IsFaulted.Should().BeFalse();
                 _job.ExecuteTask!.IsCompleted.Should().BeFalse();
+                _logger.Received(1).Log(
+        LogLevel.Warning,
+        Arg.Any<EventId>(),
+        Arg.Is<object>(state => state.ToString()!.Contains("Exception thrown")),
+        Arg.Any<Exception>(),
+        Arg.Any<Func<object, Exception?, string>>());
             }
             finally
             {
