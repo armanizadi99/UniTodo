@@ -20,7 +20,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         {
             if (!ResetPolicy.IsDefined(resetPolicy))
                 throw new ArgumentOutOfRangeException($"{nameof(resetPolicy)} is not defined.");
-            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
             OwnerId = ownerId;
             Name = name;
             ResetPolicy = resetPolicy;
