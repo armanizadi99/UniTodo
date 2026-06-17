@@ -48,7 +48,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         [Fact]
-        public async Task ExecuteAsync_RunsThatAreDue_ShouldResetThemAll()
+        public async Task StartAsync_RunsThatAreDue_ShouldResetThemAll()
         {
             // Arrange
             var dueRuns = new List<TodoListRun>();
@@ -71,6 +71,12 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             await _repository.Received(1).AddAsync(Arg.Is<TodoListRun>(r => r.Name == run1.Name));
             await _repository.Received(1).AddAsync(Arg.Is<TodoListRun>(r => r.Name == run2.Name));
             await _unitOfWork.Received(1).SaveChangesAsync();
+            _logger.Received(2).Log(LogLevel.Information,
+    Arg.Any<EventId>(),
+    Arg.Is<object>(state => state.ToString()!.Contains("Reset run")),
+    Arg.Any<Exception>(),
+    Arg.Any<Func<object, Exception?, string>>()
+            );
         }
 
         [Fact]
