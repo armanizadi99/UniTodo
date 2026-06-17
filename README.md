@@ -71,55 +71,16 @@ UniTodo (Solution)
 
 ---
 
-## API Endpoints
+## API Documentation
 
-### Authentication (`/api/auth`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/register` | Register new user |
-| POST | `/login` | Login and receive JWT |
+Full API documentation with interactive testing is available via **Swagger UI** at `/swagger` when running the application.
 
-### Templates (`/api/templates`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | List current user's templates |
-| POST | `/` | Create new template |
-| GET | `/{id}` | Get template by ID |
-| DELETE | `/{id}` | Delete template |
-| POST | `/{templateId}/item-templates` | Add item to template |
-| DELETE | `/{templateId}/template-items/{itemId}` | Remove item from template |
-| GET | `/{templateId}/item-templates` | List template items |
-
-### Runs (`/api/runs`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | List current user's active runs |
-| POST | `/` | Create empty private run |
-| POST | `/from-template/{templateId}` | Create run from template |
-| GET | `/{runId}` | Get run details |
-| POST | `/{runId}/make-shared` | Make run collaborative |
-| POST | `/{runId}/make-private` | Make run private |
-
-### Run Items (`/api/runs/{runId}/items`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | List items in run |
-| POST | `/` | Add item to run |
-| DELETE | `/{itemId}` | Delete item |
-| POST | `/{itemId}/mark-complete` | Mark item complete |
-| POST | `/{itemId}/mark-incomplete` | Mark item incomplete |
-| POST | `/{itemId}/update-notes` | Update item notes |
-| POST | `/{itemId}/change-description` | Change item description |
-| POST | `/{itemId}/assign-to` | Assign item to member |
-
-### Run Members (`/api/runs/{runId}/members`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | List run members |
-| POST | `/` | Add member (shared runs only) |
-| DELETE | `/{userId}` | Remove member |
-
----
+The API covers:
+- **Authentication**: Register, Login (JWT)
+- **Templates**: CRUD for todo list templates and their items
+- **Runs**: Create/manage active todo list runs (from templates or empty), toggle shared/private
+- **Run Items**: Full item lifecycle (add, complete, assign, update notes, change description, delete)
+- **Run Members**: Add/remove/list members on shared runs
 
 ## Getting Started
 
@@ -145,35 +106,10 @@ dotnet ef database update --project UniTodo --context AuthDbContext
 dotnet run --project UniTodo
 ```
 
-The API will be available at `https://localhost:5001` (HTTPS) and `http://localhost:5000` (HTTP).
-Swagger UI: `https://localhost:5001/swagger`
+The API will be available at `http://localhost:5000`.
+Swagger UI: `http://localhost:5000/swagger`
 
-### Configuration
-
-Edit `UniTodo/appsettings.json`:
-
-```json
-{
-  "TodoModule": {
-    "ConnectionStrings": {
-      "sqlite": "Data Source=Todos.db"
-    }
-  },
-  "AuthModule": {
-    "ConnectionStrings": {
-      "sqlite": "Data Source=Auth.db"
-    },
-    "JwtSettings": {
-      "Audience": "UniTodoApi",
-      "Issuer": "UniTodoApi",
-      "ExpirationMinutes": 1000000,
-      "SecretSigningKey": "<your-secret-key-here>"
-    }
-  }
-}
-```
-
-> **Note**: The `SecretSigningKey` must be set (e.g., via User Secrets or environment variables) for JWT signing.
+> **Note**: HTTPS is not yet configured. The `SecretSigningKey` must be set (e.g., via User Secrets or environment variables) for JWT signing.
 
 ---
 
