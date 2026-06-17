@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Extensions;
@@ -26,9 +26,7 @@ namespace UniTodo.Modules.Todos.Application.Services
         {
             var userTodoLists = await _repository.GetUserTodoListTemplatesAsync(_userContext.UserId.Value);
             return userTodoLists
-    .Select(tl => new TodoListTemplateDto(
-    tl.Id, tl.Name, tl.ResetPolicy, tl.Status,
-    tl.CreatedAt, tl.UpdatedAt)).ToList();
+                .Select(tl => tl.ToDto()).ToList();
         }
 
         public async Task<Result<TodoListTemplateDto>> GetTodoListTemplateByIdAsync(int id)
@@ -38,7 +36,7 @@ namespace UniTodo.Modules.Todos.Application.Services
                 return DomainError.EntityNotFound(nameof(TodoListTemplate), id);
             if (todoListTemplate.OwnerId != _userContext.UserId)
                 return DomainError.NotAuthorized();
-            return new TodoListTemplateDto(todoListTemplate.Id, todoListTemplate.Name, todoListTemplate.ResetPolicy, todoListTemplate.Status, todoListTemplate.CreatedAt, todoListTemplate.UpdatedAt);
+            return todoListTemplate.ToDto();
         }
 
         public async Task<Result<TodoListTemplateDto>> CreateTodoListTemplateAsync(CreateTodoListTemplateDto dto)
@@ -49,7 +47,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             var todoList = new TodoListTemplate(_userContext.UserId, dto.Name, dto.ResetPolicy!.Value);
             await _repository.AddAsync(todoList);
             await _unitOfWork.SaveChangesAsync();
-            return new TodoListTemplateDto(todoList.Id, todoList.Name, todoList.ResetPolicy, todoList.Status, todoList.CreatedAt, todoList.UpdatedAt);
+            return todoList.ToDto();
         }
 
         public async Task<Result> DeleteTodoListAsync(int id)
@@ -74,7 +72,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             if (!result.IsSuccess)
                 return Result<TodoItemTemplateDto>.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
-            return new TodoItemTemplateDto(todoItemTemplate.Id, todoItemTemplate.Description.Value, todoItemTemplate.CreatedAt, todoItemTemplate.UpdatedAt);
+            return todoItemTemplate.ToDto();
         }
 
         public async Task<Result> DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId)
@@ -96,7 +94,7 @@ namespace UniTodo.Modules.Todos.Application.Services
                 return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
             if (todoList.OwnerId != _userContext.UserId)
                 return DomainError.NotAuthorized();
-            return todoList.TodoItemTemplates.Select(t => new TodoItemTemplateDto(t.Id, t.Description.Value, t.CreatedAt, t.UpdatedAt)).ToList();
+            return todoList.TodoItemTemplates.Select(t => t.ToDto()).ToList();
         }
 
         public async Task<Result> ArchiveAsync(int id)
