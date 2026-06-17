@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
 
@@ -6,6 +7,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
 {
     [ApiController]
     [Route("/api/runs/{runId:int:min(1)}/items")]
+[Authorize]
     public class RunItemsController : ControllerBase
     {
         private readonly TodoListRunService _service;
