@@ -1,0 +1,16 @@
+services:
+  unitodo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: unitodo:latest
+    container_name: unitodo-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./unitodo-data:/app/data
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # This maps to the AuthModule:JwtSettings:SecretSigningKey configuration
+      - AuthModule__JwtSettings__SecretSigningKey=${UNITODO_JWT_SECRET:-ThisIsAPlaceholderSecretChangeItInProduction}
+    restart: unless-stopped
