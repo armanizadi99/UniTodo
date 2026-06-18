@@ -15,7 +15,7 @@ using UniTodo.Modules.Todos.ModuleStartup;
 Log.Logger = new LoggerConfiguration()
 .MinimumLevel.Information()
 .WriteTo.Console()
-.WriteTo.File(new JsonFormatter(), "logs/log-.json", rollingInterval: RollingInterval.Day)
+.WriteTo.File(new JsonFormatter(), "data/logs/log-.json", rollingInterval: RollingInterval.Day)
 .CreateLogger();
 try
 {
