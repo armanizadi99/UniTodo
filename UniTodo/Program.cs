@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -13,6 +14,7 @@ using UniTodo.Modules.Todos.ModuleStartup;
 
 Log.Logger = new LoggerConfiguration()
 .MinimumLevel.Information()
+.WriteTo.Console()
 .WriteTo.File(new JsonFormatter(), "logs/log-.json", rollingInterval: RollingInterval.Day)
 .CreateLogger();
 try
@@ -71,6 +73,33 @@ new List<string>()
 
     app.UseSerilogRequestLogging();
     app.UseHttpLogging();
+
+    // Automatically apply migrations
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var authContext = services.GetRequiredService<UniTodo.Modules.Auth.DB.AuthDbContext>();
+            if (authContext.Database.GetPendingMigrations().Any())
+            {
+                Log.Information("Applying Auth migrations...");
+                authContext.Database.Migrate();
+            }
+
+            var todoContext = services.GetRequiredService<UniTodo.Modules.Todos.Infrastructure.Db.TodoDbContext>();
+            if (todoContext.Database.GetPendingMigrations().Any())
+            {
+                Log.Information("Applying Todo migrations...");
+                todoContext.Database.Migrate();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the database.");
+            throw; // Fail fast if we can't migrate
+        }
+    }
 
     app.MapControllers();
     app.MapTodoEndpoints();
