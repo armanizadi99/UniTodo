@@ -42,13 +42,20 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
 
         async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetRunsDueForResetAsync(CancellationToken cancellationToken)
         {
+            var now = DateTimeOffset.UtcNow;
+
+            // Using FromSqlInterpolated to perform a single-hit, server-side filtered query.
+            // This bypasses the EF Core translation issue with DateTimeOffset in SQLite 
+            // while remaining efficient by not fetching unnecessary records or hitting the DB twice.
             return await _dbSet
+                .FromSqlInterpolated($@"
+                    SELECT * FROM todoListRuns 
+                    WHERE Status = {(int)Domain.Enums.TodoListRunStatus.Active} 
+                      AND ResetPolicy <> {(int)Domain.Enums.ResetPolicy.None} 
+                      AND ResetsAt IS NOT NULL 
+                      AND ResetsAt <= {now}")
                 .Include(r => r.TodoItems)
                 .Include(r => r.Members)
-                .Where(r => r.Status == Domain.Enums.TodoListRunStatus.Active &&
-                            r.ResetPolicy != Domain.Enums.ResetPolicy.None &&
-                            r.ResetsAt != null &&
-                            r.ResetsAt <= DateTimeOffset.UtcNow)
                 .ToListAsync(cancellationToken);
         }
     }
