@@ -13,9 +13,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [Authorize]
     public class RunItemsController : ControllerBase
     {
-        private readonly TodoListRunService _service;
+        private readonly TodoListRunItemsService _service;
 
-        public RunItemsController(TodoListRunService service)
+        public RunItemsController(TodoListRunItemsService service)
         {
             _service = service;
         }

@@ -12,11 +12,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/runs")]
     [Authorize]
-    public class RunController : ControllerBase
+    public class RunsController : ControllerBase
     {
         private readonly TodoListRunService _service;
 
-        public RunController(TodoListRunService service)
+        public RunsController(TodoListRunService service)
         {
             _service = service;
         }

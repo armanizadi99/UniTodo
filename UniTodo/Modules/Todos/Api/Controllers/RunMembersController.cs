@@ -13,9 +13,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [Authorize]
     public class RunMembersController : ControllerBase
     {
-        private readonly TodoListRunService _service;
+        private readonly TodoListRunMembersService _service;
 
-        public RunMembersController(TodoListRunService service)
+        public RunMembersController(TodoListRunMembersService service)
         {
             _service = service;
         }
