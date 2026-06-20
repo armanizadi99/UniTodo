@@ -17,6 +17,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
         public DbSet<TodoItemTemplate> todoItemTemplates { get; set; }
         public DbSet<TodoListRun> todoListRuns { get; set; }
         public DbSet<TodoItem> todoItems { get; set; }
+        public DbSet<RunMember> runMembers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
