@@ -44,7 +44,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().NotBeNull();
-            result.Value.name.Should().Be(dto.Name);
+            result.Value.Name.Should().Be(dto.Name);
             result.Value.ResetPolicy.Should().Be(dto.ResetPolicy.Value);
 
             await _repository.Received(1).AddAsync(Arg.Any<TodoListTemplate>());
@@ -69,8 +69,8 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().HaveCount(2);
-            result.Value.Should().Contain(r => r.name == "List 1");
-            result.Value.Should().Contain(r => r.name == "List 2");
+            result.Value.Should().Contain(r => r.Name == "List 1");
+            result.Value.Should().Contain(r => r.Name == "List 2");
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().NotBeNull();
-            result.Value.name.Should().Be("Test List");
+            result.Value.Name.Should().Be("Test List");
         }
 
         [Fact]
