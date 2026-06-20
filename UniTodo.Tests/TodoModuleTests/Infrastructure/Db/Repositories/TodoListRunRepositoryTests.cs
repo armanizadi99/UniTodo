@@ -60,9 +60,9 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             // Arrange
             var userId = Guid.NewGuid();
             var ownerId = new UserId(userId);
-            
+
             var activeRun = new TodoListRun("Active Run", ResetPolicy.None, false, ownerId);
-            
+
             var closedRun = new TodoListRun("Closed Run", ResetPolicy.None, false, ownerId);
             closedRun.Close(ownerId);
 
@@ -84,13 +84,13 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
         {
             // Arrange
             var ownerId = new UserId(Guid.NewGuid());
-            
+
             // Run due for reset (Daily, started yesterday)
             var runDue = new TodoListRun("Due Run", ResetPolicy.Daily, false, ownerId);
             // Manually set ResetsAt to the past to simulate time passing
             var resetsAtField = typeof(TodoListRun).GetProperty(nameof(TodoListRun.ResetsAt));
             resetsAtField!.SetValue(runDue, DateTimeOffset.UtcNow.AddHours(-1));
-            
+
             // Run not yet due
             var runNotDue = new TodoListRun("Not Due Run", ResetPolicy.Daily, false, ownerId);
             resetsAtField.SetValue(runNotDue, DateTimeOffset.UtcNow.AddHours(23));

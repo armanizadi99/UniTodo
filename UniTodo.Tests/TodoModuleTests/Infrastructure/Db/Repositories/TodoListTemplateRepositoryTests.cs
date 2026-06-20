@@ -107,7 +107,7 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             using (var actContext = CreateNewContext())
             {
                 ITodoListTemplateRepository repository = new TodoListTemplateRepository(actContext);
-                
+
                 // Act
                 var result = await repository.GetTodoListTemplateByIdAsync(template.Id, false, CancellationToken.None);
 

@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using UniTodo.Modules.Auth;
 using UniTodo.Modules.Todos.Infrastructure;
 using UniTodo.Modules.Todos.ModuleStartup;
+using UniTodo.OpenApiEndpointFilters;
 
 Log.Logger = new LoggerConfiguration()
 .MinimumLevel.Information()
@@ -54,15 +55,9 @@ try
             Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1Ni...\""
         });
 
-        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-{
-new OpenApiSecuritySchemeReference("Jwt bearer", document),
-new List<string>()
-    }
+        options.DocumentFilter<AuthorizedSecurityDocumentFilter>();
     });
 
-    });
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
