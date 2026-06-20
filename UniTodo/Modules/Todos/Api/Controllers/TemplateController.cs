@@ -6,7 +6,10 @@ using UniTodo.Modules.Todos.Application.Services;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
-    [ApiController]
+    /// <summary>
+/// Controller for managing todo list templates.
+/// </summary>
+[ApiController]
     [Route("api/templates")]
     [Authorize]
     public class TemplateController : ControllerBase
@@ -19,7 +22,10 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync()
+        /// <summary>
+/// Retrieves all todo list templates belonging to the current authenticated user.
+/// </summary>
+public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync()
         {
             var result = await _TodoListTemplateService.GetUserTodoListsAsync();
             if (!result.IsSuccess)
@@ -29,7 +35,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto)
+        /// <summary>
+/// Creates a new todo list template for the current user.
+/// </summary>
+/// <param name="dto">The data transfer object containing template details.</param>
+public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto)
         {
             var result = await _TodoListTemplateService.CreateTodoListTemplateAsync(dto);
             if (!result.IsSuccess)
@@ -39,7 +49,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpGet("{id:int:min(1)}", Name = "GetTodoListTemplateById")]
-        public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id)
+        /// <summary>
+/// Retrieves a specific todo list template by its identifier.
+/// </summary>
+/// <param name="id">The identifier of the todo list template.</param>
+public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id)
         {
             var result = await _TodoListTemplateService.GetTodoListTemplateByIdAsync(id);
             if (!result.IsSuccess)
@@ -49,7 +63,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpDelete("{id:int:min(1)}")]
-        public async Task<IActionResult> DeleteTodoListTemplate([FromRoute] int id)
+        /// <summary>
+/// Deletes a todo list template.
+/// </summary>
+/// <param name="id">The identifier of the todo list template to delete.</param>
+public async Task<IActionResult> DeleteTodoListTemplate([FromRoute] int id)
         {
             var result = await _TodoListTemplateService.DeleteTodoListAsync(id);
             if (!result.IsSuccess)
@@ -59,7 +77,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpPost("{todoListTemplateId:int:min(1)}/item-templates/")]
-        public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto)
+        /// <summary>
+/// Adds a new todo item template to a specific todo list template.
+/// </summary>
+/// <param name="todoListTemplateId">The identifier of the parent todo list template.</param>
+/// <param name="dto">The data transfer object containing todo item template details.</param>
+public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto)
         {
             var result = await _TodoListTemplateService.AddTodoItemTemplateAsync(todoListTemplateId, dto);
             if (!result.IsSuccess)
@@ -69,7 +92,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpDelete("{todoListTemplateId:int:min(1)}/template-items/{todoItemTemplateId:int}")]
-        public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId)
+        /// <summary>
+/// Deletes a specific todo item template from a todo list template.
+/// </summary>
+/// <param name="todoListTemplateId">The identifier of the parent todo list template.</param>
+/// <param name="todoItemTemplateId">The identifier of the todo item template to delete.</param>
+public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId)
         {
             var result = await _TodoListTemplateService.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId);
             if (!result.IsSuccess)
@@ -79,7 +107,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         [HttpGet("{todoListTemplateId:int:min(1)}/item-templates")]
-        public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId)
+        /// <summary>
+/// Retrieves all todo item templates associated with a specific todo list template.
+/// </summary>
+/// <param name="todoListTemplateId">The identifier of the todo list template.</param>
+public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId)
         {
             var result = await _TodoListTemplateService.GetTodoItemTemplatesAsync(todoListTemplateId);
             if (!result.IsSuccess)
