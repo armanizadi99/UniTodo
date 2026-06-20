@@ -10,6 +10,9 @@ using UniTodo.Modules.Auth.Services;
 
 namespace UniTodo.Modules.Auth.Controllers
 {
+    /// <summary>
+    /// Controller for user authentication, including registration and login.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -23,6 +26,11 @@ namespace UniTodo.Modules.Auth.Controllers
             _tokenCreater = tokenCreater;
         }
 
+        /// <summary>
+        /// Registers a new user account.
+        /// </summary>
+        /// <param name="dto">The registration details including email and password.</param>
+        /// <returns>The newly created user's identifier and email.</returns>
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto dto)
         {
@@ -46,6 +54,11 @@ namespace UniTodo.Modules.Auth.Controllers
             });
         }
 
+        /// <summary>
+        /// Authenticates a user and returns a JWT token.
+        /// </summary>
+        /// <param name="dto">The login credentials including email and password.</param>
+        /// <returns>A JWT token and the user's email address.</returns>
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto dto)
         {

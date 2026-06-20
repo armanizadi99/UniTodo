@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Formatting.Json;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using UniTodo.Modules.Auth;
@@ -37,7 +38,11 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo { Title = "uni todo", Version = "1.0" });
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "UniTodo API", Version = "1.0" });
+
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        options.IncludeXmlComments(xmlPath);
 
         options.AddSecurityDefinition("Jwt bearer", new OpenApiSecurityScheme
         {

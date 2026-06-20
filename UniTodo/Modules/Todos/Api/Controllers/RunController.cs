@@ -6,6 +6,9 @@ using UniTodo.Modules.Todos.Application.Services;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing todo list runs (active instances of templates).
+    /// </summary>
     [ApiController]
     [Route("api/runs")]
     [Authorize]
@@ -18,6 +21,11 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Retrieves all active todo list runs for the current authenticated user.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A list of active todo list runs for the current user.</returns>
         [HttpGet]
         public async Task<IActionResult> GetCurrentUserActiveRunsAsync(CancellationToken cancellationToken)
         {
@@ -28,6 +36,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return Ok(result.Value);
         }
 
+        /// <summary>
+        /// Creates a new private empty todo list run.
+        /// </summary>
+        /// <param name="dto">The data transfer object containing run creation details.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The created todo list run.</returns>
         [HttpPost]
         public async Task<IActionResult> CreatePrivateEmptyRunAsync([FromBody] CreateTodoListRunDto dto, CancellationToken cancellationToken)
         {
@@ -38,6 +52,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return Ok(result.Value);
         }
 
+        /// <summary>
+        /// Creates a new todo list run from a template.
+        /// </summary>
+        /// <param name="templateId">The identifier of the template to create the run from.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The created todo list run.</returns>
         [HttpPost("from-template/{templateId:int:min(1)}")]
         public async Task<IActionResult> CreateRunFromTemplateAsync([FromRoute] int templateId, CancellationToken cancellationToken)
         {
@@ -48,12 +68,24 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return CreatedAtRoute("GetRunById", new { runId = result.Value.Id }, result.Value);
         }
 
+        /// <summary>
+        /// Retrieves a specific todo list run by its identifier.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The requested todo list run.</returns>
         [HttpGet("{runId:int:min(1)}", Name = "GetRunById")]
         public async Task<IActionResult> GetRunByIdAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             return Ok();
         }
 
+        /// <summary>
+        /// Makes a todo list run shared, allowing other members to join.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
         [HttpPost("{runId:int:min(1)}/make-shared")]
         public async Task<IActionResult> MakeRunSharedAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
@@ -64,6 +96,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Makes a todo list run private, removing shared access.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
         [HttpPost("{runId:int:min(1)}/make-private")]
         public async Task<IActionResult> MakeRunPrivateAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {

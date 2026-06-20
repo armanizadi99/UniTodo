@@ -5,6 +5,9 @@ using UniTodo.Modules.Todos.Application.Services;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing members of a todo list run.
+    /// </summary>
     [ApiController]
     [Route("api/runs/{runId:int:min(1)}/members")]
     [Authorize]
@@ -17,6 +20,13 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Adds a new member to a specific todo list run.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="dto">The data transfer object containing member details.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The added member details.</returns>
         [HttpPost]
         public async Task<IActionResult> AddMemberToRunAsync([FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
         {
@@ -27,6 +37,13 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return Ok(result.Value);
         }
 
+        /// <summary>
+        /// Removes a member from a specific todo list run.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="userId">The identifier of the user to remove.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
         [HttpDelete("{userId:guid}")]
         public async Task<IActionResult> RemoveMemberFromRunAsync([FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
         {
@@ -37,6 +54,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Retrieves all members of a specific todo list run.
+        /// </summary>
+        /// <param name="runId">The identifier of the todo list run.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A list of members in the specified run.</returns>
         [HttpGet]
         public async Task<IActionResult> GetRunMembersAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
