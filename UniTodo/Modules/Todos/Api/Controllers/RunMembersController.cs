@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
 
@@ -28,11 +29,16 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The added member details.</returns>
         [HttpPost]
+        [ProducesResponseType(typeof(TodoListRunMemberDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> AddMemberToRunAsync([FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AddMemberToTodoListRunAsync(runId, dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
         }
@@ -45,11 +51,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{userId:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> RemoveMemberFromRunAsync([FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
         {
             var result = await _service.RemoveMemberFromTodoListRunAsync(runId, userId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -61,25 +71,16 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of members in the specified run.</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<TodoListRunMemberDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetRunMembersAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             var result = await _service.GetTodoListRunMembersAsync(runId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
-        }
-
-        private IActionResult MapError(UniTodo.Modules.Todos.Domain.Common.DomainError error)
-        {
-            return error.Code switch
-            {
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.EntityNotFound => NotFound(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.NotAuthorized => Forbid(),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.InvalidOperation => BadRequest(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.DuplicateEntities => Conflict(error.Message),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
         }
     }
 }

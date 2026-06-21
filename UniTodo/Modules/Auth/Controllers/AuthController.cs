@@ -32,6 +32,8 @@ namespace UniTodo.Modules.Auth.Controllers
         /// <param name="dto">The registration details including email and password.</param>
         /// <returns>The newly created user's identifier and email.</returns>
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto dto)
         {
             var user = new ApplicationUser
@@ -44,7 +46,10 @@ namespace UniTodo.Modules.Auth.Controllers
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description);
-                return BadRequest(new { Errors = errors });
+                return Problem(
+                    detail: string.Join("; ", errors),
+                    title: "Registration Failed",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
 
             return Ok(new
@@ -60,25 +65,27 @@ namespace UniTodo.Modules.Auth.Controllers
         /// <param name="dto">The login credentials including email and password.</param>
         /// <returns>A JWT token and the user's email address.</returns>
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user is null)
             {
-                return Unauthorized(new
-                {
-                    Error = "Username or password is invalid"
-                });
+                return Problem(
+                    detail: "Username or password is invalid",
+                    title: "Authentication Failed",
+                    statusCode: StatusCodes.Status401Unauthorized);
             }
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!isPasswordValid)
             {
-                return Unauthorized(new
-                {
-                    Error = "Username or password is invalid"
-                });
+                return Problem(
+                    detail: "Username or password is invalid",
+                    title: "Authentication Failed",
+                    statusCode: StatusCodes.Status401Unauthorized);
             }
 
             var token = _tokenCreater.CreateJwtToken(user);

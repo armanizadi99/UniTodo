@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.InteropServices;
+using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
 
@@ -27,11 +27,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of active todo list runs for the current user.</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<TodoListRunDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCurrentUserActiveRunsAsync(CancellationToken cancellationToken)
         {
             var result = await _service.GetUserActiveTodoRunsAsync(cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
         }
@@ -43,11 +44,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created todo list run.</returns>
         [HttpPost]
+        [ProducesResponseType(typeof(TodoListRunDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreatePrivateEmptyRunAsync([FromBody] CreateTodoListRunDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.CreateTodoListRunAsync(dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
         }
@@ -59,11 +61,14 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created todo list run.</returns>
         [HttpPost("from-template/{templateId:int:min(1)}")]
+        [ProducesResponseType(typeof(TodoListRunDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> CreateRunFromTemplateAsync([FromRoute] int templateId, CancellationToken cancellationToken)
         {
             var result = await _service.CreateTodoListRunFromTemplateAsync(templateId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return CreatedAtRoute("GetRunById", new { runId = result.Value.Id }, result.Value);
         }
@@ -75,6 +80,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The requested todo list run.</returns>
         [HttpGet("{runId:int:min(1)}", Name = "GetRunById")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRunByIdAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             return Ok();
@@ -87,11 +93,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{runId:int:min(1)}/make-shared")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MakeRunSharedAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             var result = await _service.MakeTodoListRunSharedAsync(runId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -103,25 +113,17 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{runId:int:min(1)}/make-private")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MakeRunPrivateAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             var result = await _service.MakeTodoListRunPrivateAsync(runId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
-        }
-
-        private IActionResult MapError(UniTodo.Modules.Todos.Domain.Common.DomainError error)
-        {
-            return error.Code switch
-            {
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.EntityNotFound => NotFound(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.NotAuthorized => Forbid(),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.InvalidOperation => BadRequest(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.DuplicateEntities => Conflict(error.Message),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
         }
     }
 }

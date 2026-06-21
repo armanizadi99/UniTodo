@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
 
@@ -27,11 +28,14 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of todo items for the specified run.</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<TodoItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetRunItemsAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
             var result = await _service.GetTodoListRunItemsAsync(runId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
         }
@@ -44,11 +48,16 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created todo item.</returns>
         [HttpPost]
+        [ProducesResponseType(typeof(TodoItemDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> AddItemToRunAsync([FromRoute] int runId, [FromBody] AddTodoItemDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AddTodoItemToTodoListRunAsync(runId, dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return Ok(result.Value);
         }
@@ -61,11 +70,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{itemId:int:min(1)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteItemFromRunAsync([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.DeleteTodoItemFromTodoListRunAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -78,11 +91,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{itemId:int:min(1)}/mark-complete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MarkRunItemCompleteAsync([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.MarkTodoItemCompleteAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -95,11 +112,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{itemId:int:min(1)}/mark-incomplete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MarkRunItemIncomplete([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.MarkTodoItemIncompleteAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -113,11 +134,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{itemId:int:min(1)}/update-notes")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateNotesForTodoItemAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -131,11 +156,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{itemId:int:min(1)}/change-description")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.ChangeTodoItemDescriptionAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
         }
@@ -149,25 +178,17 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
         [HttpPost("{itemId:int:min(1)}/assign-to")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AssignRunItemToUserAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AssignItemToMemberAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)
-                return MapError(result.Error);
+                return result.Error.ToActionResult();
 
             return NoContent();
-        }
-
-        private IActionResult MapError(UniTodo.Modules.Todos.Domain.Common.DomainError error)
-        {
-            return error.Code switch
-            {
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.EntityNotFound => NotFound(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.NotAuthorized => Forbid(),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.InvalidOperation => BadRequest(error.Message),
-                UniTodo.Modules.Todos.Domain.Common.DomainErrorCodes.DuplicateEntities => Conflict(error.Message),
-                _ => StatusCode(500, "An unexpected error occurred.")
-            };
         }
     }
 }

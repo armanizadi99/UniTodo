@@ -36,6 +36,7 @@ try
     builder.Services.AddTodoModule(builder.Configuration.GetSection("TodoModule"));
     builder.Services.AddAuthModule(builder.Configuration.GetSection("AuthModule"));
 
+    builder.Services.AddProblemDetails();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
