@@ -1,3 +1,4 @@
+using System.Threading;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Application.Interfaces;
@@ -20,9 +21,9 @@ namespace UniTodo.Modules.Todos.Application.Services
             _userContext = userContext;
         }
 
-        public async Task<Result<TodoItemTemplateDto>> AddTodoItemTemplateAsync(int todoListTemplateId, AddTodoItemTemplateDto dto)
+        public async Task<Result<TodoItemTemplateDto>> AddTodoItemTemplateAsync(int todoListTemplateId, AddTodoItemTemplateDto dto, CancellationToken cancellationToken = default)
         {
-            var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
+            var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true, cancellationToken: cancellationToken);
             if (todoList == null)
                 return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
             var todoItemTemplate = new TodoItemTemplate(todoListTemplateId, new TodoItemDescription(dto.Description));
@@ -33,9 +34,9 @@ namespace UniTodo.Modules.Todos.Application.Services
             return todoItemTemplate.ToDto();
         }
 
-        public async Task<Result> DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId)
+        public async Task<Result> DeleteTodoItemTemplateAsync(int todoListTemplateId, int todoItemTemplateId, CancellationToken cancellationToken = default)
         {
-            var todoItemTemplateToDeleteParent = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
+            var todoItemTemplateToDeleteParent = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true, cancellationToken: cancellationToken);
             if (todoItemTemplateToDeleteParent == null)
                 return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
             var result = todoItemTemplateToDeleteParent.Delete(todoItemTemplateId, _userContext.UserId);
@@ -45,9 +46,9 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result<IReadOnlyList<TodoItemTemplateDto>>> GetTodoItemTemplatesAsync(int todoListTemplateId)
+        public async Task<Result<IReadOnlyList<TodoItemTemplateDto>>> GetTodoItemTemplatesAsync(int todoListTemplateId, CancellationToken cancellationToken = default)
         {
-            var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true);
+            var todoList = await _repository.GetTodoListTemplateByIdAsync(todoListTemplateId, true, cancellationToken: cancellationToken);
             if (todoList == null)
                 return DomainError.EntityNotFound(nameof(TodoListTemplate), todoListTemplateId);
             if (todoList.OwnerId != _userContext.UserId)

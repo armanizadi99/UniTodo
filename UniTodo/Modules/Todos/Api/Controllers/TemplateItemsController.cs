@@ -27,9 +27,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="dto">The data transfer object containing todo item template details.</param>
         /// <returns>The created todo item template.</returns>
         [HttpPost]
-        public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto)
+        public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.AddTodoItemTemplateAsync(todoListTemplateId, dto);
+            var result = await _service.AddTodoItemTemplateAsync(todoListTemplateId, dto, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
@@ -43,9 +43,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="todoItemTemplateId">The identifier of the todo item template to delete.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{todoItemTemplateId:int}")]
-        public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId)
+        public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId, CancellationToken cancellationToken)
         {
-            var result = await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId);
+            var result = await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
@@ -58,9 +58,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="todoListTemplateId">The identifier of the todo list template.</param>
         /// <returns>A list of todo item templates for the specified todo list template.</returns>
         [HttpGet]
-        public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId)
+        public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetTodoItemTemplatesAsync(todoListTemplateId);
+            var result = await _service.GetTodoItemTemplatesAsync(todoListTemplateId, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 

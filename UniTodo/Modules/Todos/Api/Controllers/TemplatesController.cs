@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
@@ -25,9 +26,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// </summary>
         /// <returns>A list of todo list templates for the current user.</returns>
         [HttpGet]
-        public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync()
+        public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync(CancellationToken cancellationToken)
         {
-            var result = await _service.GetUserTodoListsAsync();
+            var result = await _service.GetUserTodoListsAsync(cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
@@ -40,9 +41,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="dto">The data transfer object containing template details.</param>
         /// <returns>The created todo list template.</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto)
+        public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.CreateTodoListTemplateAsync(dto);
+            var result = await _service.CreateTodoListTemplateAsync(dto, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
@@ -55,9 +56,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="id">The identifier of the todo list template.</param>
         /// <returns>The requested todo list template.</returns>
         [HttpGet("{id:int:min(1)}", Name = "GetTodoListTemplateById")]
-        public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetTodoListTemplateByIdAsync(id);
+            var result = await _service.GetTodoListTemplateByIdAsync(id, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
@@ -70,9 +71,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="id">The identifier of the todo list template to delete.</param>
         /// <returns>No content.</returns>
         [HttpDelete("{id:int:min(1)}")]
-        public async Task<IActionResult> DeleteTodoListTemplate([FromRoute] int id)
+        public async Task<IActionResult> DeleteTodoListTemplate([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var result = await _service.DeleteTodoListAsync(id);
+            var result = await _service.DeleteTodoListAsync(id, cancellationToken);
             if (!result.IsSuccess)
                 return MapError(result.Error);
 
