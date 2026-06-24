@@ -1,9 +1,21 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "bash": {
-      "*": "allow",
-      "git push *": "ask"
-}
-}
+  "plugin": [
+    "opencode-codebase-index"
+  ],
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama Local",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1",
+        "apiKey": "ollama"
+      },
+      "models": {
+        "nomic-embed-text": {
+          "name": "nomic-embed-text"
+        }
+      }
+    }
+  }
 }
