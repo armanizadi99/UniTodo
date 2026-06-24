@@ -423,3 +423,5 @@ FodyWeavers.xsd
 
 # my files
 *.txt
+
+.opencode/
