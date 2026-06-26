@@ -10,7 +10,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     /// Controller for managing members of a todo list run.
     /// </summary>
     [ApiController]
-    [Route("api/runs/{runId:int:min(1)}/members")]
+    [Route("api/runs/{runId:guid}/members")]
     [Authorize]
     public class RunMembersController : ControllerBase
     {
@@ -34,7 +34,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> AddMemberToRunAsync([FromRoute] int runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddMemberToRunAsync([FromRoute] Guid runId, [FromBody] AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AddMemberToTodoListRunAsync(runId, dto, cancellationToken);
             if (!result.IsSuccess)
@@ -55,7 +55,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> RemoveMemberFromRunAsync([FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
+        public async Task<IActionResult> RemoveMemberFromRunAsync([FromRoute] Guid runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
         {
             var result = await _service.RemoveMemberFromTodoListRunAsync(runId, userId, cancellationToken);
             if (!result.IsSuccess)
@@ -74,7 +74,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(IReadOnlyList<TodoListRunMemberDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetRunMembersAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetRunMembersAsync([FromRoute] Guid runId, CancellationToken cancellationToken)
         {
             var result = await _service.GetTodoListRunMembersAsync(runId, cancellationToken);
             if (!result.IsSuccess)

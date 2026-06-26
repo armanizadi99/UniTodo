@@ -147,10 +147,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             var run = CreateActiveRun(isShared: false);
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.MakeTodoListRunSharedAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunSharedAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -162,10 +162,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task MakeTodoListRunSharedAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act
-            var result = await _service.MakeTodoListRunSharedAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunSharedAsync(runId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -177,10 +178,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = CreateActiveRun(isShared: false);
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act 
-            var result = await _service.MakeTodoListRunSharedAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunSharedAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -195,10 +196,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             var run = CreateActiveRun(isShared: true);
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.MakeTodoListRunPrivateAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunPrivateAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -210,10 +211,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task MakeTodoListRunPrivateAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act
-            var result = await _service.MakeTodoListRunPrivateAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunPrivateAsync(runId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -226,10 +228,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = CreateActiveRun(isShared: false);
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act 
-            var result = await _service.MakeTodoListRunPrivateAsync(1, CancellationToken.None);
+            var result = await _service.MakeTodoListRunPrivateAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();

@@ -13,7 +13,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
             _dbSet = context.Set<TodoListRun>();
         }
 
-        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByIdAsync(int id, bool includeItems, CancellationToken cancellationToken)
+        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByRunIdAsync(Guid runId, bool includeItems, CancellationToken cancellationToken)
         {
             IQueryable<TodoListRun> query = _dbSet;
 
@@ -22,14 +22,14 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
 
             query = query.Include(i => i.Members);
 
-            return await query.FirstOrDefaultAsync(e => e.Id == id);
+            return await query.FirstOrDefaultAsync(e => e.RunId == runId);
         }
 
-        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByIdAsync(int id, int itemId, CancellationToken cancellationToken)
+        async Task<TodoListRun?> ITodoListRunRepository.GetTodoListRunByRunIdAsync(Guid runId, int itemId, CancellationToken cancellationToken)
         {
             return await _dbSet.Include(i => i.TodoItems.Where(item => item.Id == itemId))
 .Include(i => i.Members)
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(e => e.RunId == runId, cancellationToken);
         }
 
         async Task<IReadOnlyList<TodoListRun>> ITodoListRunRepository.GetUserActiveRunsAsync(Guid userId, CancellationToken cancellationToken)

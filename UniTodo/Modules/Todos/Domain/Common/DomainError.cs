@@ -7,6 +7,11 @@
             return new DomainError(DomainErrorCodes.EntityNotFound, $"'{entityName}' with id {entityId}' is not found.");
         }
 
+        public static DomainError EntityNotFound(string entityName, Guid entityId)
+        {
+            return new DomainError(DomainErrorCodes.EntityNotFound, $"'{entityName}' with id {entityId}' is not found.");
+        }
+
         public static DomainError NotAuthorized(string message = "")
         {
             return new DomainError(DomainErrorCodes.NotAuthorized, message);

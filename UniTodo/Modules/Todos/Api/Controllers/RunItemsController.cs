@@ -10,7 +10,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     /// Controller for managing todo items within a todo list run.
     /// </summary>
     [ApiController]
-    [Route("/api/runs/{runId:int:min(1)}/items")]
+    [Route("/api/runs/{runId:guid}/items")]
     [Authorize]
     public class RunItemsController : ControllerBase
     {
@@ -31,7 +31,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(IReadOnlyList<TodoItemDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetRunItemsAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetRunItemsAsync([FromRoute] Guid runId, CancellationToken cancellationToken)
         {
             var result = await _service.GetTodoListRunItemsAsync(runId, cancellationToken);
             if (!result.IsSuccess)
@@ -53,7 +53,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> AddItemToRunAsync([FromRoute] int runId, [FromBody] AddTodoItemDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddItemToRunAsync([FromRoute] Guid runId, [FromBody] AddTodoItemDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AddTodoItemToTodoListRunAsync(runId, dto, cancellationToken);
             if (!result.IsSuccess)
@@ -74,7 +74,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> DeleteItemFromRunAsync([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteItemFromRunAsync([FromRoute] Guid runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.DeleteTodoItemFromTodoListRunAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
@@ -95,7 +95,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> MarkRunItemCompleteAsync([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
+        public async Task<IActionResult> MarkRunItemCompleteAsync([FromRoute] Guid runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.MarkTodoItemCompleteAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
@@ -116,7 +116,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> MarkRunItemIncomplete([FromRoute] int runId, [FromRoute] int itemId, CancellationToken cancellationToken)
+        public async Task<IActionResult> MarkRunItemIncomplete([FromRoute] Guid runId, [FromRoute] int itemId, CancellationToken cancellationToken)
         {
             var result = await _service.MarkTodoItemIncompleteAsync(runId, itemId, cancellationToken);
             if (!result.IsSuccess)
@@ -138,7 +138,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateItemNotesAsync([FromRoute] Guid runId, [FromRoute] int itemId, [FromBody] UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateNotesForTodoItemAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)
@@ -160,7 +160,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] Guid runId, [FromRoute] int itemId, [FromBody] ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.ChangeTodoItemDescriptionAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)
@@ -182,7 +182,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> AssignRunItemToUserAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> AssignRunItemToUserAsync([FromRoute] Guid runId, [FromRoute] int itemId, [FromBody] AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.AssignItemToMemberAsync(runId, itemId, dto, cancellationToken);
             if (!result.IsSuccess)

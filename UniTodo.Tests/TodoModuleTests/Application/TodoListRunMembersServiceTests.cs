@@ -52,10 +52,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var run = CreateActiveRun(isShared: true);
             var otherUserId = new UserId(Guid.NewGuid());
             run.AddMember(otherUserId, _currentUserId);
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.GetTodoListRunMembersAsync(1, CancellationToken.None);
+            var result = await _service.GetTodoListRunMembersAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -69,10 +69,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             var run = CreateActiveRun(isShared: false, ownerId: new UserId(Guid.NewGuid()));
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.GetTodoListRunMembersAsync(1, CancellationToken.None);
+            var result = await _service.GetTodoListRunMembersAsync(run.RunId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -83,10 +83,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task GetTodoListRunMembersAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act
-            var result = await _service.GetTodoListRunMembersAsync(1, CancellationToken.None);
+            var result = await _service.GetTodoListRunMembersAsync(runId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -101,10 +102,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = CreateActiveRun(isShared: true);
             var newMemberId = Guid.NewGuid();
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = newMemberId }, CancellationToken.None);
+            var result = await _service.AddMemberToTodoListRunAsync(run.RunId, new AddMemberToTodoListRunDto { UserId = newMemberId }, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -117,10 +118,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task AddMemberToTodoListRunAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act
-            var result = await _service.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None);
+            var result = await _service.AddMemberToTodoListRunAsync(runId, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -133,10 +135,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = CreateActiveRun();
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetTodoListRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.AddMemberToTodoListRunAsync(1, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None);
+            var result = await _service.AddMemberToTodoListRunAsync(run.RunId, new AddMemberToTodoListRunDto { UserId = Guid.NewGuid() }, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -153,10 +155,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var run = CreateActiveRun(isShared: true);
             var memberId = Guid.NewGuid();
             run.AddMember(new UserId(memberId), _currentUserId);
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
-            var result = await _service.RemoveMemberFromTodoListRunAsync(1, memberId, CancellationToken.None);
+            var result = await _service.RemoveMemberFromTodoListRunAsync(run.RunId, memberId, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -168,10 +170,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task RemoveMemberFromTodoListRunAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, true, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
 
             // Act
-            var result = await _service.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None);
+            var result = await _service.RemoveMemberFromTodoListRunAsync(runId, Guid.NewGuid(), CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -184,10 +187,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = CreateActiveRun();
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetTodoListRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act 
-            var result = await _service.RemoveMemberFromTodoListRunAsync(1, Guid.NewGuid(), CancellationToken.None);
+            var result = await _service.RemoveMemberFromTodoListRunAsync(run.RunId, Guid.NewGuid(), CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
