@@ -141,6 +141,45 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
         #endregion
 
+        #region GetTodoListRunByRunIdAsync
+        [Fact]
+        public async Task GetTodoListRunByRunIdAsync_WhenRunExists_ShouldReturnSuccessWithMappedDto()
+        {
+            // Arrange
+            var run = CreateActiveRun("Test Run");
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.GetTodoListRunByRunIdAsync(run.RunId, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+            result.Value.Id.Should().Be(run.Id);
+            result.Value.RunId.Should().Be(run.RunId);
+            result.Value.Name.Should().Be(run.Name);
+            result.Value.ResetPolicy.Should().Be(run.ResetPolicy);
+            result.Value.OwnerId.Should().Be(run.ownerId.Value);
+            result.Value.Status.Should().Be(run.Status);
+            result.Value.IsShared.Should().Be(run.IsShared);
+        }
+
+        [Fact]
+        public async Task GetTodoListRunByRunIdAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            var runId = Guid.NewGuid();
+            _runRepository.GetTodoListRunByRunIdAsync(runId, false, Arg.Any<CancellationToken>()).Returns((TodoListRun)null!);
+
+            // Act
+            var result = await _service.GetTodoListRunByRunIdAsync(runId, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+        }
+        #endregion
+
         #region MakeTodoListRunSharedAsync
         [Fact]
         public async Task MakeTodoListRunSharedAsync_WhenAuthorizedAndValid_ShouldUpdateAndReturnSuccess()
