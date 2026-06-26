@@ -98,18 +98,27 @@ cd UniTodo
 # Restore dependencies
 dotnet restore
 
-# Apply database migrations (creates Todos.db and Auth.db)
-dotnet ef database update --project UniTodo --context TodoDbContext
-dotnet ef database update --project UniTodo --context AuthDbContext
+# Set JWT secret (required)
+dotnet user-secrets set "AuthModule:JwtSettings:SecretSigningKey" "your-secret-key-here" --project UniTodo
 
-# Run the API
+# Run the API (migrations apply automatically on startup)
 dotnet run --project UniTodo
 ```
 
 The API will be available at `http://localhost:5000`.
 Swagger UI: `http://localhost:5000/swagger`
 
-> **Note**: HTTPS is not yet configured. The `SecretSigningKey` must be set (e.g., via User Secrets or environment variables) for JWT signing.
+### Docker
+
+```bash
+# Set JWT secret and run
+$env:UNITODO_JWT_SECRET = "your-secret-key-here"
+docker compose up
+```
+
+The API will be available at `http://localhost:8080`.
+
+> **Note**: The `SecretSigningKey` must be set (via User Secrets, environment variable, or the `UNITODO_JWT_SECRET` env var for Docker) or the app will throw on startup.
 
 ---
 
@@ -143,9 +152,10 @@ Test coverage includes:
 | Authentication (Register/Login/JWT) | ✅ Complete |
 | Authorization (Owner/Member) | ✅ Complete |
 | Swagger/OpenAPI Docs | ✅ Enabled |
+| Automatic Migrations | ✅ On startup |
 | Unit Tests | ✅ Comprehensive |
 | Integration Tests | ⏳ Planned |
-| Docker Support | ⏳ Planned |
+| Docker Support | ✅ Complete (Dockerfile + docker-compose) |
 
 ---
 
