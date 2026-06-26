@@ -178,6 +178,21 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
         }
+
+        [Fact]
+        public async Task GetTodoListRunByRunIdAsync_WhenUserIsNotMember_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetTodoListRunByRunIdAsync(run.RunId, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.GetTodoListRunByRunIdAsync(run.RunId, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
         #endregion
 
         #region MakeTodoListRunSharedAsync

@@ -55,6 +55,8 @@ namespace UniTodo.Modules.Todos.Application.Services
             var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, false, cancellationToken);
             if (run == null)
                 return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+            if (!run.Members.Any(m => m.UserId == _userContext.UserId))
+                return DomainError.NotAuthorized();
             return run.ToDto();
         }
 
