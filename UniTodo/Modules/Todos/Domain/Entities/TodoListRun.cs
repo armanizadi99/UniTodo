@@ -38,12 +38,6 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             SetResetPolicy(resetPolicy);
         }
 
-        private TodoListRun(string name, ResetPolicy resetPolicy, bool isShared, UserId ownerUserId, Guid runId)
-            : this(name, resetPolicy, isShared, ownerUserId)
-        {
-            RunId = runId;
-        }
-
         public Result UpdateResetPolicy(ResetPolicy newPolicy, UserId actorId)
         {
             if (actorId != ownerId)
@@ -114,7 +108,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             Status = TodoListRunStatus.Closed;
             ClosedAt = DateTimeOffset.UtcNow;
 
-            var newRun = new TodoListRun(Name, ResetPolicy, IsShared, ownerId, RunId);
+            var newRun = new TodoListRun(Name, ResetPolicy, IsShared, ownerId);
 
             foreach (var member in _members)
             {

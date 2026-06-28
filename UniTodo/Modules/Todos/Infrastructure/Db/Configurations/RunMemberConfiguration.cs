@@ -10,7 +10,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
         void IEntityTypeConfiguration<RunMember>.Configure(EntityTypeBuilder<RunMember> builder)
         {
             builder.Ignore(e => e.Id);
-            builder.HasKey(e => new { e.UserId, e.TodoListRunId });
+            builder.HasKey(e => new { e.UserId, e.RunId });
         }
     }
 }

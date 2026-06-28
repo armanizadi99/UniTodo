@@ -20,11 +20,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<TodoItemDto>> AddTodoItemToTodoListRunAsync(Guid runId, AddTodoItemDto dto, CancellationToken cancellationToken)
+        public async Task<Result<TodoItemDto>> AddTodoItemToTodoListRunAsync(int todoListRunId, AddTodoItemDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, true, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var item = new TodoItem(new TodoItemDescription(dto.Description));
             var result = run.AddTodoItem(item, _userContext.UserId);
             if (!result.IsSuccess)
@@ -33,11 +33,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return item.ToTodoItemDto();
         }
 
-        public async Task<Result> DeleteTodoItemFromTodoListRunAsync(Guid runId, int todoItemId, CancellationToken cancellationToken)
+        public async Task<Result> DeleteTodoItemFromTodoListRunAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.DeleteItem(todoItemId, _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -45,21 +45,21 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result<IReadOnlyList<TodoItemDto>>> GetTodoListRunItemsAsync(Guid runId, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<TodoItemDto>>> GetTodoListRunItemsAsync(int todoListRunId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, true, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 return DomainError.NotAuthorized();
             return run.TodoItems.Select(i => i.ToTodoItemDto()).ToList();
         }
 
-        public async Task<Result> MarkTodoItemCompleteAsync(Guid runId, int todoItemId, CancellationToken cancellationToken)
+        public async Task<Result> MarkTodoItemCompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.MarkItemComplete(todoItemId, _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -67,11 +67,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> MarkTodoItemIncompleteAsync(Guid runId, int todoItemId, CancellationToken cancellationToken)
+        public async Task<Result> MarkTodoItemIncompleteAsync(int todoListRunId, int todoItemId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.MarkItemIncomplete(todoItemId, _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -79,11 +79,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> UpdateNotesForTodoItemAsync(Guid runId, int todoItemId, UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
+        public async Task<Result> UpdateNotesForTodoItemAsync(int todoListRunId, int todoItemId, UpdateNotesForTodoItemDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.UpdateNotes(todoItemId, new TodoItemNotes(dto.Notes), _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -91,11 +91,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> AssignItemToMemberAsync(Guid runId, int todoItemId, AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
+        public async Task<Result> AssignItemToMemberAsync(int todoListRunId, int todoItemId, AssignTodoItemToMemberDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.AssignItemToMember(todoItemId, new UserId(dto.MemberId!.Value), _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -103,11 +103,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> ChangeTodoItemDescriptionAsync(Guid runId, int todoItemId, ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
+        public async Task<Result> ChangeTodoItemDescriptionAsync(int todoListRunId, int todoItemId, ChangeTodoItemDescriptionDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, todoItemId, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, todoItemId, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
             var result = run.ChangeItemDescription(todoItemId, new TodoItemDescription(dto.Description), _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);

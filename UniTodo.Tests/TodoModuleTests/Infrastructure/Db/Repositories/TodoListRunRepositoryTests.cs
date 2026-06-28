@@ -28,7 +28,7 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             await Context.SaveChangesAsync();
 
             // Act
-            var result = await _repository.GetTodoListRunByRunIdAsync(run.RunId, false, CancellationToken.None);
+            var result = await _repository.GetTodoListRunByIdAsync(run.Id, false, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -46,7 +46,7 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             await Context.SaveChangesAsync();
 
             // Act
-            var result = await _repository.GetTodoListRunByRunIdAsync(run.RunId, true, CancellationToken.None);
+            var result = await _repository.GetTodoListRunByIdAsync(run.Id, true, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -128,7 +128,7 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
                 var repository = new TodoListRunRepository(actContext);
 
                 // Act
-                var result = await ((ITodoListRunRepository)repository).GetTodoListRunByRunIdAsync(run.RunId, itemId, CancellationToken.None);
+                var result = await ((ITodoListRunRepository)repository).GetTodoListRunByIdAsync(run.Id, itemId, CancellationToken.None);
 
                 // Assert
                 result.Should().NotBeNull();

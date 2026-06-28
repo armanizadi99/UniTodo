@@ -31,8 +31,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             builder.Property(e => e.RunId)
             .IsRequired();
 
-            builder.HasIndex(e => e.RunId).IsUnique(false);
-
             builder.Property(e => e.IsShared)
             .IsRequired();
 
@@ -45,8 +43,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 
             builder.HasMany(e => e.Members)
             .WithOne(e => e.Run)
-            .HasForeignKey(e => e.TodoListRunId)
-            .HasPrincipalKey(e => e.RunId);
+            .HasForeignKey(e => e.RunId);
 
             builder.Navigation(nameof(TodoListRun.TodoItems))
                     .UsePropertyAccessMode(PropertyAccessMode.Field);

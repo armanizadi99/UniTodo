@@ -50,19 +50,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return runs.Select(r => r.ToDto()).ToList();
         }
 
-        public async Task<Result<TodoListRunDto>> GetTodoListRunByRunIdAsync(Guid runId, CancellationToken cancellationToken)
+        public async Task<Result> MakeTodoListRunSharedAsync(int id, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, false, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(id, false, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
-            return run.ToDto();
-        }
-
-        public async Task<Result> MakeTodoListRunSharedAsync(Guid runId, CancellationToken cancellationToken)
-        {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, false, cancellationToken);
-            if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), id);
             var result = run.MakeShared(_userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
@@ -70,11 +62,11 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> MakeTodoListRunPrivateAsync(Guid runId, CancellationToken cancellationToken)
+        public async Task<Result> MakeTodoListRunPrivateAsync(int id, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByRunIdAsync(runId, true, cancellationToken);
+            var run = await _runRepository.GetTodoListRunByIdAsync(id, true, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), runId);
+                return DomainError.EntityNotFound(nameof(TodoListRun), id);
             var result = run.MakePrivate(_userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);

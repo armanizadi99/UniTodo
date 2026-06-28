@@ -22,20 +22,20 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("TodoListRunId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("UserId", "TodoListRunId");
+                    b.HasKey("UserId");
 
-                    b.HasIndex("TodoListRunId");
+                    b.HasIndex("RunId");
 
-                    b.ToTable("runMembers");
+                    b.ToTable("RunMember");
                 });
 
             modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoItem", b =>
@@ -152,8 +152,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RunId");
-
                     b.ToTable("todoListRuns");
                 });
 
@@ -196,8 +194,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                 {
                     b.HasOne("UniTodo.Modules.Todos.Domain.Entities.TodoListRun", "Run")
                         .WithMany("Members")
-                        .HasForeignKey("TodoListRunId")
-                        .HasPrincipalKey("RunId")
+                        .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
