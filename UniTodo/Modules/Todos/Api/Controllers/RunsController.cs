@@ -82,7 +82,6 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [HttpGet("{runId:guid}", Name = "GetRunByRunId")]
         [ProducesResponseType(typeof(TodoListRunDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetRunByRunIdAsync([FromRoute] Guid runId, CancellationToken cancellationToken)
         {
             var result = await _service.GetTodoListRunByRunIdAsync(runId, cancellationToken);
