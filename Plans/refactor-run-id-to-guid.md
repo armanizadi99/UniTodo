@@ -1,4 +1,4 @@
-# [COMPLETED] Refactor: Use `Guid RunId` for All Run Operations
+# Refactor: Use `Guid RunId` for All Run Operations
 
 ## Context
 
