@@ -23,7 +23,7 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
                 {
                     using (var scope = _scopeFactory.CreateScope())
                     {
-                        var repository = scope.ServiceProvider.GetRequiredService<ITodoListRunRepository>();
+                        var repository = scope.ServiceProvider.GetRequiredService<IRunRepository>();
                         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                         var runsDueForReset = await repository.GetRunsDueForResetAsync(stoppingToken);
                         foreach (var run in runsDueForReset)
@@ -31,11 +31,10 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
                             var result = run.Reset();
                             if (!result.IsSuccess)
                             {
-                                _logger.LogWarning(message: "Failed to reset run {@}. Error: {@error}", run, result.Error);
+                                _logger.LogWarning(message: "Failed to reset run {@run}. Error: {@error}", run, result.Error);
                                 continue;
                             }
-                            await repository.AddAsync(result.Value);
-                            _logger.LogInformation("Reset run {@run}. The new run is {@result.Value}", run, result.Value);
+                            _logger.LogInformation("Reset run {@run}. New current iteration id is {IterationId}", run, run.CurrentIteration.Id);
                         }
                         await unitOfWork.SaveChangesAsync();
                     }
