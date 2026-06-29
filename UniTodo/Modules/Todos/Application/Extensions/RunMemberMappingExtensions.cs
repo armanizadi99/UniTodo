@@ -5,9 +5,9 @@ namespace UniTodo.Modules.Todos.Application.Extensions
 {
     public static class RunMemberMappingExtensions
     {
-        public static TodoListRunMemberDto ToDto(this RunMember member)
+        public static RunMemberDto ToDto(this RunMember member)
         {
-            return new TodoListRunMemberDto(
+            return new RunMemberDto(
     Id: member.Id,
                 UserId: member.UserId.Value,
     CreatedAt: member.CreatedAt,
