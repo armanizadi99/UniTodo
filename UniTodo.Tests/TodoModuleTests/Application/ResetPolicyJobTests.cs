@@ -18,7 +18,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
 {
     public class ResetPolicyJobTests
     {
-        private readonly ITodoListRunRepository _repository;
+        private readonly IRunRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ResetPolicyJob> _logger;
         private readonly ResetPolicyJob _job;
@@ -30,20 +30,20 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public ResetPolicyJobTests()
         {
             _unitOfWork = Substitute.For<IUnitOfWork>();
-            _repository = Substitute.For<ITodoListRunRepository>();
+            _repository = Substitute.For<IRunRepository>();
             _logger = Substitute.For<ILogger<ResetPolicyJob>>();
             _scopeFactory = Substitute.For<IServiceScopeFactory>();
             _scope = Substitute.For<IServiceScope>();
             _serviceProvider = Substitute.For<IServiceProvider>();
             _serviceProvider.GetService(typeof(IUnitOfWork)).Returns(_unitOfWork);
-            _serviceProvider.GetService(typeof(ITodoListRunRepository)).Returns(_repository);
+            _serviceProvider.GetService(typeof(IRunRepository)).Returns(_repository);
             _scope.ServiceProvider.Returns(_serviceProvider);
             _scopeFactory.CreateScope().Returns(_scope);
             _job = new ResetPolicyJob(_scopeFactory, _logger);
         }
-        private void setResetsAt(TodoListRun run, DateTimeOffset? date)
+        private void setResetsAt(Run run, DateTimeOffset? date)
         {
-            var property = typeof(TodoListRun).GetProperty(nameof(TodoListRun.ResetsAt), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            var property = typeof(Run).GetProperty(nameof(Run.ResetsAt), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
             property!.SetValue(run, date);
         }
 
@@ -51,10 +51,10 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task StartAsync_RunsThatAreDue_ShouldResetThemAll()
         {
             // Arrange
-            var dueRuns = new List<TodoListRun>();
-            var run1 = new TodoListRun("run1", Modules.Todos.Domain.Enums.ResetPolicy.Daily, false, _ownerId);
+            var dueRuns = new List<Run>();
+            var run1 = new Run("run1", Modules.Todos.Domain.Enums.ResetPolicy.Daily, false, _ownerId);
             setResetsAt(run1, run1.ResetsAt?.AddDays(-1));
-            var run2 = new TodoListRun("run2", Modules.Todos.Domain.Enums.ResetPolicy.Weekly, false, _ownerId);
+            var run2 = new Run("run2", Modules.Todos.Domain.Enums.ResetPolicy.Weekly, false, _ownerId);
             setResetsAt(run2, run2.ResetsAt?.AddDays(-10));
             dueRuns.AddRange(run1, run2);
             _repository.GetRunsDueForResetAsync(Arg.Any<CancellationToken>()).Returns(dueRuns);
@@ -66,10 +66,11 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             cts.Cancel();
 
             // Assert
-            run1.Status.Should().Be(Modules.Todos.Domain.Enums.TodoListRunStatus.Closed);
-            run2.Status.Should().Be(Modules.Todos.Domain.Enums.TodoListRunStatus.Closed);
-            await _repository.Received(1).AddAsync(Arg.Is<TodoListRun>(r => r.Name == run1.Name));
-            await _repository.Received(1).AddAsync(Arg.Is<TodoListRun>(r => r.Name == run2.Name));
+            run1.Status.Should().Be(Modules.Todos.Domain.Enums.TodoListRunStatus.Active);
+            run2.Status.Should().Be(Modules.Todos.Domain.Enums.TodoListRunStatus.Active);
+            run1.Iterations.Should().HaveCount(2);
+            run2.Iterations.Should().HaveCount(2);
+            await _repository.DidNotReceive().AddAsync(Arg.Any<Run>());
             await _unitOfWork.Received(1).SaveChangesAsync();
             _logger.Received(2).Log(LogLevel.Information,
     Arg.Any<EventId>(),
