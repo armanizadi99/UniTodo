@@ -1,6 +1,6 @@
-﻿namespace UniTodo.Modules.Todos.Application.DTOs
+namespace UniTodo.Modules.Todos.Application.DTOs
 {
-    public record TodoListRunMemberDto
+    public record RunMemberDto
     {
         /// <summary>The database identifier of this membership record.</summary>
         public int Id { get; init; }
@@ -11,7 +11,7 @@
         /// <summary>When the membership was last updated.</summary>
         public DateTimeOffset? UpdatedAt { get; init; }
 
-        public TodoListRunMemberDto(int Id, Guid UserId, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
+        public RunMemberDto(int Id, Guid UserId, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
         {
             this.Id = Id;
             this.UserId = UserId;

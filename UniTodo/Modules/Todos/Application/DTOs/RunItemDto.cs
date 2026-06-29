@@ -1,12 +1,10 @@
-﻿using UniTodo.Modules.Todos.Domain.ValueObjects;
-
 namespace UniTodo.Modules.Todos.Application.DTOs
 {
-    public record TodoItemDto
+    public record RunItemDto
     {
-        /// <summary>The database identifier of this todo item.</summary>
+        /// <summary>The database identifier of this run item.</summary>
         public int Id { get; init; }
-        /// <summary>The description text of the todo item.</summary>
+        /// <summary>The description text of the run item.</summary>
         public string Description { get; init; }
         /// <summary>Whether the item is completed.</summary>
         public bool IsCompleted { get; init; }
@@ -23,7 +21,7 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         /// <summary>When the item was last updated.</summary>
         public DateTimeOffset? UpdatedAt { get; init; }
 
-        public TodoItemDto(int Id, string Description, bool IsCompleted, DateTimeOffset? CompletedAt, Guid? CompletedBy, string? Notes, Guid? AsignedTo, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
+        public RunItemDto(int Id, string Description, bool IsCompleted, DateTimeOffset? CompletedAt, Guid? CompletedBy, string? Notes, Guid? AsignedTo, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
         {
             this.Id = Id;
             this.Description = Description;

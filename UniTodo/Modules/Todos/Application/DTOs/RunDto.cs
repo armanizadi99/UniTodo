@@ -1,13 +1,11 @@
-﻿using UniTodo.Modules.Todos.Domain.Enums;
+using UniTodo.Modules.Todos.Domain.Enums;
 
 namespace UniTodo.Modules.Todos.Application.DTOs
 {
-    public record TodoListRunDto
+    public record RunDto
     {
-        /// <summary>The database identifier of this run.</summary>
+        /// <summary>The identifier of this run.</summary>
         public int Id { get; init; }
-        /// <summary>The public GUID identifying this run.</summary>
-        public Guid RunId { get; init; }
         /// <summary>The display name of the run.</summary>
         public string Name { get; init; }
         /// <summary>The reset policy governing item reset behavior.</summary>
@@ -25,10 +23,9 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         /// <summary>When the run was last updated.</summary>
         public DateTimeOffset? UpdatedAt { get; init; }
 
-        public TodoListRunDto(int Id, Guid RunId, string Name, ResetPolicy ResetPolicy, Guid OwnerId, TodoListRunStatus Status, bool IsShared, DateTimeOffset? ClosedAt, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
+        public RunDto(int Id, string Name, ResetPolicy ResetPolicy, Guid OwnerId, TodoListRunStatus Status, bool IsShared, DateTimeOffset? ClosedAt, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
         {
             this.Id = Id;
-            this.RunId = RunId;
             this.Name = Name;
             this.ResetPolicy = ResetPolicy;
             this.OwnerId = OwnerId;
