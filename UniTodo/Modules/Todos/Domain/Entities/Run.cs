@@ -105,10 +105,16 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                     return DomainError.InvalidOperation("The run cannot be reset before the scheduled time.");
             }
 
+        var result = CurrentIteration.Close();
+        if (!result.IsSuccess)
+            return result;
+
             var newIteration = new RunIteration();
             foreach (var item in CurrentIteration.RunItems)
             {
-                newIteration.AddItem(new RunItem(item.Description));
+                var addResult = newIteration.AddItem(new RunItem(item.Description));
+        if (!addResult.IsSuccess)
+            return addResult;
             }
             _iterations.Add(newIteration);
 
@@ -137,7 +143,10 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 return DomainError.InvalidOperation("Items couldn't be added to a closed run.");
             if (CurrentIteration.RunItems.Any(i => String.Equals(i.Description.Value, item.Description.Value, StringComparison.OrdinalIgnoreCase)))
                 return DomainError.DuplicateEntities("No duplicate description could be in a run.");
-            CurrentIteration.AddItem(item);
+            var result = CurrentIteration.AddItem(item);
+        if (!result.IsSuccess)
+            return result;
+
             return Result.Success();
         }
 
@@ -150,7 +159,10 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
             if (item == null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
-            CurrentIteration.RemoveItem(item);
+            var result = CurrentIteration.RemoveItem(item);
+        if (!result.IsSuccess)
+            return result;
+
             return Result.Success();
         }
 
