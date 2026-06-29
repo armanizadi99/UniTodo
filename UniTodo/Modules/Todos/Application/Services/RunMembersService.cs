@@ -7,46 +7,46 @@ using UniTodo.Modules.Todos.Domain.ValueObjects;
 
 namespace UniTodo.Modules.Todos.Application.Services
 {
-    public class TodoListRunMembersService
+    public class RunMembersService
     {
-        private readonly ITodoListRunRepository _runRepository;
+        private readonly IRunRepository _runRepository;
         private readonly IUserContext _userContext;
         private readonly IUnitOfWork _unitOfWork;
 
-        public TodoListRunMembersService(ITodoListRunRepository runRepository, IUserContext userContext, IUnitOfWork unitOfWork)
+        public RunMembersService(IRunRepository runRepository, IUserContext userContext, IUnitOfWork unitOfWork)
         {
             _runRepository = runRepository;
             _userContext = userContext;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<IReadOnlyList<TodoListRunMemberDto>>> GetTodoListRunMembersAsync(int todoListRunId, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<RunMemberDto>>> GetRunMembersAsync(int runId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetRunByIdAsync(runId, true, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
+                return DomainError.EntityNotFound(nameof(Run), runId);
             if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 return DomainError.NotAuthorized();
             return run.Members.Select(m => m.ToDto()).ToList();
         }
 
-        public async Task<Result<TodoListRunMemberDto>> AddMemberToTodoListRunAsync(int todoListRunId, AddMemberToTodoListRunDto dto, CancellationToken cancellationToken)
+        public async Task<Result<RunMemberDto>> AddMemberToRunAsync(int runId, AddMemberToRunDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, false, cancellationToken);
+            var run = await _runRepository.GetRunByIdAsync(runId, false, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
+                return DomainError.EntityNotFound(nameof(Run), runId);
             var result = run.AddMember(new UserId(dto.UserId!.Value), _userContext.UserId);
             if (!result.IsSuccess)
-                return Result<TodoListRunMemberDto>.Failure(result.Error);
+                return Result<RunMemberDto>.Failure(result.Error);
             await _unitOfWork.SaveChangesAsync();
             return result.Value.ToDto();
         }
 
-        public async Task<Result> RemoveMemberFromTodoListRunAsync(int todoListRunId, Guid memberId, CancellationToken cancellationToken)
+        public async Task<Result> RemoveMemberFromRunAsync(int runId, Guid memberId, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetTodoListRunByIdAsync(todoListRunId, true, cancellationToken);
+            var run = await _runRepository.GetRunByIdAsync(runId, true, cancellationToken);
             if (run == null)
-                return DomainError.EntityNotFound(nameof(TodoListRun), todoListRunId);
+                return DomainError.EntityNotFound(nameof(Run), runId);
             var result = run.RemoveMember(new UserId(memberId), _userContext.UserId);
             if (!result.IsSuccess)
                 return Result.Failure(result.Error);
