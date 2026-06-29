@@ -7,7 +7,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
     {
         public UserId UserId { get; private set; }
         public int RunId { get; private set; }
-        public TodoListRun Run { get; private set; } = null!;
+        public Run Run { get; private set; } = null!;
 
         private RunMember() { }
 
