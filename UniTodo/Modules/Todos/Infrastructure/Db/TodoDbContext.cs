@@ -15,17 +15,19 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db
 
         public DbSet<TodoListTemplate> todoLists { get; set; }
         public DbSet<TodoItemTemplate> todoItemTemplates { get; set; }
-        public DbSet<TodoListRun> todoListRuns { get; set; }
-        public DbSet<TodoItem> todoItems { get; set; }
+        public DbSet<Run> runs { get; set; }
+        public DbSet<RunIteration> runIterations { get; set; }
+        public DbSet<RunItem> runItems { get; set; }
         public DbSet<RunMember> runMembers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new TodoListTemplateConfiguration());
-            modelBuilder.ApplyConfiguration(new TodoListRunConfiguration());
+            modelBuilder.ApplyConfiguration(new RunConfiguration());
+            modelBuilder.ApplyConfiguration(new RunIterationConfiguration());
             modelBuilder.ApplyConfiguration(new TodoItemTemplateConfiguration());
-            modelBuilder.ApplyConfiguration(new TodoItemConfiguration());
+            modelBuilder.ApplyConfiguration(new RunItemConfiguration());
             modelBuilder.ApplyConfiguration(new RunMemberConfiguration());
         }
 
