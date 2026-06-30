@@ -48,6 +48,16 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
     .ToListAsync(cancellationToken);
         }
 
+        async Task<Run?> IRunRepository.GetRunWithAllIterationsAsync(int id, CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .Include(r => r.Iterations)
+                .ThenInclude(i => i.RunItems)
+                .Include(r => r.Members)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        }
+
         async Task<IReadOnlyList<Run>> IRunRepository.GetRunsDueForResetAsync(CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.UtcNow;

@@ -434,5 +434,74 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.Error.Message.Should().Be("A closed run's policy cannot be updated.");
         }
         #endregion
+
+        #region GetRunHistoryAsync
+        [Fact]
+        public async Task GetRunHistoryAsync_WhenMember_ShouldReturnClosedIterationsWithItems()
+        {
+            // Arrange
+            var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Historic Item 1")), _currentUserId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Historic Item 2")), _currentUserId);
+            run.Reset(_currentUserId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Current Item")), _currentUserId);
+
+            _runRepository.GetRunWithAllIterationsAsync(1, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.GetRunHistoryAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(1);
+            result.Value[0].ClosedAt.Should().NotBeNull();
+            result.Value[0].Items.Should().HaveCount(2);
+            result.Value[0].Items.Select(i => i.Description).Should().Contain(new[] { "Historic Item 1", "Historic Item 2" });
+        }
+
+        [Fact]
+        public async Task GetRunHistoryAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            _runRepository.GetRunWithAllIterationsAsync(1, Arg.Any<CancellationToken>()).Returns((Run)null!);
+
+            // Act
+            var result = await _service.GetRunHistoryAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+        }
+
+        [Fact]
+        public async Task GetRunHistoryAsync_WhenNotMember_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = new Run("Test Run", ResetPolicy.None, false, new UserId(Guid.NewGuid()));
+            _runRepository.GetRunWithAllIterationsAsync(1, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.GetRunHistoryAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public async Task GetRunHistoryAsync_WhenNoClosedIterations_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
+            _runRepository.GetRunWithAllIterationsAsync(1, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.GetRunHistoryAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().BeEmpty();
+        }
+        #endregion
     }
 }

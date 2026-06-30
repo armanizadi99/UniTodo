@@ -173,6 +173,25 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         /// <summary>
+        /// Retrieves the history of a run (all closed iterations with their items).
+        /// </summary>
+        /// <param name="runId">The identifier of the run.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A list of closed iterations with their items.</returns>
+        [HttpGet("{runId:int:min(1)}/history")]
+        [ProducesResponseType(typeof(IReadOnlyList<RunIterationDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetRunHistoryAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        {
+            var result = await _service.GetRunHistoryAsync(runId, cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
         /// Updates the reset policy of a run.
         /// </summary>
         /// <param name="runId">The identifier of the run.</param>

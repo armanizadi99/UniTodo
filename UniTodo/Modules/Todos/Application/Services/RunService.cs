@@ -108,6 +108,23 @@ namespace UniTodo.Modules.Todos.Application.Services
             return Result.Success();
         }
 
+        public async Task<Result<IReadOnlyList<RunIterationDto>>> GetRunHistoryAsync(int id, CancellationToken cancellationToken)
+        {
+            var run = await _runRepository.GetRunWithAllIterationsAsync(id, cancellationToken);
+            if (run == null)
+                return DomainError.EntityNotFound(nameof(Run), id);
+            if (!run.Members.Any(m => m.UserId == _userContext.UserId))
+                return DomainError.NotAuthorized();
+
+            var history = run.Iterations
+                .Where(i => i.ClosedAt.HasValue)
+                .OrderByDescending(i => i.ClosedAt)
+                .Select(i => i.ToRunIterationDto())
+                .ToList();
+
+            return history;
+        }
+
         public async Task<Result> UpdateRunResetPolicyAsync(int id, UpdateResetPolicyDto dto, CancellationToken cancellationToken)
         {
             var run = await _runRepository.GetRunByIdAsync(id, false, cancellationToken);
