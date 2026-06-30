@@ -83,5 +83,41 @@ namespace UniTodo.Modules.Todos.Application.Services
             await _unitOfWork.SaveChangesAsync();
             return Result.Success();
         }
+
+        public async Task<Result> CloseRunAsync(int id, CancellationToken cancellationToken)
+        {
+            var run = await _runRepository.GetRunByIdAsync(id, false, cancellationToken);
+            if (run == null)
+                return DomainError.EntityNotFound(nameof(Run), id);
+            var result = run.Close(_userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
+
+        public async Task<Result> ResetRunAsync(int id, CancellationToken cancellationToken)
+        {
+            var run = await _runRepository.GetRunByIdAsync(id, false, cancellationToken);
+            if (run == null)
+                return DomainError.EntityNotFound(nameof(Run), id);
+            var result = run.Reset(_userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
+
+        public async Task<Result> UpdateRunResetPolicyAsync(int id, UpdateResetPolicyDto dto, CancellationToken cancellationToken)
+        {
+            var run = await _runRepository.GetRunByIdAsync(id, false, cancellationToken);
+            if (run == null)
+                return DomainError.EntityNotFound(nameof(Run), id);
+            var result = run.UpdateResetPolicy(dto.ResetPolicy, _userContext.UserId);
+            if (!result.IsSuccess)
+                return Result.Failure(result.Error);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
     }
 }

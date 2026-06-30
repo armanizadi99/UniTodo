@@ -283,5 +283,156 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
         #endregion
+
+        #region CloseRunAsync
+        [Fact]
+        public async Task CloseRunAsync_WhenAuthorizedAndValid_ShouldCloseAndReturnSuccess()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.CloseRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+            run.ClosedAt.Should().NotBeNull();
+            await _unitOfWork.Received(1).SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task CloseRunAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((Run)null!);
+
+            // Act
+            var result = await _service.CloseRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+        }
+
+        [Fact]
+        public async Task CloseRunAsync_WhenAlreadyClosed_ShouldReturnInvalidOperationError()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.CloseRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("The run is already closed.");
+        }
+        #endregion
+
+        #region ResetRunAsync
+        [Fact]
+        public async Task ResetRunAsync_WhenAuthorizedAndValid_ShouldResetAndReturnSuccess()
+        {
+            // Arrange
+            var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.ResetRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Iterations.Should().HaveCount(2);
+            await _unitOfWork.Received(1).SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task ResetRunAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((Run)null!);
+
+            // Act
+            var result = await _service.ResetRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+        }
+
+        [Fact]
+        public async Task ResetRunAsync_WhenClosed_ShouldReturnInvalidOperationError()
+        {
+            // Arrange
+            var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.ResetRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run cannot be reset.");
+        }
+        #endregion
+
+        #region UpdateRunResetPolicyAsync
+        [Fact]
+        public async Task UpdateRunResetPolicyAsync_WhenAuthorizedAndValid_ShouldUpdateAndReturnSuccess()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            var dto = new UpdateResetPolicyDto { ResetPolicy = ResetPolicy.Weekly };
+
+            // Act
+            var result = await _service.UpdateRunResetPolicyAsync(1, dto, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.ResetPolicy.Should().Be(ResetPolicy.Weekly);
+            await _unitOfWork.Received(1).SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateRunResetPolicyAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((Run)null!);
+            var dto = new UpdateResetPolicyDto { ResetPolicy = ResetPolicy.Weekly };
+
+            // Act
+            var result = await _service.UpdateRunResetPolicyAsync(1, dto, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+        }
+
+        [Fact]
+        public async Task UpdateRunResetPolicyAsync_WhenClosed_ShouldReturnInvalidOperationError()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            var dto = new UpdateResetPolicyDto { ResetPolicy = ResetPolicy.Weekly };
+
+            // Act
+            var result = await _service.UpdateRunResetPolicyAsync(1, dto, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run's policy cannot be updated.");
+        }
+        #endregion
     }
 }

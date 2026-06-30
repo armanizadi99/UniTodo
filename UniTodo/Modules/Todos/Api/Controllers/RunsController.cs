@@ -131,5 +131,66 @@ namespace UniTodo.Modules.Todos.Api.Controllers
 
             return NoContent();
         }
+
+        /// <summary>
+        /// Closes a run, preventing further modifications.
+        /// </summary>
+        /// <param name="runId">The identifier of the run to close.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
+        [HttpPost("{runId:int:min(1)}/close")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> CloseRunAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        {
+            var result = await _service.CloseRunAsync(runId, cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Resets a run, creating a new iteration with copies of the current incomplete items.
+        /// </summary>
+        /// <param name="runId">The identifier of the run to reset.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
+        [HttpPost("{runId:int:min(1)}/reset")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> ResetRunAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        {
+            var result = await _service.ResetRunAsync(runId, cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Updates the reset policy of a run.
+        /// </summary>
+        /// <param name="runId">The identifier of the run.</param>
+        /// <param name="dto">The new reset policy settings.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
+        [HttpPost("{runId:int:min(1)}/reset-policy")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> UpdateRunResetPolicyAsync([FromRoute] int runId, [FromBody] UpdateResetPolicyDto dto, CancellationToken cancellationToken)
+        {
+            var result = await _service.UpdateRunResetPolicyAsync(runId, dto, cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return NoContent();
+        }
     }
 }
