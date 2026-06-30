@@ -1,58 +1,108 @@
 # UniTodo API
 
-[![.NET 9](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![Architecture](https://img.shields.io/badge/architecture-modular%20monolith-informational.svg)](#architecture)
+[![Tests](https://img.shields.io/badge/tests-xUnit-success.svg)](#testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
-**UniTodo** is a modular monolith backend API for collaborative task management, built with .NET 9 using Clean Architecture and Domain-Driven Design principles. It supports reusable todo templates, active task runs with team collaboration, and automatic reset policies for recurring workflows.
+**UniTodo** is a backend API for collaborative, recurring task management. Define reusable **templates**, spin them up into live **runs**, share them with teammates, and let recurring lists reset automatically on a daily, weekly, or monthly schedule — with every past cycle preserved as history.
+
+It is built with .NET 9 and ASP.NET Core as a **modular monolith**, following **Clean Architecture** and **Domain-Driven Design** principles.
 
 ---
 
-## Key Features
+## Contents
 
-### Todo Templates
-- Create reusable todo list templates with items
-- Support for **reset policies**: None, Daily, Weekly, Monthly
-- Archive/activate templates
-- Owner-based authorization
+- [Concepts](#concepts)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [API Overview](#api-overview)
+- [Testing](#testing)
+- [Project Layout](#project-layout)
+- [License](#license)
 
-### Todo Runs (Active Instances)
-- Instantiate runs from templates or create empty private runs
-- **Collaboration**: Share runs with team members, assign items to members
-- **Item management**: Add, delete, mark complete/incomplete, update notes, change descriptions
-- **Reset logic**: Automatic reset based on policy (background job + manual trigger)
-- **Visibility control**: Toggle between private and shared runs
+---
+
+## Concepts
+
+UniTodo is organized around three core ideas:
+
+| Concept | Description |
+|---------|-------------|
+| **Template** | A reusable blueprint for a todo list (a name plus a set of item descriptions). Templates are owned by a user and can be instantiated into runs on demand. |
+| **Run** | A live, working instance of a list. A run can be created empty or from a template, can be private or shared with members, and carries a **reset policy**. |
+| **Iteration** | A single cycle of a run. Resetting a run closes the current iteration and opens a fresh one, carrying the items forward — so completed cycles are retained as immutable **history**. |
+
+This iteration model is what makes recurring workflows first-class: a "Daily standup checklist" or "Weekly cleaning rota" is one run that resets on schedule, and each reset is auditable after the fact.
+
+---
+
+## Features
+
+### Templates
+- Create and delete reusable list templates with items
+- Per-user ownership and authorization
+- Instantiate a run directly from a template
+
+### Runs
+- Create private empty runs, or generate a run from a template
+- **Reset policies**: `None`, `Daily`, `Weekly`, `Monthly`, with the next reset time computed automatically
+- **Manual + automatic reset**: reset on demand, or let the background `ResetPolicyJob` reset due runs on schedule
+- **Close** a run to make it read-only
+- **History endpoint** to retrieve all closed iterations and their items
+- Toggle **shared / private** visibility
+
+### Collaboration
+- Share a run and add or remove members
+- Assign individual items to specific members
+- Members can act on items assigned to them; owners retain full control
+
+### Item lifecycle
+- Add, delete, and re-describe items
+- Mark complete / incomplete
+- Attach and update free-text notes
+- Assign / unassign to a member
 
 ### Authentication & Authorization
-- User registration and login via ASP.NET Core Identity
-- JWT Bearer token authentication
-- Per-resource ownership and membership authorization
+- Registration and login via ASP.NET Core Identity
+- Stateless **JWT Bearer** authentication
+- Per-resource ownership and membership checks enforced in the domain layer
 
 ---
 
 ## Architecture
 
+UniTodo is a **modular monolith** — a single deployable that maintains strict internal boundaries between modules.
+
 ```
-UniTodo (Solution)
-├── UniTodo (Web API)
-│   ├── Modules
-│   │   ├── Auth          # Authentication module (Identity + JWT)
-│   │   └── Todos         # Todo module (Templates, Runs, Items, Members)
-│   │       ├── Domain    # Entities, Value Objects, Domain Events, Exceptions
-│   │       ├── Application   # Services, DTOs, Interfaces (Repository, UnitOfWork)
-│   │       ├── Infrastructure  # EF Core, Repositories, Configurations, Migrations
-│   │       └── Api       # Controllers, Endpoint Mapping
-└── UniTodo.Tests         # xUnit tests (Domain, Application, Infrastructure)
+UniTodo.sln
+├── UniTodo/                     # ASP.NET Core Web API host
+│   └── Modules/
+│       ├── Auth/                # Identity + JWT (flat module)
+│       │   ├── Controllers/     #   register / login
+│       │   ├── DB/              #   AuthDbContext, ApplicationUser, migrations
+│       │   └── Services/        #   JWT token creation
+│       └── Todos/               # Core domain (Clean Architecture)
+│           ├── Api/             #   Controllers + endpoint mapping
+│           ├── Application/     #   Services, DTOs, interfaces, background jobs
+│           ├── Domain/          #   Entities, value objects, enums, Result
+│           └── Infrastructure/  #   EF Core, repositories, configurations, migrations
+└── UniTodo.Tests/               # xUnit tests (Domain / Application / Infrastructure)
 ```
 
-### Design Principles
-- **Modular Monolith**: Clear separation between `Auth` and `Todos` modules
-- **Domain-Driven Design**: Rich domain models (`TodoListTemplate`, `TodoListRun`, `TodoItem`, `RunMember`) with encapsulated business logic
-- **Clean Architecture**: Domain → Application → Infrastructure → API layering
-- **Strongly-Typed IDs**: Generic `IStronglyTypedId<T>` prevents primitive obsession
-- **Result Pattern**: `Result<T>` for explicit error handling without exceptions
-- **Repository & Unit of Work**: Decoupled persistence with EF Core
-- **Automatic Auditing**: `IAuditable` interface with `CreatedAt`/`UpdatedAt` via `DbContext` overrides
+Each module owns its **own SQLite database** (`Auth.db`, `Todos.db`), keeping persistence concerns isolated. Modules register themselves through `AddAuthModule(...)` and `AddTodoModule(...)` in `Program.cs`.
+
+### Design principles
+
+- **Clean Architecture** — dependencies point inward: `Api → Application → Domain`, with `Infrastructure` plugging in behind interfaces.
+- **Domain-Driven Design** — `Run` is an aggregate root that encapsulates iterations, members, and all invariants (authorization, reset rules, item state). Business logic lives in the domain, not the controllers.
+- **Result pattern** — operations return `Result` / `Result<T>` with typed `DomainError`s instead of throwing for expected failures; controllers translate errors to the right HTTP status.
+- **Strongly-typed IDs & value objects** — `UserId`, `TodoItemDescription`, and `TodoItemNotes` prevent primitive obsession and centralize validation.
+- **Repository + Unit of Work** — persistence is decoupled behind `IRepository`, `IRunRepository`, `ITodoListTemplateRepository`, and `IUnitOfWork`.
+- **Automatic auditing** — entities implementing `IAuditable` get `CreatedAt` / `UpdatedAt` stamped via `DbContext` overrides.
 
 ---
 
@@ -60,111 +110,165 @@ UniTodo (Solution)
 
 | Category | Technology |
 |----------|------------|
-| Framework | .NET 9.0 (ASP.NET Core) |
-| Persistence | EF Core 9.0 with SQLite (separate DBs per module) |
+| Framework | .NET 9.0 / ASP.NET Core |
+| Persistence | EF Core 9 with SQLite (one database per module) |
 | Identity | ASP.NET Core Identity |
-| Auth | JWT Bearer Tokens |
+| Auth | JWT Bearer tokens |
+| API docs | Swagger / OpenAPI (Swashbuckle) |
+| Logging | Serilog (structured JSON, rolling daily) |
 | Testing | xUnit, NSubstitute, FluentAssertions, coverlet |
-| API Docs | Swagger/OpenAPI (Swashbuckle) |
-| Logging | Serilog (JSON, rolling daily) |
-| Mapping | Manual DTO↔Entity mapping via extension methods |
+| Containerization | Docker + Docker Compose |
 
 ---
-
-## API Documentation
-
-Full API documentation with interactive testing is available via **Swagger UI** at `/swagger` when running the application.
-
-The API covers:
-- **Authentication**: Register, Login (JWT)
-- **Templates**: CRUD for todo list templates and their items
-- **Runs**: Create/manage active todo list runs (from templates or empty), toggle shared/private
-- **Run Items**: Full item lifecycle (add, complete, assign, update notes, change description, delete)
-- **Run Members**: Add/remove/list members on shared runs
 
 ## Getting Started
 
 ### Prerequisites
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- Visual Studio 2022 / JetBrains Rider / VS Code
 
-### Installation
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- (Optional) Docker, for containerized runs
+- An IDE such as Visual Studio 2022, JetBrains Rider, or VS Code
+
+### Run locally
 
 ```bash
-# Clone the repository
+# 1. Clone and restore
 git clone <repository-url>
 cd UniTodo
-
-# Restore dependencies
 dotnet restore
 
-# Set JWT secret (required)
-dotnet user-secrets set "AuthModule:JwtSettings:SecretSigningKey" "your-secret-key-here" --project UniTodo
+# 2. Set the required JWT signing key (see Configuration)
+dotnet user-secrets set "AuthModule:JwtSettings:SecretSigningKey" "your-long-random-secret" --project UniTodo
 
-# Run the API (migrations apply automatically on startup)
+# 3. Run (migrations apply automatically on startup)
 dotnet run --project UniTodo
 ```
 
-The API will be available at `http://localhost:5000`.
-Swagger UI: `http://localhost:5000/swagger`
+The API starts at **http://localhost:5000**, with interactive Swagger UI at **http://localhost:5000/swagger**.
 
-### Docker
+### Run with Docker
 
 ```bash
-# Set JWT secret and run
-$env:UNITODO_JWT_SECRET = "your-secret-key-here"
+# Provide the JWT secret via env var, then start
+export UNITODO_JWT_SECRET="your-long-random-secret"   # PowerShell: $env:UNITODO_JWT_SECRET = "..."
 docker compose up
 ```
 
-The API will be available at `http://localhost:8080`.
+The containerized API listens on **http://localhost:8080** and persists its SQLite databases to the `./unitodo-data` volume.
 
-> **Note**: The `SecretSigningKey` must be set (via User Secrets, environment variable, or the `UNITODO_JWT_SECRET` env var for Docker) or the app will throw on startup.
+---
+
+## Configuration
+
+The JWT **`SecretSigningKey` is required** — the application fails fast on startup if it is missing. Provide it through any standard ASP.NET Core configuration source:
+
+| Environment | How |
+|-------------|-----|
+| Local dev | `dotnet user-secrets set "AuthModule:JwtSettings:SecretSigningKey" "..."` |
+| Any host | Environment variable `AuthModule__JwtSettings__SecretSigningKey` |
+| Docker Compose | Environment variable `UNITODO_JWT_SECRET` (mapped in `docker-compose.yml`) |
+
+Non-secret JWT settings (e.g. `ExpirationMinutes`) live in `appsettings.json`. Serilog writes structured logs to `data/logs/` as daily rolling JSON files.
+
+---
+
+## API Overview
+
+All Todos endpoints require a valid `Authorization: Bearer <token>` header. Obtain a token via `POST /api/auth/login`.
+
+### Auth
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/api/auth/register` | Create a new user account |
+| `POST` | `/api/auth/login` | Authenticate and receive a JWT |
+
+### Templates
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/templates` | List the current user's templates |
+| `POST` | `/api/templates` | Create a template |
+| `GET` | `/api/templates/{id}` | Get a template by id |
+| `DELETE` | `/api/templates/{id}` | Delete a template |
+
+> Template items are managed via the `TemplateItems` endpoints under a template.
+
+### Runs
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/runs` | List the current user's active runs |
+| `POST` | `/api/runs` | Create a private empty run |
+| `POST` | `/api/runs/from-template/{templateId}` | Create a run from a template |
+| `GET` | `/api/runs/{runId}` | Get a run by id |
+| `POST` | `/api/runs/{runId}/make-shared` | Make a run shared |
+| `POST` | `/api/runs/{runId}/make-private` | Make a run private |
+| `POST` | `/api/runs/{runId}/close` | Close the run (read-only) |
+| `POST` | `/api/runs/{runId}/reset` | Close the current iteration and open a new one |
+| `POST` | `/api/runs/{runId}/reset-policy` | Update the run's reset policy |
+| `GET` | `/api/runs/{runId}/history` | List closed iterations and their items |
+
+### Run items
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/runs/{runId}/items` | List items in the current iteration |
+| `POST` | `/api/runs/{runId}/items` | Add an item |
+| `DELETE` | `/api/runs/{runId}/items/{itemId}` | Delete an item |
+| `POST` | `/api/runs/{runId}/items/{itemId}/mark-complete` | Mark complete |
+| `POST` | `/api/runs/{runId}/items/{itemId}/mark-incomplete` | Mark incomplete |
+| `POST` | `/api/runs/{runId}/items/{itemId}/update-notes` | Update notes |
+| `POST` | `/api/runs/{runId}/items/{itemId}/change-description` | Change description |
+| `POST` | `/api/runs/{runId}/items/{itemId}/assign-to` | Assign to a member |
+
+### Run members
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/runs/{runId}/members` | List members |
+| `POST` | `/api/runs/{runId}/members` | Add a member |
+| `DELETE` | `/api/runs/{runId}/members/{userId}` | Remove a member |
+
+For full request/response schemas, see the **Swagger UI** at `/swagger`.
 
 ---
 
 ## Testing
 
 ```bash
-# Run all tests
+# Run the full suite
 dotnet test
 
-# Run with coverage
+# Filter by layer
+dotnet test --filter "FullyQualifiedName~Domain"
+
+# Collect coverage
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-Test coverage includes:
-- Domain logic (entities, value objects, reset policies)
-- Application services (template/run/item/member operations)
-- Infrastructure (repositories, UserContext, UnitOfWork)
+Tests follow the **Arrange / Act / Assert** convention using xUnit, FluentAssertions, and NSubstitute. The test project references the API project directly (`InternalsVisibleTo`), and service tests mock `IUnitOfWork`, the repositories, and `IUserContext`. Coverage spans:
+
+- **Domain** — entity invariants, value objects, and reset logic
+- **Application** — template, run, item, and member services
+- **Infrastructure** — repositories, `UserContext`, and `UnitOfWork`
 
 ---
 
-## Project Status
+## Project Layout
 
-| Area | Status |
-|------|--------|
-| Core Domain | ✅ Complete |
-| Template Management | ✅ Complete |
-| Run Management | ✅ Complete |
-| Collaboration (Members/Assignments) | ✅ Complete |
-| Reset Policies (Daily/Weekly/Monthly) | ✅ Complete |
-| Background Reset Job | ✅ Implemented (`ResetPolicyJob`) |
-| Authentication (Register/Login/JWT) | ✅ Complete |
-| Authorization (Owner/Member) | ✅ Complete |
-| Swagger/OpenAPI Docs | ✅ Enabled |
-| Automatic Migrations | ✅ On startup |
-| Unit Tests | ✅ Comprehensive |
-| Integration Tests | ⏳ Planned |
-| Docker Support | ✅ Complete (Dockerfile + docker-compose) |
+```
+UniTodo/
+├── UniTodo/                 # Web API host + Auth & Todos modules
+├── UniTodo.Tests/           # xUnit test project
+├── docker-compose.yml       # Containerized run (port 8080)
+├── Dockerfile               # Multi-stage .NET build
+└── UniTodo.sln
+```
 
 ---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+Released under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 ---
 
 ## Author
 
-Developed by Hamidreza Izadi
+Developed by **Hamidreza Izadi**.
