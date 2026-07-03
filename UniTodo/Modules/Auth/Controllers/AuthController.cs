@@ -101,6 +101,12 @@ namespace UniTodo.Modules.Auth.Controllers
             });
         }
 
+        /// <summary>
+        /// Exchanges a valid refresh token for a new access token and a new refresh token.
+        /// </summary>
+        /// <param name="dto">The refresh token to exchange.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A new access token and refresh token pair.</returns>
         [HttpPost("refresh")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
