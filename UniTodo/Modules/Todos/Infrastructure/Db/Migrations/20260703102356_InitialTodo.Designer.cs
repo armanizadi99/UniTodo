@@ -11,8 +11,8 @@ using UniTodo.Modules.Todos.Infrastructure.Db;
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20260612071402_AddResetsAtToTodoListRun")]
-    partial class AddResetsAtToTodoListRun
+    [Migration("20260703102356_InitialTodo")]
+    partial class InitialTodo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,28 +20,47 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.15");
 
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunMember", b =>
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.Run", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RunId")
+                    b.Property<bool>("IsShared")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ResetPolicy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ResetsAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("UserId");
+                    b.Property<Guid>("ownerId")
+                        .HasColumnType("TEXT");
 
-                    b.HasIndex("RunId");
+                    b.HasKey("Id");
 
-                    b.ToTable("RunMember");
+                    b.ToTable("runs");
                 });
 
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoItem", b =>
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,6 +90,31 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("RunIterationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunIterationId");
+
+                    b.ToTable("runItems");
+                });
+
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunIteration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("RunId")
                         .HasColumnType("INTEGER");
 
@@ -81,7 +125,28 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 
                     b.HasIndex("RunId");
 
-                    b.ToTable("todoItems");
+                    b.ToTable("runIterations");
+                });
+
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunMember", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "RunId");
+
+                    b.HasIndex("RunId");
+
+                    b.ToTable("runMembers");
                 });
 
             modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoItemTemplate", b =>
@@ -113,49 +178,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                         .IsUnique();
 
                     b.ToTable("todoItemTemplates");
-                });
-
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoListRun", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset?>("ClosedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsShared")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ResetPolicy")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset?>("ResetsAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("RunId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ownerId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("todoListRuns");
                 });
 
             modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoListTemplate", b =>
@@ -193,10 +215,21 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                     b.ToTable("todoLists");
                 });
 
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunMember", b =>
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunItem", b =>
                 {
-                    b.HasOne("UniTodo.Modules.Todos.Domain.Entities.TodoListRun", "Run")
-                        .WithMany("Members")
+                    b.HasOne("UniTodo.Modules.Todos.Domain.Entities.RunIteration", "Iteration")
+                        .WithMany("RunItems")
+                        .HasForeignKey("RunIterationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Iteration");
+                });
+
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunIteration", b =>
+                {
+                    b.HasOne("UniTodo.Modules.Todos.Domain.Entities.Run", "Run")
+                        .WithMany("Iterations")
                         .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -204,10 +237,10 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                     b.Navigation("Run");
                 });
 
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoItem", b =>
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunMember", b =>
                 {
-                    b.HasOne("UniTodo.Modules.Todos.Domain.Entities.TodoListRun", "Run")
-                        .WithMany("TodoItems")
+                    b.HasOne("UniTodo.Modules.Todos.Domain.Entities.Run", "Run")
+                        .WithMany("Members")
                         .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -226,11 +259,16 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                     b.Navigation("TodoList");
                 });
 
-            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoListRun", b =>
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.Run", b =>
                 {
-                    b.Navigation("Members");
+                    b.Navigation("Iterations");
 
-                    b.Navigation("TodoItems");
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.RunIteration", b =>
+                {
+                    b.Navigation("RunItems");
                 });
 
             modelBuilder.Entity("UniTodo.Modules.Todos.Domain.Entities.TodoListTemplate", b =>

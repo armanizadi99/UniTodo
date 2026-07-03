@@ -11,7 +11,7 @@ using UniTodo.Modules.Auth.DB;
 namespace UniTodo.Modules.Auth.DB.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260518064540_InitialAuth")]
+    [Migration("20260703102526_InitialAuth")]
     partial class InitialAuth
     {
         /// <inheritdoc />
@@ -210,6 +210,35 @@ namespace UniTodo.Modules.Auth.DB.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("UniTodo.Modules.Auth.Models.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRevoked")
+                        .IsConcurrencyToken()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
