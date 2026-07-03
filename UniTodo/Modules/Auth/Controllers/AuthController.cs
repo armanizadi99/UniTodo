@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 using UniTodo.Modules.Auth.DB;
 using UniTodo.Modules.Auth.Dtos;
 using UniTodo.Modules.Auth.Services;
@@ -18,12 +16,14 @@ namespace UniTodo.Modules.Auth.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly JwtTokenCreater _tokenCreater;
+        private readonly TokenService _tokenService;
+        private readonly AuthDbContext _context;
 
-        public AuthController(UserManager<ApplicationUser> userManager, JwtTokenCreater tokenCreater)
+        public AuthController(UserManager<ApplicationUser> userManager, TokenService tokenService, AuthDbContext context)
         {
             _userManager = userManager;
-            _tokenCreater = tokenCreater;
+            _tokenService = tokenService;
+            _context = context;
         }
 
         /// <summary>
@@ -88,12 +88,62 @@ namespace UniTodo.Modules.Auth.Controllers
                     statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            var token = _tokenCreater.CreateJwtToken(user);
+            var (accessToken, expiresAt) = _tokenService.CreateAccessToken(user);
+            var refreshToken = _tokenService.CreateRefreshToken(user.Id);
+            await _context.SaveChangesAsync();
 
-            return Ok(new
+            return Ok(new LoginResponseDto
             {
-                Token = token,
-                Email = user.Email
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                AccessTokenExpiresAt = expiresAt,
+                Email = user.Email ?? ""
+            });
+        }
+
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> RefreshAccessTokenAsync([FromBody] RefreshAccessTokenRequestDto dto, CancellationToken cancellationToken)
+        {
+            var tokenHash = _tokenService.ComputeSha256(dto.RefreshToken);
+            var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
+            if (token is null)
+                return Problem(detail: "Token not found", statusCode: (int)HttpStatusCode.NotFound);
+
+            if (token.IsRevoked)
+                return Problem(detail: "Token is revoked", statusCode: (int)HttpStatusCode.BadRequest);
+
+            if (token.ExpiresAt < DateTimeOffset.UtcNow)
+                return Problem(detail: "Token is expired", statusCode: (int)HttpStatusCode.Unauthorized);
+
+            token.IsRevoked = true;
+            var newRefreshToken = _tokenService.CreateRefreshToken(token.UserId);
+
+            var user = await _userManager.FindByIdAsync(token.UserId);
+            if (user is null)
+                return Problem(detail: "User not found", statusCode: (int)HttpStatusCode.NotFound);
+
+            var (newAccessToken, expiresAt) = _tokenService.CreateAccessToken(user);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Problem(detail: "Token was already revoked by another request.",
+                statusCode: (int)HttpStatusCode.Conflict);
+            }
+
+            return Ok(new RefreshAccessTokenResponseDto
+            {
+                RefreshToken = newRefreshToken,
+                AccessToken = newAccessToken,
+                AccessTokenExpiresAt = expiresAt
             });
         }
     }

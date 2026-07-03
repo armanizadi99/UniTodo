@@ -51,7 +51,7 @@ namespace UniTodo.Modules.Auth
                 };
             });
 
-            services.AddSingleton<JwtTokenCreater>();
+            services.AddScoped<TokenService>();
 
             return services;
         }

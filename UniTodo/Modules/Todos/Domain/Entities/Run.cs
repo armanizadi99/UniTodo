@@ -105,16 +105,16 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                     return DomainError.InvalidOperation("The run cannot be reset before the scheduled time.");
             }
 
-        var result = CurrentIteration.Close();
-        if (!result.IsSuccess)
-            return result;
+            var result = CurrentIteration.Close();
+            if (!result.IsSuccess)
+                return result;
 
             var newIteration = new RunIteration();
             foreach (var item in CurrentIteration.RunItems)
             {
                 var addResult = newIteration.AddItem(new RunItem(item.Description));
-        if (!addResult.IsSuccess)
-            return addResult;
+                if (!addResult.IsSuccess)
+                    return addResult;
             }
             _iterations.Add(newIteration);
 
@@ -144,8 +144,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (CurrentIteration.RunItems.Any(i => String.Equals(i.Description.Value, item.Description.Value, StringComparison.OrdinalIgnoreCase)))
                 return DomainError.DuplicateEntities("No duplicate description could be in a run.");
             var result = CurrentIteration.AddItem(item);
-        if (!result.IsSuccess)
-            return result;
+            if (!result.IsSuccess)
+                return result;
 
             return Result.Success();
         }
@@ -160,8 +160,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             if (item == null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
             var result = CurrentIteration.RemoveItem(item);
-        if (!result.IsSuccess)
-            return result;
+            if (!result.IsSuccess)
+                return result;
 
             return Result.Success();
         }
