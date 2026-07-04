@@ -160,6 +160,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> ChangeRunItemDescriptionAsync([FromRoute] int runId, [FromRoute] int itemId, [FromBody] ChangeRunItemDescriptionDto dto, CancellationToken cancellationToken)
         {
             var result = await _service.ChangeRunItemDescriptionAsync(runId, itemId, dto, cancellationToken);

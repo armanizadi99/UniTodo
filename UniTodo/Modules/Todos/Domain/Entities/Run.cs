@@ -262,6 +262,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
+            if (CurrentIteration.RunItems.Any(i => i.Id != itemId && string.Equals(i.Description.Value, description.Value, StringComparison.OrdinalIgnoreCase)))
+                return DomainError.DuplicateEntities("No duplicate description could be in a run.");
             return item.ChangeDescription(description);
         }
 

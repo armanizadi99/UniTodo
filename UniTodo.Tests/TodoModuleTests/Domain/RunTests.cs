@@ -884,6 +884,43 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
+
+        [Fact]
+        public void ChangeItemDescription_WhenDuplicateDescriptionExists_ShouldReturnDuplicateEntitiesError()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var item1 = new RunItem(new TodoItemDescription("First Task"));
+            run.AddRunItem(item1, _ownerId);
+            SetId(item1, 1);
+            var item2 = new RunItem(new TodoItemDescription("Second Task"));
+            run.AddRunItem(item2, _ownerId);
+            SetId(item2, 2);
+
+            // Act
+            var result = run.ChangeItemDescription(2, new TodoItemDescription("first task"), _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("No duplicate description could be in a run.");
+        }
+
+        [Fact]
+        public void ChangeItemDescription_WhenSameAsCurrentDescription_ShouldIgnoreSelfAndReturnSuccess()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var item = new RunItem(new TodoItemDescription("My Task"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            // Act
+            var result = run.ChangeItemDescription(1, new TodoItemDescription("my task"), _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+        }
         #endregion
 
         #region AddMember/RemoveMember Tests
