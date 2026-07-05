@@ -54,6 +54,10 @@ UNITODO_JWT_SECRET=your-secret-key-here docker compose up
 - No CI workflows, no `.editorconfig`, no linter/formatter config — standard .NET conventions apply
 - `Todos.txt` at repo root tracks future refactoring ideas (not user-facing docs)
 
+## decide
+
+This project has a decision-aware planning skill at `.opencode/skills/decide/SKILL.md`. Before any planning or implementation task, read that file and follow its instructions. When you encounter a significant decision point (Level 2 or Level 3 per the skill), use the `question` tool to ask the user before proceeding.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
