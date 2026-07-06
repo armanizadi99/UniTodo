@@ -1,0 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+using UniTodo.Modules.Todos.Application.Validation;
+
+namespace UniTodo.Modules.Todos.Application.DTOs
+{
+    /// <summary>Request DTO for updating run settings.</summary>
+    public class UpdateRunSettingsDto
+    {
+        /// <summary>The IANA or Windows time zone identifier for scheduling resets.</summary>
+        [Required]
+        [ValidTimeZoneId]
+        public string TimeZone { get; set; } = null!;
+
+        /// <summary>The last day of the week for weekly reset calculations.</summary>
+        [Required]
+        [EnumDataType(typeof(DayOfWeek))]
+        public DayOfWeek EndOfWeekDay { get; set; }
+
+        /// <summary>Whether historical iterations are preserved after a reset.</summary>
+        public bool PreserveHystory { get; set; }
+    }
+}

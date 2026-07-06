@@ -13,6 +13,8 @@ namespace UniTodo.Modules.Todos.Application.Extensions
             services.AddScoped<RunService>();
             services.AddScoped<RunItemsService>();
             services.AddScoped<RunMembersService>();
+            services.AddScoped<RunSettingsService>();
+            services.AddScoped<RunPermissionsService>();
             services.AddHostedService<ResetPolicyJob>();
 
             return services;

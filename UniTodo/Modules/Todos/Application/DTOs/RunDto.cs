@@ -22,6 +22,10 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         public DateTimeOffset CreatedAt { get; init; }
         /// <summary>When the run was last updated.</summary>
         public DateTimeOffset? UpdatedAt { get; init; }
+        /// <summary>settings for the run.</summary>
+        public RunSettingsDto Settings { get; init; } = null!;
+        /// <summary>permissions for the run.</summary>
+        public RunPermissionsDto Permissions { get; init; } = null!;
 
         public RunDto(int Id, string Name, ResetPolicy ResetPolicy, Guid OwnerId, TodoListRunStatus Status, bool IsShared, DateTimeOffset? ClosedAt, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
         {

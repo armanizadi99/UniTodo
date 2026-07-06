@@ -366,6 +366,131 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
         #endregion
 
+        #region UpdateSettings Tests
+        [Fact]
+        public void UpdateSettings_WhenOwner_ShouldUpdateSettingsAndReturnSuccess()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var newSettings = new RunSettings
+            {
+                TimeZone = TimeZoneInfo.Utc,
+                EndOfWeekDay = DayOfWeek.Monday,
+                PreserveHystory = false
+            };
+
+            // Act
+            var result = run.UpdateSettings(newSettings, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().Be(newSettings);
+            run.Settings.Should().Be(newSettings);
+        }
+
+        [Fact]
+        public void UpdateSettings_WhenNotOwner_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.UpdateSettings(run.Settings, _otherUserId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateSettings_WhenClosed_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            run.Close(_ownerId);
+
+            // Act
+            var result = run.UpdateSettings(run.Settings, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run's settings cannot be updated.");
+        }
+
+        [Fact]
+        public void UpdateSettings_ShouldRecalculateResetsAt()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.Daily, false, _ownerId);
+            var originalResetsAt = run.ResetsAt;
+            SetResetsAt(run, originalResetsAt!.Value.AddHours(5));
+
+            // Act
+            var result = run.UpdateSettings(run.Settings, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.ResetsAt.Should().Be(originalResetsAt);
+        }
+        #endregion
+
+        #region UpdatePermissions Tests
+        [Fact]
+        public void UpdatePermissions_WhenOwner_ShouldUpdatePermissionsAndReturnSuccess()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var newPermissions = new RunPermissions
+            {
+                MemberAllowedToAddItems = true,
+                MemberAllowdToRemoveItems = true,
+                MemberAllowedToChangeDescriptions = false,
+                MemberAllowedToCompleteUnassignedItems = false,
+                MemberAllowedToMarkIncompleteUnassignedItems = false,
+                MemberAllowedToModifyNotesForUnassignedItems = false
+            };
+
+            // Act
+            var result = run.UpdatePermissions(newPermissions, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().Be(newPermissions);
+            run.Permissions.Should().Be(newPermissions);
+        }
+
+        [Fact]
+        public void UpdatePermissions_WhenNotOwner_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.UpdatePermissions(run.Permissions, _otherUserId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdatePermissions_WhenClosed_ShouldReturnInvalidOperation()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            run.Close(_ownerId);
+
+            // Act
+            var result = run.UpdatePermissions(run.Permissions, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("A closed run's permissions cannot be updated.");
+        }
+        #endregion
+
         [Fact]
         public void CreateRunFromRunItemTemplates_WithValidParameters_ShouldCreateRunAndItemsAndReturnSuccess()
         {

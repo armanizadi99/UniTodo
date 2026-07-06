@@ -16,7 +16,24 @@ namespace UniTodo.Modules.Todos.Application.Extensions
     run.IsShared,
     run.ClosedAt,
     run.CreatedAt,
-    run.UpdatedAt);
+    run.UpdatedAt)
+            {
+                Settings = new RunSettingsDto
+                {
+                    TimeZone = run.Settings.TimeZone.Id,
+                    EndOfWeekDay = run.Settings.EndOfWeekDay,
+                    PreserveHystory = run.Settings.PreserveHystory
+                },
+                Permissions = new RunPermissionsDto
+                {
+                    MemberAllowedToCompleteUnassignedItems = run.Permissions.MemberAllowedToCompleteUnassignedItems,
+                    MemberAllowedToMarkIncompleteUnassignedItems = run.Permissions.MemberAllowedToMarkIncompleteUnassignedItems,
+                    MemberAllowedToChangeDescriptions = run.Permissions.MemberAllowedToChangeDescriptions,
+                    MemberAllowedToModifyNotesForUnassignedItems = run.Permissions.MemberAllowedToModifyNotesForUnassignedItems,
+                    MemberAllowedToAddItems = run.Permissions.MemberAllowedToAddItems,
+                    MemberAllowdToRemoveItems = run.Permissions.MemberAllowdToRemoveItems
+                }
+            };
         }
     }
 }
