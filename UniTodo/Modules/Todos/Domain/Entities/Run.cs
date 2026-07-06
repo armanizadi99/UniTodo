@@ -16,6 +16,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         public DateTimeOffset? ClosedAt { get; private set; }
         public DateTimeOffset? ResetsAt { get; private set; }
         public bool IsShared { get; private set; }
+        public RunSettings Settings { get; private set; }
+        public RunPermissions Permissions { get; private set; }
 
         public IReadOnlyCollection<RunIteration> Iterations => _iterations.AsReadOnly();
         public IReadOnlyCollection<RunMember> Members => _members.AsReadOnly();
@@ -35,7 +37,30 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             _iterations.Add(new RunIteration());
             Status = TodoListRunStatus.Active;
             IsShared = isShared;
+            Settings = Defaults.DefaultRunSettings;
+            Permissions = Defaults.DefaultRunPermissions;
             SetResetPolicy(resetPolicy);
+        }
+
+        public Result<RunSettings> UpdateSettings(RunSettings settings, UserId actorId)
+        {
+            if (actorId != ownerId)
+                return DomainError.NotAuthorized();
+            if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run's settings cannot be updated.");
+            Settings = settings;
+            UpdateResetsAt();
+            return Settings;
+        }
+
+        public Result<RunPermissions> UpdatePermissions(RunPermissions permissions, UserId actorId)
+        {
+            if (actorId != ownerId)
+                return DomainError.NotAuthorized();
+            if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run's permissions cannot be updated.");
+            Permissions = permissions;
+            return Permissions;
         }
 
         public Result UpdateResetPolicy(ResetPolicy newPolicy, UserId actorId)
@@ -52,22 +77,37 @@ namespace UniTodo.Modules.Todos.Domain.Entities
         private void SetResetPolicy(ResetPolicy newPolicy)
         {
             ResetPolicy = newPolicy;
-            var now = DateTimeOffset.UtcNow;
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+            UpdateResetsAt();
+        }
+
+        private void UpdateResetsAt()
+        {
+            var now = DateTime.UtcNow;
+            var userNow = TimeZoneInfo.ConvertTimeFromUtc(now, Settings.TimeZone);
+            var userTomorrow = new DateTime(userNow.Year, userNow.Month, userNow.Day, 0, 0, 0, DateTimeKind.Unspecified).AddDays(1);
+            var userNextMonth = new DateTime(userNow.Year, userNow.Month, 1, 0, 0, 0, DateTimeKind.Unspecified).AddMonths(1);
             ResetsAt = ResetPolicy switch
             {
-                ResetPolicy.Daily => today.AddDays(1),
-                ResetPolicy.Weekly => GetNextSaturday(today),
-                ResetPolicy.Monthly => new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, now.Offset).AddMonths(1),
+                ResetPolicy.Daily => new DateTimeOffset(userTomorrow, Settings.TimeZone.GetUtcOffset(userTomorrow)),
+                ResetPolicy.Weekly => CalculateNextWeeklyReset(userNow),
+                ResetPolicy.Monthly => new DateTimeOffset(userNextMonth, Settings.TimeZone.GetUtcOffset(userNextMonth)),
                 _ => null
             };
         }
 
-        private DateTimeOffset GetNextSaturday(DateTimeOffset today)
+        private DateTimeOffset CalculateNextWeeklyReset(DateTime userNow)
         {
-            int daysUntilSaturday = ((int)DayOfWeek.Saturday - (int)today.DayOfWeek + 7) % 7;
-            if (daysUntilSaturday == 0) daysUntilSaturday = 7;
-            return today.AddDays(daysUntilSaturday);
+            DayOfWeek resetDayOfWeek = (DayOfWeek)(((int)Settings.EndOfWeekDay + 1) % 7);
+            int daysUntilReset = ((int)resetDayOfWeek - (int)userNow.DayOfWeek + 7) % 7;
+
+            if (daysUntilReset == 0)
+            {
+                daysUntilReset = 7;
+            }
+
+            DateTime targetLocalMidnight = new DateTime(userNow.Year, userNow.Month, userNow.Day, 0, 0, 0, DateTimeKind.Unspecified).AddDays(daysUntilReset);
+
+            return new DateTimeOffset(targetLocalMidnight, Settings.TimeZone.GetUtcOffset(targetLocalMidnight));
         }
 
         public Result Close(UserId actorId)
@@ -116,6 +156,9 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 if (!addResult.IsSuccess)
                     return addResult;
             }
+            if (Settings.PreserveHystory is false)
+                _iterations.Remove(CurrentIteration);
+
             _iterations.Add(newIteration);
 
             SetResetPolicy(ResetPolicy);
@@ -137,7 +180,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result AddRunItem(RunItem item, UserId actorUserId)
         {
-            if (actorUserId != ownerId)
+            if (!Permissions.MemberAllowedToAddItems && actorUserId != ownerId)
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be added to a closed run.");
@@ -152,7 +195,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result DeleteItem(int itemId, UserId actorId)
         {
-            if (ownerId != actorId)
+            if (!Permissions.MemberAllowdToRemoveItems && ownerId != actorId)
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be deleted from a closed run.");
@@ -204,7 +247,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
-            if (item.AssignedTo == null && actorId != ownerId)
+            if (item.AssignedTo == null && actorId != ownerId && !Permissions.MemberAllowedToCompleteUnassignedItems)
                 return DomainError.NotAuthorized();
             if (item.AssignedTo != null && item.AssignedTo.Value != actorId)
                 return DomainError.NotAuthorized();
@@ -218,7 +261,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
-            if (item.AssignedTo == null && actorId != ownerId)
+            if (item.AssignedTo == null && actorId != ownerId && !Permissions.MemberAllowedToMarkIncompleteUnassignedItems)
                 return DomainError.NotAuthorized();
             if (item.AssignedTo != null && item.AssignedTo.Value != actorId)
                 return DomainError.NotAuthorized();
@@ -232,7 +275,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
             if (item is null)
                 return DomainError.EntityNotFound(nameof(RunItem), itemId);
-            if (item.AssignedTo == null && actorId != ownerId)
+            if (item.AssignedTo == null && actorId != ownerId && !Permissions.MemberAllowedToModifyNotesForUnassignedItems)
                 return DomainError.NotAuthorized();
             if (item.AssignedTo != null && item.AssignedTo.Value != actorId)
                 return DomainError.NotAuthorized();
@@ -255,7 +298,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
         {
-            if (actorId != ownerId)
+            if (actorId != ownerId && !Permissions.MemberAllowedToChangeDescriptions)
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
