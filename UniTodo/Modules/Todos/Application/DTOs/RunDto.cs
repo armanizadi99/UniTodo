@@ -22,12 +22,12 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         public DateTimeOffset CreatedAt { get; init; }
         /// <summary>When the run was last updated.</summary>
         public DateTimeOffset? UpdatedAt { get; init; }
-        /// <summary>settings for the run.</summary>
-        public RunSettingsDto Settings { get; init; } = null!;
-        /// <summary>permissions for the run.</summary>
-        public RunPermissionsDto Permissions { get; init; } = null!;
+        /// <summary>The scheduling settings for the run.</summary>
+        public RunSettingsDto Settings { get; init; }
+        /// <summary>The member permissions for the run.</summary>
+        public RunPermissionsDto Permissions { get; init; }
 
-        public RunDto(int Id, string Name, ResetPolicy ResetPolicy, Guid OwnerId, TodoListRunStatus Status, bool IsShared, DateTimeOffset? ClosedAt, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt)
+        public RunDto(int Id, string Name, ResetPolicy ResetPolicy, Guid OwnerId, TodoListRunStatus Status, bool IsShared, DateTimeOffset? ClosedAt, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, RunSettingsDto Settings, RunPermissionsDto Permissions)
         {
             this.Id = Id;
             this.Name = Name;
@@ -38,6 +38,8 @@ namespace UniTodo.Modules.Todos.Application.DTOs
             this.ClosedAt = ClosedAt;
             this.CreatedAt = CreatedAt;
             this.UpdatedAt = UpdatedAt;
+            this.Settings = Settings;
+            this.Permissions = Permissions;
         }
     }
 }

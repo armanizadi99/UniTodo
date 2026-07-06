@@ -66,6 +66,12 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 
                             b1.Property<bool>("MemberAllowedToCompleteUnassignedItems")
                                 .HasColumnType("INTEGER");
+
+                            b1.Property<bool>("MemberAllowedToMarkIncompleteUnassignedItems")
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<bool>("MemberAllowedToModifyNotesForUnassignedItems")
+                                .HasColumnType("INTEGER");
                         });
 
                     b.ComplexProperty<Dictionary<string, object>>("Settings", "UniTodo.Modules.Todos.Domain.Entities.Run.Settings#RunSettings", b1 =>

@@ -123,7 +123,15 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((Run)null!);
-            var dto = new UpdateRunPermissionsDto();
+            var dto = new UpdateRunPermissionsDto
+            {
+                MemberAllowedToCompleteUnassignedItems = false,
+                MemberAllowedToMarkIncompleteUnassignedItems = false,
+                MemberAllowedToChangeDescriptions = false,
+                MemberAllowedToModifyNotesForUnassignedItems = false,
+                MemberAllowedToAddItems = false,
+                MemberAllowdToRemoveItems = false
+            };
 
             // Act
             var result = await _service.UpdateRunPermissionsAsync(1, dto, CancellationToken.None);
@@ -142,7 +150,12 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
             var dto = new UpdateRunPermissionsDto
             {
-                MemberAllowedToAddItems = true
+                MemberAllowedToCompleteUnassignedItems = false,
+                MemberAllowedToMarkIncompleteUnassignedItems = false,
+                MemberAllowedToChangeDescriptions = false,
+                MemberAllowedToModifyNotesForUnassignedItems = false,
+                MemberAllowedToAddItems = true,
+                MemberAllowdToRemoveItems = false
             };
 
             // Act

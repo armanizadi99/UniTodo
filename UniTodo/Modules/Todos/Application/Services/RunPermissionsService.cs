@@ -1,4 +1,5 @@
 using UniTodo.Modules.Todos.Application.DTOs;
+using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
@@ -28,7 +29,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 return DomainError.NotAuthorized();
 
-            return MapPermissions(run.Permissions);
+            return run.Permissions.ToDto();
         }
 
         public async Task<Result<RunPermissionsDto>> UpdateRunPermissionsAsync(int runId, UpdateRunPermissionsDto dto, CancellationToken cancellationToken)
@@ -39,12 +40,12 @@ namespace UniTodo.Modules.Todos.Application.Services
 
             var permissions = new RunPermissions
             {
-                MemberAllowedToCompleteUnassignedItems = dto.MemberAllowedToCompleteUnassignedItems,
-                MemberAllowedToMarkIncompleteUnassignedItems = dto.MemberAllowedToMarkIncompleteUnassignedItems,
-                MemberAllowedToChangeDescriptions = dto.MemberAllowedToChangeDescriptions,
-                MemberAllowedToModifyNotesForUnassignedItems = dto.MemberAllowedToModifyNotesForUnassignedItems,
-                MemberAllowedToAddItems = dto.MemberAllowedToAddItems,
-                MemberAllowdToRemoveItems = dto.MemberAllowdToRemoveItems
+                MemberAllowedToCompleteUnassignedItems = dto.MemberAllowedToCompleteUnassignedItems!.Value,
+                MemberAllowedToMarkIncompleteUnassignedItems = dto.MemberAllowedToMarkIncompleteUnassignedItems!.Value,
+                MemberAllowedToChangeDescriptions = dto.MemberAllowedToChangeDescriptions!.Value,
+                MemberAllowedToModifyNotesForUnassignedItems = dto.MemberAllowedToModifyNotesForUnassignedItems!.Value,
+                MemberAllowedToAddItems = dto.MemberAllowedToAddItems!.Value,
+                MemberAllowdToRemoveItems = dto.MemberAllowdToRemoveItems!.Value
             };
 
             var result = run.UpdatePermissions(permissions, _userContext.UserId);
@@ -53,20 +54,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            return MapPermissions(run.Permissions);
-        }
-
-        private static RunPermissionsDto MapPermissions(RunPermissions permissions)
-        {
-            return new RunPermissionsDto
-            {
-                MemberAllowedToCompleteUnassignedItems = permissions.MemberAllowedToCompleteUnassignedItems,
-                MemberAllowedToMarkIncompleteUnassignedItems = permissions.MemberAllowedToMarkIncompleteUnassignedItems,
-                MemberAllowedToChangeDescriptions = permissions.MemberAllowedToChangeDescriptions,
-                MemberAllowedToModifyNotesForUnassignedItems = permissions.MemberAllowedToModifyNotesForUnassignedItems,
-                MemberAllowedToAddItems = permissions.MemberAllowedToAddItems,
-                MemberAllowdToRemoveItems = permissions.MemberAllowdToRemoveItems
-            };
+            return run.Permissions.ToDto();
         }
     }
 }

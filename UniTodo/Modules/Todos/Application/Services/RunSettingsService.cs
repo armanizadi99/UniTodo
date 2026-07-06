@@ -1,4 +1,5 @@
 using UniTodo.Modules.Todos.Application.DTOs;
+using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Application.Interfaces;
 using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
@@ -28,7 +29,7 @@ namespace UniTodo.Modules.Todos.Application.Services
             if (!run.Members.Any(m => m.UserId == _userContext.UserId))
                 return DomainError.NotAuthorized();
 
-            return MapSettings(run.Settings);
+            return run.Settings.ToDto();
         }
 
         public async Task<Result<RunSettingsDto>> UpdateRunSettingsAsync(int runId, UpdateRunSettingsDto dto, CancellationToken cancellationToken)
@@ -37,12 +38,12 @@ namespace UniTodo.Modules.Todos.Application.Services
             if (run == null)
                 return DomainError.EntityNotFound(nameof(Run), runId);
 
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(dto.TimeZone);
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(dto.TimeZone!);
             var settings = new RunSettings
             {
                 TimeZone = timeZone,
-                EndOfWeekDay = dto.EndOfWeekDay,
-                PreserveHystory = dto.PreserveHystory
+                EndOfWeekDay = dto.EndOfWeekDay!.Value,
+                PreserveHystory = dto.PreserveHystory!.Value
             };
 
             var result = run.UpdateSettings(settings, _userContext.UserId);
@@ -51,17 +52,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            return MapSettings(run.Settings);
-        }
-
-        private static RunSettingsDto MapSettings(RunSettings settings)
-        {
-            return new RunSettingsDto
-            {
-                TimeZone = settings.TimeZone.Id,
-                EndOfWeekDay = settings.EndOfWeekDay,
-                PreserveHystory = settings.PreserveHystory
-            };
+            return run.Settings.ToDto();
         }
     }
 }
