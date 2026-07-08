@@ -47,6 +47,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [InlineData(" ")]
         public void Constructor_WhenNameIsNullOrEmptyOrWhitespace_ShouldThrowArgumentException(string? name)
         {
+            // Arrange
+
             // Act
             var act = () => new Run(name!, ResetPolicy.None, false, _ownerId);
 
@@ -58,6 +60,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void Constructor_WhenResetPolicyIsUndefined_ShouldThrowArgumentException()
         {
+            // Arrange
+
             // Act
             var act = () => new Run("Test", (ResetPolicy)999, false, _ownerId);
 
@@ -1245,11 +1249,14 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void AddRunItem_WhenMemberWithPermission_ShouldAddItem()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToAddItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
 
+            // Act
             var result = run.AddRunItem(item, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             run.CurrentIteration.RunItems.Should().Contain(item);
         }
@@ -1257,11 +1264,14 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void AddRunItem_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToAddItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
 
+            // Act
             var result = run.AddRunItem(item, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
@@ -1269,13 +1279,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void DeleteItem_WhenMemberWithPermission_ShouldDeleteItem()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.DeleteItem(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             run.CurrentIteration.RunItems.Should().NotContain(item);
         }
@@ -1283,13 +1296,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void DeleteItem_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.DeleteItem(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
@@ -1297,13 +1313,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void MarkItemComplete_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToCompleteUnassignedItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.MarkItemComplete(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeTrue();
         }
@@ -1311,13 +1330,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void MarkItemComplete_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToCompleteUnassignedItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.MarkItemComplete(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
@@ -1325,14 +1347,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void MarkItemIncomplete_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToMarkIncompleteUnassignedItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
             run.MarkItemComplete(1, _ownerId);
 
+            // Act
             var result = run.MarkItemIncomplete(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeFalse();
         }
@@ -1340,14 +1365,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void MarkItemIncomplete_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToMarkIncompleteUnassignedItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
             run.MarkItemComplete(1, _ownerId);
 
+            // Act
             var result = run.MarkItemIncomplete(1, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
@@ -1355,14 +1383,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void UpdateNotes_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToModifyNotesForUnassignedItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
             var notes = new TodoItemNotes("Member notes");
 
+            // Act
             var result = run.UpdateNotes(1, notes, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             item.Notes.Should().Be(notes);
         }
@@ -1370,13 +1401,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void UpdateNotes_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToModifyNotesForUnassignedItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.UpdateNotes(1, new TodoItemNotes("Notes"), memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
@@ -1384,14 +1418,17 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void ChangeItemDescription_WhenMemberWithPermission_ShouldSucceed()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToChangeDescriptions = true });
             var item = new RunItem(new TodoItemDescription("Old"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
             var newDesc = new TodoItemDescription("New");
 
+            // Act
             var result = run.ChangeItemDescription(1, newDesc, memberId);
 
+            // Assert
             result.IsSuccess.Should().BeTrue();
             item.Description.Should().Be(newDesc);
         }
@@ -1399,13 +1436,16 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void ChangeItemDescription_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
+            // Arrange
             var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToChangeDescriptions = false });
             var item = new RunItem(new TodoItemDescription("Old"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
+            // Act
             var result = run.ChangeItemDescription(1, new TodoItemDescription("New"), memberId);
 
+            // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }

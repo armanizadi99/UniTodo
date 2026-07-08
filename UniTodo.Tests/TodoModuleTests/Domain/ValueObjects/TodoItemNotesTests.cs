@@ -41,9 +41,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var notes1 = new TodoItemNotes("Value");
             var notes2 = new TodoItemNotes("Value");
 
+            // Act
+            var equalsResult = notes1.Equals(notes2);
+            var operatorResult = notes1 == notes2;
+
             // Assert
-            notes1.Should().Be(notes2);
-            (notes1 == notes2).Should().BeTrue();
+            equalsResult.Should().BeTrue();
+            operatorResult.Should().BeTrue();
         }
 
         [Fact]
@@ -53,9 +57,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var notes1 = new TodoItemNotes("Value 1");
             var notes2 = new TodoItemNotes("Value 2");
 
+            // Act
+            var equalsResult = notes1.Equals(notes2);
+            var operatorResult = notes1 == notes2;
+
             // Assert
-            notes1.Should().NotBe(notes2);
-            (notes1 == notes2).Should().BeFalse();
+            equalsResult.Should().BeFalse();
+            operatorResult.Should().BeFalse();
         }
     }
 }

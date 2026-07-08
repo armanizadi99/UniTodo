@@ -25,6 +25,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
         [InlineData("")]
         public void Constructor_WithNullOrEmptyValue_ShouldThrowArgumentException(string? value)
         {
+            // Arrange
+
             // Act
             Action act = () => new TodoItemDescription(value!);
 
@@ -54,9 +56,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var desc1 = new TodoItemDescription("Value");
             var desc2 = new TodoItemDescription("Value");
 
+            // Act
+            var equalsResult = desc1.Equals(desc2);
+            var operatorResult = desc1 == desc2;
+
             // Assert
-            desc1.Should().Be(desc2);
-            (desc1 == desc2).Should().BeTrue();
+            equalsResult.Should().BeTrue();
+            operatorResult.Should().BeTrue();
         }
 
         [Fact]
@@ -66,9 +72,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var desc1 = new TodoItemDescription("Value 1");
             var desc2 = new TodoItemDescription("Value 2");
 
+            // Act
+            var equalsResult = desc1.Equals(desc2);
+            var operatorResult = desc1 == desc2;
+
             // Assert
-            desc1.Should().NotBe(desc2);
-            (desc1 == desc2).Should().BeFalse();
+            equalsResult.Should().BeFalse();
+            operatorResult.Should().BeFalse();
         }
     }
 }

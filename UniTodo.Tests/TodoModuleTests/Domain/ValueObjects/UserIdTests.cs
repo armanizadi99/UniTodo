@@ -41,9 +41,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var userId1 = new UserId(guid);
             var userId2 = new UserId(guid);
 
+            // Act
+            var equalsResult = userId1.Equals(userId2);
+            var operatorResult = userId1 == userId2;
+
             // Assert
-            userId1.Should().Be(userId2);
-            (userId1 == userId2).Should().BeTrue();
+            equalsResult.Should().BeTrue();
+            operatorResult.Should().BeTrue();
         }
 
         [Fact]
@@ -53,9 +57,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             var userId1 = new UserId(Guid.NewGuid());
             var userId2 = new UserId(Guid.NewGuid());
 
+            // Act
+            var equalsResult = userId1.Equals(userId2);
+            var operatorResult = userId1 == userId2;
+
             // Assert
-            userId1.Should().NotBe(userId2);
-            (userId1 == userId2).Should().BeFalse();
+            equalsResult.Should().BeFalse();
+            operatorResult.Should().BeFalse();
         }
     }
 }

@@ -26,6 +26,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [Fact]
         public void Constructor_WithValidParameters_ShouldInitializeCorrectly()
         {
+            // Arrange
+
             // Act
             var todoList = new TodoListTemplate(_ownerId, ValidName, DefaultPolicy);
 
@@ -57,6 +59,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [InlineData("   ")]
         public void Constructor_WhenNameIsInvalid_ShouldThrowArgumentException(string? name)
         {
+            // Arrange
+
             // Act
             Action act = () => new TodoListTemplate(_ownerId, name!, DefaultPolicy);
 
@@ -74,6 +78,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         [InlineData(ResetPolicy.Monthly)]
         public void Constructor_WithValidResetPolicies_ShouldSetCorrectPolicy(ResetPolicy policy)
         {
+            // Arrange
+
             // Act
             var todoList = new TodoListTemplate(_ownerId, ValidName, policy);
 
