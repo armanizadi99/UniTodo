@@ -31,6 +31,15 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             field?.SetValue(run, resetsAt);
         }
 
+        private (Run run, UserId memberId) CreateSharedRunWithPermissions(RunPermissions permissions)
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            run.UpdatePermissions(permissions, _ownerId);
+            return (run, memberId);
+        }
+
         #region Constructor Tests
         [Theory]
         [InlineData(null)]
@@ -77,6 +86,8 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             run.Members.Should().Contain(m => m.UserId == _ownerId);
             run.ResetsAt.Should().NotBeNull();
             run.Iterations.Should().HaveCount(1);
+            run.Settings.Should().Be(Defaults.DefaultRunSettings);
+            run.Permissions.Should().Be(Defaults.DefaultRunPermissions);
             run.CurrentIteration.RunItems.Should().BeEmpty();
         }
         #endregion
@@ -366,6 +377,45 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
         #endregion
 
+        #region PreserveHystory Reset Tests
+        [Fact]
+        public void Reset_WhenPreserveHystoryIsFalse_ShouldRemoveOldIteration()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            run.UpdateSettings(new RunSettings
+            {
+                TimeZone = TimeZoneInfo.Utc,
+                EndOfWeekDay = DayOfWeek.Friday,
+                PreserveHystory = false
+            }, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Item 1"));
+            run.AddRunItem(item, _ownerId);
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Iterations.Should().HaveCount(1);
+            run.CurrentIteration.RunItems.Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void Reset_WhenPreserveHystoryIsTrue_ShouldPreserveOldIteration()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+
+            // Act
+            var result = run.Reset(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.Iterations.Should().HaveCount(2);
+        }
+        #endregion
+
         #region UpdateSettings Tests
         [Fact]
         public void UpdateSettings_WhenOwner_ShouldUpdateSettingsAndReturnSuccess()
@@ -432,6 +482,51 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeTrue();
             run.ResetsAt.Should().Be(originalResetsAt);
+        }
+        #endregion
+
+        #region Timezone-Aware Reset Tests
+        [Fact]
+        public void UpdateSettings_WithWeeklyPolicyAndCustomEndOfWeekDay_CalculatesCorrectResetDay()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.Weekly, false, _ownerId);
+            var newSettings = new RunSettings
+            {
+                TimeZone = TimeZoneInfo.Utc,
+                EndOfWeekDay = DayOfWeek.Wednesday,
+                PreserveHystory = true
+            };
+
+            // Act
+            var result = run.UpdateSettings(newSettings, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.ResetsAt.Should().NotBeNull();
+            run.ResetsAt.Value.DayOfWeek.Should().Be(DayOfWeek.Thursday);
+        }
+
+        [Fact]
+        public void UpdateSettings_WithDifferentTimeZone_CalculatesResetsAtWithCorrectOffset()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.Daily, false, _ownerId);
+            var customTz = TimeZoneInfo.CreateCustomTimeZone("CustomTZ", TimeSpan.FromHours(5.5), "CustomTZ", "CustomTZ");
+            var newSettings = new RunSettings
+            {
+                TimeZone = customTz,
+                EndOfWeekDay = DayOfWeek.Friday,
+                PreserveHystory = true
+            };
+
+            // Act
+            var result = run.UpdateSettings(newSettings, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            run.ResetsAt.Should().NotBeNull();
+            run.ResetsAt.Value.Offset.Should().Be(TimeSpan.FromHours(5.5));
         }
         #endregion
 
@@ -1143,6 +1238,176 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             newItem.AssignedTo.Should().BeNull();
             // the historical iteration's item is frozen and keeps its assignment
             item.AssignedTo.Should().Be(memberId);
+        }
+        #endregion
+
+        #region Permission-Gated Authorization Tests
+        [Fact]
+        public void AddRunItem_WhenMemberWithPermission_ShouldAddItem()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToAddItems = true });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+
+            var result = run.AddRunItem(item, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            run.CurrentIteration.RunItems.Should().Contain(item);
+        }
+
+        [Fact]
+        public void AddRunItem_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToAddItems = false });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+
+            var result = run.AddRunItem(item, memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void DeleteItem_WhenMemberWithPermission_ShouldDeleteItem()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = true });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.DeleteItem(1, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            run.CurrentIteration.RunItems.Should().NotContain(item);
+        }
+
+        [Fact]
+        public void DeleteItem_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = false });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.DeleteItem(1, memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MarkItemComplete_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToCompleteUnassignedItems = true });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.MarkItemComplete(1, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            item.IsCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public void MarkItemComplete_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToCompleteUnassignedItems = false });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.MarkItemComplete(1, memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MarkItemIncomplete_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToMarkIncompleteUnassignedItems = true });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.MarkItemComplete(1, _ownerId);
+
+            var result = run.MarkItemIncomplete(1, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            item.IsCompleted.Should().BeFalse();
+        }
+
+        [Fact]
+        public void MarkItemIncomplete_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToMarkIncompleteUnassignedItems = false });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.MarkItemComplete(1, _ownerId);
+
+            var result = run.MarkItemIncomplete(1, memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateNotes_WhenUnassignedAndMemberWithPermission_ShouldSucceed()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToModifyNotesForUnassignedItems = true });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var notes = new TodoItemNotes("Member notes");
+
+            var result = run.UpdateNotes(1, notes, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            item.Notes.Should().Be(notes);
+        }
+
+        [Fact]
+        public void UpdateNotes_WhenUnassignedAndMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToModifyNotesForUnassignedItems = false });
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.UpdateNotes(1, new TodoItemNotes("Notes"), memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void ChangeItemDescription_WhenMemberWithPermission_ShouldSucceed()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToChangeDescriptions = true });
+            var item = new RunItem(new TodoItemDescription("Old"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var newDesc = new TodoItemDescription("New");
+
+            var result = run.ChangeItemDescription(1, newDesc, memberId);
+
+            result.IsSuccess.Should().BeTrue();
+            item.Description.Should().Be(newDesc);
+        }
+
+        [Fact]
+        public void ChangeItemDescription_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
+        {
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToChangeDescriptions = false });
+            var item = new RunItem(new TodoItemDescription("Old"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+
+            var result = run.ChangeItemDescription(1, new TodoItemDescription("New"), memberId);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
     }
