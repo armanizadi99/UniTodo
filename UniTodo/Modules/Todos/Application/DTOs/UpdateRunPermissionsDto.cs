@@ -7,26 +7,26 @@ namespace UniTodo.Modules.Todos.Application.DTOs
     {
         /// <summary>Whether members can mark unassigned items as complete.</summary>
         [Required]
-        public required bool? MemberAllowedToCompleteUnassignedItems { get; set; }
+        public bool? MemberAllowedToCompleteUnassignedItems { get; set; }
 
         /// <summary>Whether members can mark unassigned items as incomplete.</summary>
         [Required]
-        public required bool? MemberAllowedToMarkIncompleteUnassignedItems { get; set; }
+        public bool? MemberAllowedToMarkIncompleteUnassignedItems { get; set; }
 
         /// <summary>Whether members can change item descriptions.</summary>
         [Required]
-        public required bool? MemberAllowedToChangeDescriptions { get; set; }
+        public bool? MemberAllowedToChangeDescriptions { get; set; }
 
         /// <summary>Whether members can modify notes for unassigned items.</summary>
         [Required]
-        public required bool? MemberAllowedToModifyNotesForUnassignedItems { get; set; }
+        public bool? MemberAllowedToModifyNotesForUnassignedItems { get; set; }
 
         /// <summary>Whether members can add new items to the run.</summary>
         [Required]
-        public required bool? MemberAllowedToAddItems { get; set; }
+        public bool? MemberAllowedToAddItems { get; set; }
 
         /// <summary>Whether members can remove items from the run.</summary>
         [Required]
-        public required bool? MemberAllowdToRemoveItems { get; set; }
+        public bool? MemberAllowedToRemoveItems { get; set; }
     }
 }

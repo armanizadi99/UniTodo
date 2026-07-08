@@ -19,6 +19,6 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         public bool MemberAllowedToAddItems { get; init; }
 
         /// <summary>Whether members can remove items from the run.</summary>
-        public bool MemberAllowdToRemoveItems { get; init; }
+        public bool MemberAllowedToRemoveItems { get; init; }
     }
 }

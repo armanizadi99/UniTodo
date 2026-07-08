@@ -7,6 +7,6 @@
         public readonly bool MemberAllowedToChangeDescriptions { get; init; }
         public readonly bool MemberAllowedToModifyNotesForUnassignedItems { get; init; }
         public readonly bool MemberAllowedToAddItems { get; init; }
-        public readonly bool MemberAllowdToRemoveItems { get; init; }
+        public readonly bool MemberAllowedToRemoveItems { get; init; }
     }
 }

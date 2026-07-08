@@ -45,7 +45,7 @@ namespace UniTodo.Modules.Todos.Application.Services
                 MemberAllowedToChangeDescriptions = dto.MemberAllowedToChangeDescriptions!.Value,
                 MemberAllowedToModifyNotesForUnassignedItems = dto.MemberAllowedToModifyNotesForUnassignedItems!.Value,
                 MemberAllowedToAddItems = dto.MemberAllowedToAddItems!.Value,
-                MemberAllowdToRemoveItems = dto.MemberAllowdToRemoveItems!.Value
+                MemberAllowedToRemoveItems = dto.MemberAllowedToRemoveItems!.Value
             };
 
             var result = run.UpdatePermissions(permissions, _userContext.UserId);

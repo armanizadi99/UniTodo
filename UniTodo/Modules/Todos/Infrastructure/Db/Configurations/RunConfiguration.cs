@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UniTodo.Modules.Todos.Domain.Entities;
 using UniTodo.Modules.Todos.Domain.ValueObjects;
-using UniTodo.Modules.Todos.Infrastructure.Db.Converters;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
 {
@@ -35,11 +34,11 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             builder.ComplexProperty(e => e.Settings, cfg =>
             {
                 cfg.Property(s => s.TimeZone)
-                    .HasConversion<TimeZoneConverter>()
+                    .HasConversion<UniTodo.Modules.Todos.Infrastructure.Db.Converters.TimeZoneConverter>()
                     .IsRequired();
                 cfg.Property(s => s.EndOfWeekDay)
                     .IsRequired();
-                cfg.Property(s => s.PreserveHystory)
+                cfg.Property(s => s.PreserveHistory)
                     .IsRequired();
             });
 
@@ -51,7 +50,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
                     .IsRequired();
                 cfg.Property(p => p.MemberAllowedToAddItems)
                     .IsRequired();
-                cfg.Property(p => p.MemberAllowdToRemoveItems)
+                cfg.Property(p => p.MemberAllowedToRemoveItems)
                     .IsRequired();
                 cfg.Property(p => p.MemberAllowedToMarkIncompleteUnassignedItems)
                 .IsRequired();

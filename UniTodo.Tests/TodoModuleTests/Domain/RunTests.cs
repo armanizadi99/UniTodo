@@ -381,9 +381,9 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
         #endregion
 
-        #region PreserveHystory Reset Tests
+        #region PreserveHistory Reset Tests
         [Fact]
-        public void Reset_WhenPreserveHystoryIsFalse_ShouldRemoveOldIteration()
+        public void Reset_WhenPreserveHistoryIsFalse_ShouldRemoveOldIteration()
         {
             // Arrange
             var run = new Run("Test", ResetPolicy.None, false, _ownerId);
@@ -391,7 +391,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             {
                 TimeZone = TimeZoneInfo.Utc,
                 EndOfWeekDay = DayOfWeek.Friday,
-                PreserveHystory = false
+                PreserveHistory = false
             }, _ownerId);
             var item = new RunItem(new TodoItemDescription("Item 1"));
             run.AddRunItem(item, _ownerId);
@@ -406,7 +406,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
 
         [Fact]
-        public void Reset_WhenPreserveHystoryIsTrue_ShouldPreserveOldIteration()
+        public void Reset_WhenPreserveHistoryIsTrue_ShouldPreserveOldIteration()
         {
             // Arrange
             var run = new Run("Test", ResetPolicy.None, false, _ownerId);
@@ -430,7 +430,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             {
                 TimeZone = TimeZoneInfo.Utc,
                 EndOfWeekDay = DayOfWeek.Monday,
-                PreserveHystory = false
+                PreserveHistory = false
             };
 
             // Act
@@ -499,7 +499,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             {
                 TimeZone = TimeZoneInfo.Utc,
                 EndOfWeekDay = DayOfWeek.Wednesday,
-                PreserveHystory = true
+                PreserveHistory = true
             };
 
             // Act
@@ -521,7 +521,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             {
                 TimeZone = customTz,
                 EndOfWeekDay = DayOfWeek.Friday,
-                PreserveHystory = true
+                PreserveHistory = true
             };
 
             // Act
@@ -543,7 +543,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             var newPermissions = new RunPermissions
             {
                 MemberAllowedToAddItems = true,
-                MemberAllowdToRemoveItems = true,
+                MemberAllowedToRemoveItems = true,
                 MemberAllowedToChangeDescriptions = false,
                 MemberAllowedToCompleteUnassignedItems = false,
                 MemberAllowedToMarkIncompleteUnassignedItems = false,
@@ -1280,7 +1280,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void DeleteItem_WhenMemberWithPermission_ShouldDeleteItem()
         {
             // Arrange
-            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = true });
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToRemoveItems = true });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
@@ -1297,7 +1297,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void DeleteItem_WhenMemberWithoutPermission_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowdToRemoveItems = false });
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToRemoveItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);

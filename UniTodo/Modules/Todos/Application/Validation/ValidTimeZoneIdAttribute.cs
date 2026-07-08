@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using TimeZoneConverter;
 
 namespace UniTodo.Modules.Todos.Application.Validation;
 
@@ -6,8 +7,14 @@ namespace UniTodo.Modules.Todos.Application.Validation;
 public class ValidTimeZoneIdAttribute : ValidationAttribute
 {
     private static readonly Lazy<HashSet<string>> ValidTimeZoneIds = new(() =>
-        TimeZoneInfo.GetSystemTimeZones().Select(tz => tz.Id)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase));
+    {
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var id in TZConvert.KnownIanaTimeZoneNames)
+            ids.Add(id);
+        foreach (var id in TZConvert.KnownWindowsTimeZoneIds)
+            ids.Add(id);
+        return ids;
+    });
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {

@@ -11,7 +11,7 @@ namespace UniTodo.Modules.Todos.Application.Extensions
             {
                 TimeZone = settings.TimeZone.Id,
                 EndOfWeekDay = settings.EndOfWeekDay,
-                PreserveHystory = settings.PreserveHystory
+                PreserveHistory = settings.PreserveHistory
             };
         }
 
@@ -24,7 +24,7 @@ namespace UniTodo.Modules.Todos.Application.Extensions
                 MemberAllowedToChangeDescriptions = permissions.MemberAllowedToChangeDescriptions,
                 MemberAllowedToModifyNotesForUnassignedItems = permissions.MemberAllowedToModifyNotesForUnassignedItems,
                 MemberAllowedToAddItems = permissions.MemberAllowedToAddItems,
-                MemberAllowdToRemoveItems = permissions.MemberAllowdToRemoveItems
+                MemberAllowedToRemoveItems = permissions.MemberAllowedToRemoveItems
             };
         }
     }

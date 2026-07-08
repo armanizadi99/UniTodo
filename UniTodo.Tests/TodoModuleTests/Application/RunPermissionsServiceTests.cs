@@ -58,7 +58,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.MemberAllowedToAddItems.Should().Be(run.Permissions.MemberAllowedToAddItems);
-            result.Value.MemberAllowdToRemoveItems.Should().Be(run.Permissions.MemberAllowdToRemoveItems);
+            result.Value.MemberAllowedToRemoveItems.Should().Be(run.Permissions.MemberAllowedToRemoveItems);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var dto = new UpdateRunPermissionsDto
             {
                 MemberAllowedToAddItems = true,
-                MemberAllowdToRemoveItems = true,
+                MemberAllowedToRemoveItems = true,
                 MemberAllowedToChangeDescriptions = true,
                 MemberAllowedToCompleteUnassignedItems = true,
                 MemberAllowedToMarkIncompleteUnassignedItems = true,
@@ -114,7 +114,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Value.MemberAllowedToAddItems.Should().BeTrue();
-            result.Value.MemberAllowdToRemoveItems.Should().BeTrue();
+            result.Value.MemberAllowedToRemoveItems.Should().BeTrue();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
@@ -130,7 +130,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 MemberAllowedToChangeDescriptions = false,
                 MemberAllowedToModifyNotesForUnassignedItems = false,
                 MemberAllowedToAddItems = false,
-                MemberAllowdToRemoveItems = false
+                MemberAllowedToRemoveItems = false
             };
 
             // Act
@@ -155,7 +155,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 MemberAllowedToChangeDescriptions = false,
                 MemberAllowedToModifyNotesForUnassignedItems = false,
                 MemberAllowedToAddItems = true,
-                MemberAllowdToRemoveItems = false
+                MemberAllowedToRemoveItems = false
             };
 
             // Act

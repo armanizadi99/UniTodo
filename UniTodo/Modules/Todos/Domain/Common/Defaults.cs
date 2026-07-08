@@ -8,12 +8,12 @@ namespace UniTodo.Modules.Todos.Domain.Common
         {
             EndOfWeekDay = DayOfWeek.Friday,
             TimeZone = TimeZoneInfo.Utc,
-            PreserveHystory = true
+            PreserveHistory = true
         };
 
         public static RunPermissions DefaultRunPermissions = new RunPermissions
         {
-            MemberAllowdToRemoveItems = false,
+            MemberAllowedToRemoveItems = false,
             MemberAllowedToAddItems = false,
             MemberAllowedToChangeDescriptions = false,
             MemberAllowedToCompleteUnassignedItems = false,

@@ -59,7 +59,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeTrue();
             result.Value.TimeZone.Should().Be(run.Settings.TimeZone.Id);
             result.Value.EndOfWeekDay.Should().Be(run.Settings.EndOfWeekDay);
-            result.Value.PreserveHystory.Should().Be(run.Settings.PreserveHystory);
+            result.Value.PreserveHistory.Should().Be(run.Settings.PreserveHistory);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             {
                 TimeZone = "Tokyo Standard Time",
                 EndOfWeekDay = DayOfWeek.Wednesday,
-                PreserveHystory = false
+                PreserveHistory = false
             };
 
             // Act
@@ -113,7 +113,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeTrue();
             result.Value.TimeZone.Should().Be("Tokyo Standard Time");
             result.Value.EndOfWeekDay.Should().Be(DayOfWeek.Wednesday);
-            result.Value.PreserveHystory.Should().BeFalse();
+            result.Value.PreserveHistory.Should().BeFalse();
             await _unitOfWork.Received(1).SaveChangesAsync();
         }
 
@@ -126,7 +126,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             {
                 TimeZone = "UTC",
                 EndOfWeekDay = DayOfWeek.Friday,
-                PreserveHystory = true
+                PreserveHistory = true
             };
 
             // Act
@@ -148,7 +148,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             {
                 TimeZone = "UTC",
                 EndOfWeekDay = DayOfWeek.Friday,
-                PreserveHystory = true
+                PreserveHistory = true
             };
 
             // Act

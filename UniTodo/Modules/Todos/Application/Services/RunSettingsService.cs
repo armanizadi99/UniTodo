@@ -1,3 +1,4 @@
+using TimeZoneConverter;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Application.Interfaces;
@@ -38,12 +39,12 @@ namespace UniTodo.Modules.Todos.Application.Services
             if (run == null)
                 return DomainError.EntityNotFound(nameof(Run), runId);
 
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(dto.TimeZone!);
+            var timeZone = TZConvert.GetTimeZoneInfo(dto.TimeZone!);
             var settings = new RunSettings
             {
                 TimeZone = timeZone,
                 EndOfWeekDay = dto.EndOfWeekDay!.Value,
-                PreserveHystory = dto.PreserveHystory!.Value
+                PreserveHistory = dto.PreserveHistory!.Value
             };
 
             var result = run.UpdateSettings(settings, _userContext.UserId);

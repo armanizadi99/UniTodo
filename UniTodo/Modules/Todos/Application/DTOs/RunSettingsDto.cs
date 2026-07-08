@@ -10,6 +10,6 @@ namespace UniTodo.Modules.Todos.Application.DTOs
         public DayOfWeek EndOfWeekDay { get; init; }
 
         /// <summary>Whether historical (closed) iterations are preserved after a reset.</summary>
-        public bool PreserveHystory { get; init; }
+        public bool PreserveHistory { get; init; }
     }
 }

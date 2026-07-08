@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using TimeZoneConverter;
 
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Converters
 {
@@ -6,7 +7,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Converters
     {
         public TimeZoneConverter() : base(
             tz => tz.Id,
-            s => TimeZoneInfo.FindSystemTimeZoneById(s)
+            s => TZConvert.GetTimeZoneInfo(s)
         )
         { }
     }

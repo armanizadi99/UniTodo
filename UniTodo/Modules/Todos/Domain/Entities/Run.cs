@@ -156,7 +156,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
                 if (!addResult.IsSuccess)
                     return addResult;
             }
-            if (Settings.PreserveHystory is false)
+            if (Settings.PreserveHistory is false)
                 _iterations.Remove(CurrentIteration);
 
             _iterations.Add(newIteration);
@@ -195,7 +195,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result DeleteItem(int itemId, UserId actorId)
         {
-            if (!Permissions.MemberAllowdToRemoveItems && ownerId != actorId)
+            if (!Permissions.MemberAllowedToRemoveItems && ownerId != actorId)
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be deleted from a closed run.");

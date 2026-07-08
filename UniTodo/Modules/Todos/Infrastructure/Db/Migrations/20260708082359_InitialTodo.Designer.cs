@@ -12,7 +12,7 @@ using UniTodo.Modules.Todos.Infrastructure.Db;
 namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20260706131926_InitialTodo")]
+    [Migration("20260708082359_InitialTodo")]
     partial class InitialTodo
     {
         /// <inheritdoc />
@@ -58,9 +58,6 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 
                     b.ComplexProperty<Dictionary<string, object>>("Permissions", "UniTodo.Modules.Todos.Domain.Entities.Run.Permissions#RunPermissions", b1 =>
                         {
-                            b1.Property<bool>("MemberAllowdToRemoveItems")
-                                .HasColumnType("INTEGER");
-
                             b1.Property<bool>("MemberAllowedToAddItems")
                                 .HasColumnType("INTEGER");
 
@@ -75,6 +72,9 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
 
                             b1.Property<bool>("MemberAllowedToModifyNotesForUnassignedItems")
                                 .HasColumnType("INTEGER");
+
+                            b1.Property<bool>("MemberAllowedToRemoveItems")
+                                .HasColumnType("INTEGER");
                         });
 
                     b.ComplexProperty<Dictionary<string, object>>("Settings", "UniTodo.Modules.Todos.Domain.Entities.Run.Settings#RunSettings", b1 =>
@@ -82,7 +82,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Migrations
                             b1.Property<int>("EndOfWeekDay")
                                 .HasColumnType("INTEGER");
 
-                            b1.Property<bool>("PreserveHystory")
+                            b1.Property<bool>("PreserveHistory")
                                 .HasColumnType("INTEGER");
 
                             b1.Property<string>("TimeZone")
