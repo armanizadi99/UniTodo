@@ -106,6 +106,31 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
         }
 
         [Fact]
+        public async Task GetUserClosedRunsAsync_ShouldReturnClosedRunsForUser()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var ownerId = new UserId(userId);
+
+            var closedRun = new Run("Closed Run", ResetPolicy.None, false, ownerId);
+            closedRun.Close(ownerId);
+
+            var activeRun = new Run("Active Run", ResetPolicy.None, false, ownerId);
+
+            var otherUserRun = new Run("Other Run", ResetPolicy.None, false, new UserId(Guid.NewGuid()));
+
+            await Context.runs.AddRangeAsync(closedRun, activeRun, otherUserRun);
+            await Context.SaveChangesAsync();
+
+            // Act
+            var result = await _repository.GetUserClosedRunsAsync(userId, CancellationToken.None);
+
+            // Assert
+            result.Should().HaveCount(1);
+            result.Should().Contain(r => r.Name == "Closed Run");
+        }
+
+        [Fact]
         public async Task GetRunsDueForResetAsync_ShouldReturnRunsThatNeedReset()
         {
             // Arrange

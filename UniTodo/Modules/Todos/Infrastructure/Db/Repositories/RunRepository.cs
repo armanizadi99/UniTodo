@@ -48,6 +48,14 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
     .ToListAsync(cancellationToken);
         }
 
+        async Task<IReadOnlyList<Run>> IRunRepository.GetUserClosedRunsAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            return await _dbSet.Include(r => r.Members)
+                .Where(e => e.Status == Domain.Enums.TodoListRunStatus.Closed)
+                .Where(e => e.Members.Select(m => m.UserId).Contains(new Domain.ValueObjects.UserId(userId)))
+                .ToListAsync(cancellationToken);
+        }
+
         async Task<Run?> IRunRepository.GetRunWithAllIterationsAsync(int id, CancellationToken cancellationToken)
         {
             return await _dbSet

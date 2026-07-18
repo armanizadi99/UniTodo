@@ -503,5 +503,93 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.Value.Should().BeEmpty();
         }
         #endregion
+
+        #region RemoveRunAsync
+        [Fact]
+        public async Task RemoveRunAsync_WhenOwner_ShouldRemoveAndReturnSuccess()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.RemoveRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            _runRepository.Received(1).Remove(run);
+            await _unitOfWork.Received(1).SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task RemoveRunAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
+        {
+            // Arrange
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns((Run)null!);
+
+            // Act
+            var result = await _service.RemoveRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            _runRepository.DidNotReceive().Remove(Arg.Any<Run>());
+        }
+
+        [Fact]
+        public async Task RemoveRunAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var otherOwnerId = new UserId(Guid.NewGuid());
+            var run = CreateActiveRun(ownerId: otherOwnerId);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.RemoveRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            _runRepository.DidNotReceive().Remove(Arg.Any<Run>());
+        }
+
+        [Fact]
+        public async Task RemoveRunAsync_WhenClosed_ShouldAllowRemovalAndReturnSuccess()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            SetStatus(run, TodoListRunStatus.Closed);
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.RemoveRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            _runRepository.Received(1).Remove(run);
+            await _unitOfWork.Received(1).SaveChangesAsync();
+        }
+        #endregion
+
+        #region GetUserClosedRunsAsync
+        [Fact]
+        public async Task GetUserClosedRunsAsync_WhenCalled_ShouldReturnSuccessWithClosedRunsForCurrentUser()
+        {
+            // Arrange
+            var closedRun = CreateActiveRun("Closed Run 1");
+            SetStatus(closedRun, TodoListRunStatus.Closed);
+            var runs = new List<Run> { closedRun };
+            _runRepository.GetUserClosedRunsAsync(_currentUserId.Value, Arg.Any<CancellationToken>()).Returns(runs);
+
+            // Act
+            var result = await _service.GetUserClosedRunsAsync(CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(1);
+            result.Value[0].Name.Should().Be("Closed Run 1");
+            result.Value[0].Status.Should().Be(TodoListRunStatus.Closed);
+        }
+        #endregion
     }
 }

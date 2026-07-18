@@ -38,6 +38,22 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         /// <summary>
+        /// Retrieves all closed runs for the current authenticated user.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A list of closed runs for the current user.</returns>
+        [HttpGet("closed")]
+        [ProducesResponseType(typeof(IReadOnlyList<RunDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCurrentUserClosedRunsAsync(CancellationToken cancellationToken)
+        {
+            var result = await _service.GetUserClosedRunsAsync(cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
         /// Creates a new private empty run.
         /// </summary>
         /// <param name="dto">The data transfer object containing run creation details.</param>
@@ -189,6 +205,25 @@ namespace UniTodo.Modules.Todos.Api.Controllers
                 return result.Error.ToActionResult();
 
             return Ok(result.Value);
+        }
+
+        /// <summary>
+        /// Deletes a run (both active and closed). Only the owner can delete a run.
+        /// </summary>
+        /// <param name="runId">The identifier of the run to delete.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>No content.</returns>
+        [HttpDelete("{runId:int:min(1)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> RemoveRunAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        {
+            var result = await _service.RemoveRunAsync(runId, cancellationToken);
+            if (!result.IsSuccess)
+                return result.Error.ToActionResult();
+
+            return NoContent();
         }
 
         /// <summary>

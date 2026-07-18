@@ -8,6 +8,7 @@ namespace UniTodo.Modules.Todos.Application.Interfaces
         Task<Run?> GetRunByIdAsync(int id, int itemId, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<Run>> GetUserActiveRunsAsync(Guid userId, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<Run>> GetRunsDueForResetAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Run>> GetUserClosedRunsAsync(Guid userId, CancellationToken cancellationToken = default);
         Task<Run?> GetRunWithAllIterationsAsync(int id, CancellationToken cancellationToken = default);
     }
 }
