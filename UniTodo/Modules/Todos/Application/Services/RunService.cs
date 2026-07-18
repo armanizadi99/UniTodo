@@ -98,7 +98,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
         public async Task<Result> ResetRunAsync(int id, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetRunByIdAsync(id, false, cancellationToken);
+            var run = await _runRepository.GetRunByIdAsync(id, true, cancellationToken);
             if (run == null)
                 return DomainError.EntityNotFound(nameof(Run), id);
             var result = run.Reset(_userContext.UserId);

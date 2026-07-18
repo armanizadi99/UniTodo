@@ -340,7 +340,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         {
             // Arrange
             var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
-            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             var result = await _service.ResetRunAsync(1, CancellationToken.None);
@@ -371,7 +371,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             // Arrange
             var run = new Run("Test Run", ResetPolicy.None, false, _currentUserId);
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             var result = await _service.ResetRunAsync(1, CancellationToken.None);
