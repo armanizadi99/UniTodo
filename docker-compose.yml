@@ -6,7 +6,7 @@ services:
     image: unitodo:latest
     container_name: unitodo-app
     ports:
-      - "8080:8080"
+      - "5000:8080"
     volumes:
       - ./unitodo-data:/app/data
     environment:

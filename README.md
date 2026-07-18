@@ -154,7 +154,7 @@ export UNITODO_JWT_SECRET="your-long-random-secret"   # PowerShell: $env:UNITODO
 docker compose up
 ```
 
-The containerized API listens on **http://localhost:8080** and persists its SQLite databases to the `./unitodo-data` volume.
+The containerized API listens on **http://localhost:5000** and persists its SQLite databases to the `./unitodo-data` volume.
 
 ---
 
