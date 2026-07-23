@@ -12,6 +12,7 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
     {
         private readonly UserId _ownerId = new UserId(Guid.NewGuid());
         private readonly UserId _otherUserId = new UserId(Guid.NewGuid());
+        private readonly UserId _nonMemberId = new UserId(Guid.NewGuid());
 
         private void SetStatus(Run run, TodoListRunStatus status)
         {
@@ -116,10 +117,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void Close_WhenNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.Close(_otherUserId);
+            var result = run.Close(memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -164,10 +165,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void UpdateResetPolicy_WhenNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.UpdateResetPolicy(ResetPolicy.Daily, _otherUserId);
+            var result = run.UpdateResetPolicy(ResetPolicy.Daily, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -323,10 +324,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void Reset_WhenNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.Reset(_otherUserId);
+            var result = run.Reset(memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -446,10 +447,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void UpdateSettings_WhenNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.UpdateSettings(run.Settings, _otherUserId);
+            var result = run.UpdateSettings(run.Settings, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -563,10 +564,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void UpdatePermissions_WhenNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.UpdatePermissions(run.Permissions, _otherUserId);
+            var result = run.UpdatePermissions(run.Permissions, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -647,11 +648,11 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void AddRunItem_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToAddItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
 
             // Act
-            var result = run.AddRunItem(item, _otherUserId);
+            var result = run.AddRunItem(item, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -714,13 +715,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void DeleteItem_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToRemoveItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
             // Act
-            var result = run.DeleteItem(1, _otherUserId);
+            var result = run.DeleteItem(1, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -767,10 +768,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void MakeShared_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.MakeShared(_otherUserId);
+            var result = run.MakeShared(memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -868,10 +869,10 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void MakePrivate_WhenNotOwner_ShouldReturnNotAuthorizedError()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions());
 
             // Act
-            var result = run.MakePrivate(_otherUserId);
+            var result = run.MakePrivate(memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -902,13 +903,13 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         public void MarkItemComplete_WhenUnassignedAndNotOwner_ShouldReturnNotAuthorized()
         {
             // Arrange
-            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var (run, memberId) = CreateSharedRunWithPermissions(new RunPermissions { MemberAllowedToCompleteUnassignedItems = false });
             var item = new RunItem(new TodoItemDescription("Test Item"));
             run.AddRunItem(item, _ownerId);
             SetId(item, 1);
 
             // Act
-            var result = run.MarkItemComplete(1, _otherUserId);
+            var result = run.MarkItemComplete(1, memberId);
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -1449,6 +1450,178 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
+
+        #region Non-Member Authorization Tests
+        [Fact]
+        public void Close_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.Close(_nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateSettings_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.UpdateSettings(run.Settings, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateResetPolicy_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.UpdateResetPolicy(ResetPolicy.Daily, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdatePermissions_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.UpdatePermissions(run.Permissions, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void Reset_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.Reset(_nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MakeShared_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, false, _ownerId);
+            var result = run.MakeShared(_nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MakePrivate_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var result = run.MakePrivate(_nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void AddRunItem_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            var result = run.AddRunItem(item, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void DeleteItem_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var result = run.DeleteItem(1, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MarkItemComplete_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var result = run.MarkItemComplete(1, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void MarkItemIncomplete_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.MarkItemComplete(1, _ownerId);
+            var result = run.MarkItemIncomplete(1, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void UpdateNotes_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var result = run.UpdateNotes(1, new TodoItemNotes("Notes"), _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void AssignItemToMember_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var result = run.AssignItemToMember(1, memberId, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void ChangeItemDescription_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            var result = run.ChangeItemDescription(1, new TodoItemDescription("New"), _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void AddMember_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var newUserId = new UserId(Guid.NewGuid());
+            var result = run.AddMember(newUserId, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
+        public void RemoveMember_WhenNotMember_ShouldReturnNotAuthorized()
+        {
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            var result = run.RemoveMember(memberId, _nonMemberId);
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+        #endregion
+
         #endregion
     }
 }

@@ -44,7 +44,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result<RunSettings> UpdateSettings(RunSettings settings, UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.UpdateSettings, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run's settings cannot be updated.");
@@ -55,7 +55,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result<RunPermissions> UpdatePermissions(RunPermissions permissions, UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.UpdatePermissions, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run's permissions cannot be updated.");
@@ -65,7 +65,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result UpdateResetPolicy(ResetPolicy newPolicy, UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.UpdateResetPolicy, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run's policy cannot be updated.");
@@ -112,7 +112,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result Close(UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.Close, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("The run is already closed.");
@@ -124,7 +124,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result Reset(UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.Reset, actorId))
                 return DomainError.NotAuthorized();
             return ResetInternal();
         }
@@ -180,7 +180,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result AddRunItem(RunItem item, UserId actorUserId)
         {
-            if (!Permissions.MemberAllowedToAddItems && actorUserId != ownerId)
+            if (!IsAllowedToDo(RunOperation.AddItem, actorUserId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be added to a closed run.");
@@ -195,7 +195,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result DeleteItem(int itemId, UserId actorId)
         {
-            if (!Permissions.MemberAllowedToRemoveItems && ownerId != actorId)
+            if (!IsAllowedToDo(RunOperation.DeleteItem, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("Items couldn't be deleted from a closed run.");
@@ -211,7 +211,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result MakeShared(UserId actorUserId)
         {
-            if (actorUserId != ownerId)
+            if (!IsAllowedToDo(RunOperation.MakeShared, actorUserId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
@@ -223,7 +223,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result MakePrivate(UserId actorUserId)
         {
-            if (actorUserId != ownerId)
+            if (!IsAllowedToDo(RunOperation.MakePrivate, actorUserId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
@@ -242,6 +242,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result MarkItemComplete(int itemId, UserId actorId)
         {
+            if (!IsAllowedToDo(RunOperation.MarkItemComplete, actorId))
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
@@ -256,6 +258,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result MarkItemIncomplete(int itemId, UserId actorId)
         {
+            if (!IsAllowedToDo(RunOperation.MarkItemIncomplete, actorId))
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
@@ -270,6 +274,8 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result UpdateNotes(int itemId, TodoItemNotes notes, UserId actorId)
         {
+            if (!IsAllowedToDo(RunOperation.UpdateItemNotes, actorId))
+                return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
             var item = CurrentIteration.RunItems.FirstOrDefault(i => i.Id == itemId);
@@ -284,7 +290,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result AssignItemToMember(int itemId, UserId memberId, UserId actorId)
         {
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.AssignItemToMember, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
@@ -298,7 +304,7 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result ChangeItemDescription(int itemId, TodoItemDescription description, UserId actorId)
         {
-            if (actorId != ownerId && !Permissions.MemberAllowedToChangeDescriptions)
+            if (!IsAllowedToDo(RunOperation.ChangeItemDescription, actorId))
                 return DomainError.NotAuthorized();
             if (Status == TodoListRunStatus.Closed)
                 return DomainError.InvalidOperation("A closed run couldn't get modified.");
@@ -312,10 +318,10 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result<RunMember> AddMember(UserId userId, UserId actorId)
         {
-            if (Status == TodoListRunStatus.Closed)
-                return DomainError.InvalidOperation("A closed run couldn't get modified.");
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.AddMember, actorId))
                 return DomainError.NotAuthorized();
+        if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (!IsShared)
                 return DomainError.InvalidOperation("Couldn't add members to a private group.");
             if (_members.Any(m => m.UserId.Equals(userId)))
@@ -327,10 +333,10 @@ namespace UniTodo.Modules.Todos.Domain.Entities
 
         public Result RemoveMember(UserId userId, UserId actorId)
         {
-            if (Status == TodoListRunStatus.Closed)
-                return DomainError.InvalidOperation("A closed run couldn't get modified.");
-            if (actorId != ownerId)
+            if (!IsAllowedToDo(RunOperation.RemoveMember, actorId))
                 return DomainError.NotAuthorized();
+        if (Status == TodoListRunStatus.Closed)
+                return DomainError.InvalidOperation("A closed run couldn't get modified.");
             if (userId == ownerId)
                 return DomainError.InvalidOperation("Owner of a run couldn't be get removed.");
             if (!_members.Any(m => m.UserId.Equals(userId)))
@@ -346,6 +352,32 @@ namespace UniTodo.Modules.Todos.Domain.Entities
             }
             _members.RemoveAll(m => m.UserId.Equals(userId));
             return Result.Success();
+        }
+
+        private bool IsAllowedToDo(RunOperation operation, UserId actorId)
+        {
+            if (!_members.Any(m => m.UserId == actorId))
+                return false;
+            return operation switch
+            {
+                RunOperation.UpdatePermissions => actorId == ownerId,
+                RunOperation.UpdateResetPolicy => actorId == ownerId,
+                RunOperation.UpdateSettings => actorId == ownerId,
+                RunOperation.Close => actorId == ownerId,
+                RunOperation.MakeShared => actorId == ownerId,
+                RunOperation.MakePrivate => actorId == ownerId,
+                RunOperation.Reset => actorId == ownerId,
+                RunOperation.AddItem => actorId == ownerId || Permissions.MemberAllowedToAddItems,
+                RunOperation.AssignItemToMember => actorId == ownerId,
+                RunOperation.DeleteItem => actorId == ownerId || Permissions.MemberAllowedToRemoveItems,
+                RunOperation.AddMember => actorId == ownerId,
+                RunOperation.RemoveMember => actorId == ownerId,
+                RunOperation.MarkItemComplete => true,
+                RunOperation.MarkItemIncomplete => true,
+                RunOperation.ChangeItemDescription => actorId == ownerId || Permissions.MemberAllowedToChangeDescriptions,
+                RunOperation.UpdateItemNotes => true,
+                _ => false
+            };
         }
     }
 }
