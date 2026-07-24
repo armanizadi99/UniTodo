@@ -9,13 +9,17 @@ using UniTodo.Modules.Todos.Domain.Enums;
 
 namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
 {
+    [Collection("RepositoryTests")]
     public class TodoListTemplateRepositoryTests : RepositoryTestBase
     {
-        private readonly ITodoListTemplateRepository _repository;
+        private ITodoListTemplateRepository _repository = null!;
 
-        public TodoListTemplateRepositoryTests()
+        public TodoListTemplateRepositoryTests(TestContainersFixture fixture) : base(fixture) { }
+
+        protected override Task OnInitializedAsync()
         {
             _repository = new TodoListTemplateRepository(Context);
+            return Task.CompletedTask;
         }
 
         [Fact]
@@ -146,12 +150,5 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             result.Should().BeTrue();
         }
 
-        private TodoDbContext CreateNewContext()
-        {
-            var options = new DbContextOptionsBuilder<TodoDbContext>()
-                .UseSqlite(Context.Database.GetDbConnection())
-                .Options;
-            return new TodoDbContext(options);
-        }
     }
 }

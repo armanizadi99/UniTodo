@@ -9,13 +9,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
 {
+    [Collection("RepositoryTests")]
     public class RunRepositoryTests : RepositoryTestBase
     {
-        private readonly IRunRepository _repository;
+        private IRunRepository _repository = null!;
 
-        public RunRepositoryTests()
+        public RunRepositoryTests(TestContainersFixture fixture) : base(fixture) { }
+
+        protected override Task OnInitializedAsync()
         {
             _repository = new RunRepository(Context);
+            return Task.CompletedTask;
         }
 
         [Fact]
@@ -271,12 +275,5 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             result.CurrentIteration.RunItems.Should().Contain(i => i.Description.Value == "Current Item");
         }
 
-        private TodoDbContext CreateNewContext()
-        {
-            var options = new DbContextOptionsBuilder<TodoDbContext>()
-                .UseSqlite(Context.Database.GetDbConnection())
-                .Options;
-            return new TodoDbContext(options);
-        }
     }
 }

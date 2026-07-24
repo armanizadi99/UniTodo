@@ -8,13 +8,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
 {
+    [Collection("RepositoryTests")]
     public class RepositoryBaseTests : RepositoryTestBase
     {
-        private readonly IRepository<TodoListTemplate> _repository;
+        private IRepository<TodoListTemplate> _repository = null!;
 
-        public RepositoryBaseTests()
+        public RepositoryBaseTests(TestContainersFixture fixture) : base(fixture) { }
+
+        protected override Task OnInitializedAsync()
         {
             _repository = new Repository<TodoListTemplate>(Context);
+            return Task.CompletedTask;
         }
 
         [Fact]

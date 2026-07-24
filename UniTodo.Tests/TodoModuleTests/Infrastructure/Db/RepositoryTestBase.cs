@@ -1,32 +1,48 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using UniTodo.Modules.Todos.Infrastructure.Db;
 
-namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db
+namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db;
+
+public abstract class RepositoryTestBase : IAsyncLifetime
 {
-    public abstract class RepositoryTestBase : IDisposable
+    private readonly TestContainersFixture _fixture;
+    private IDbContextTransaction _transaction = null!;
+
+    protected TodoDbContext Context { get; private set; } = null!;
+
+    protected RepositoryTestBase(TestContainersFixture fixture)
     {
-        private readonly SqliteConnection _connection;
-        protected readonly TodoDbContext Context;
+        _fixture = fixture;
+    }
 
-        protected RepositoryTestBase()
-        {
-            _connection = new SqliteConnection("Filename=:memory:");
-            _connection.Open();
+    public async Task InitializeAsync()
+    {
+        var options = new DbContextOptionsBuilder<TodoDbContext>()
+            .UseSqlServer(_fixture.ConnectionString)
+            .Options;
+        Context = new TodoDbContext(options);
+        _transaction = await Context.Database.BeginTransactionAsync();
+        await OnInitializedAsync();
+    }
 
-            var options = new DbContextOptionsBuilder<TodoDbContext>()
-                .UseSqlite(_connection)
-                .Options;
+    protected TodoDbContext CreateNewContext()
+    {
+        var options = new DbContextOptionsBuilder<TodoDbContext>()
+            .UseSqlServer(Context.Database.GetDbConnection())
+            .Options;
+        var context = new TodoDbContext(options);
+        context.Database.UseTransaction(_transaction.GetDbTransaction());
+        return context;
+    }
 
-            Context = new TodoDbContext(options);
-            Context.Database.EnsureCreated();
-        }
+    protected virtual Task OnInitializedAsync() => Task.CompletedTask;
 
-        public void Dispose()
-        {
-            Context.Dispose();
-            _connection.Close();
-            _connection.Dispose();
-        }
+    public async Task DisposeAsync()
+    {
+        if (_transaction != null)
+            await _transaction.RollbackAsync();
+        if (Context != null)
+            await Context.DisposeAsync();
     }
 }
