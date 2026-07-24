@@ -44,7 +44,7 @@ services:
       - AuthModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Auth;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
       - TodoModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Todos;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
       - SEQ_URL=http://seq:5341
-      - SEQ_API_KEY=${UNITODO_SEQ_API_KEY:-PlaceholderSeqApiKeyChangeMe}
+      - SEQ_API_KEY=${UNITODO_SEQ_API_KEY:-R4w9eXBdvAAahEROvnGy}
       - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
     depends_on:
       sqlserver:
