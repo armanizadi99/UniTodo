@@ -17,6 +17,19 @@ services:
       timeout: 3s
     restart: unless-stopped
 
+  seq:
+    image: datalust/seq:latest
+    container_name: unitodo-seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_ADMIN_PASSWORD:-SeqAdmin123!}
+    ports:
+      - "5341:5341"   # Ingestion endpoint
+      - "8081:80"     # Seq web UI
+    volumes:
+      - ./seq-data:/data
+    restart: unless-stopped
+
   unitodo:
     build:
       context: .
@@ -30,8 +43,12 @@ services:
       - AuthModule__JwtSettings__SecretSigningKey=${UNITODO_JWT_SECRET:-ThisIsAPlaceholderSecretChangeItInProduction}
       - AuthModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Auth;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
       - TodoModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Todos;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
+      - SEQ_URL=http://seq:5341
+      - SEQ_API_KEY=${UNITODO_SEQ_API_KEY:-PlaceholderSeqApiKeyChangeMe}
       - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
     depends_on:
       sqlserver:
         condition: service_healthy
+      seq:
+        condition: service_started
     restart: unless-stopped

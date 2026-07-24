@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
-using Serilog.Formatting.Json;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -17,14 +16,27 @@ using UniTodo.OpenApiEndpointFilters;
 Log.Logger = new LoggerConfiguration()
 .MinimumLevel.Information()
 .WriteTo.Console()
-.WriteTo.File(new JsonFormatter(), "data/logs/log-.json", rollingInterval: RollingInterval.Day)
 .CreateLogger();
 try
 {
     Log.Information("Starting application");
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog();
+    builder.Host.UseSerilog((context, loggerConfig) =>
+    {
+        var seqUrl = context.Configuration["SEQ_URL"] ?? "http://localhost:5341";
+        var seqApiKey = context.Configuration["SEQ_API_KEY"];
+        if (string.IsNullOrEmpty(seqApiKey))
+            throw new InvalidOperationException("SEQ_API_KEY is required. Set it via user secrets, env var, or appsettings.json.");
+
+        Log.Information("Configuring Seq sink: {SeqUrl}", seqUrl);
+
+        loggerConfig
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+            .WriteTo.Console()
+            .WriteTo.Seq(serverUrl: seqUrl, apiKey: seqApiKey);
+    });
     // Add services to the container.
     builder.Services.AddControllers()
     .AddJsonOptions(options =>
