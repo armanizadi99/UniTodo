@@ -1,4 +1,22 @@
 services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: unitodo-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd}
+    ports:
+      - "14333:1433"
+    volumes:
+      - ./sqlserver-data:/var/opt/mssql/data
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 3s
+      retries: 15
+      start_period: 15s
+      timeout: 3s
+    restart: unless-stopped
+
   unitodo:
     build:
       context: .
@@ -7,10 +25,13 @@ services:
     container_name: unitodo-app
     ports:
       - "5000:8080"
-    volumes:
-      - ./unitodo-data:/app/data
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # This maps to the AuthModule:JwtSettings:SecretSigningKey configuration
       - AuthModule__JwtSettings__SecretSigningKey=${UNITODO_JWT_SECRET:-ThisIsAPlaceholderSecretChangeItInProduction}
+      - AuthModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Auth;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
+      - TodoModule__ConnectionStrings__Default=Server=sqlserver,1433;Database=UniTodo_Todos;User Id=sa;Password=${SQL_SERVER_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Warning
+    depends_on:
+      sqlserver:
+        condition: service_healthy
     restart: unless-stopped

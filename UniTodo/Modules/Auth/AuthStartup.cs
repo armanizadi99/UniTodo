@@ -17,7 +17,8 @@ namespace UniTodo.Modules.Auth
 
             services.AddDbContext<AuthDbContext>(options =>
             {
-                options.UseSqlite(moduleConfiguration.GetConnectionString("sqlite"));
+                options.UseSqlServer(moduleConfiguration.GetConnectionString("Default"),
+                    opts => opts.MigrationsHistoryTable("__EFMigrationsHistory", "dbo"));
             });
 
             services.AddIdentityCore<ApplicationUser>()

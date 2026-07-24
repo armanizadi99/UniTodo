@@ -20,7 +20,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Configurations
             builder.Property(e => e.Name)
             .IsRequired()
             .HasMaxLength(Constants.NameMaxLength)
-    .UseCollation("NOCASE");
+    .UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
             builder.HasIndex(e => e.Name)
             .IsUnique();

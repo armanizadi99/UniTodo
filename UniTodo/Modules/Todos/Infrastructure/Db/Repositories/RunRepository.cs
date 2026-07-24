@@ -24,7 +24,7 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
                 query = query.Include(r => r.Iterations.OrderByDescending(i => i.Id).Take(1));
 
             // AsSplitQuery avoids combining the filtered Iterations include with the Members include
-            // into a single query, which would require SQL APPLY (unsupported on SQLite).
+            // into a single query, which would require SQL APPLY.
             query = query.Include(r => r.Members).AsSplitQuery();
 
             return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
@@ -69,19 +69,13 @@ namespace UniTodo.Modules.Todos.Infrastructure.Db.Repositories
         async Task<IReadOnlyList<Run>> IRunRepository.GetRunsDueForResetAsync(CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.UtcNow;
-
-            // Using FromSqlInterpolated to perform a single-hit, server-side filtered query.
-            // This bypasses the EF Core translation issue with DateTimeOffset in SQLite
-            // while remaining efficient by not fetching unnecessary records or hitting the DB twice.
             return await _dbSet
-                .FromSqlInterpolated($@"
-                    SELECT * FROM runs
-                    WHERE Status = {(int)Domain.Enums.TodoListRunStatus.Active}
-                      AND ResetPolicy <> {(int)Domain.Enums.ResetPolicy.None}
-                      AND ResetsAt IS NOT NULL
-                      AND ResetsAt <= {now}")
+                .Where(r => r.Status == Domain.Enums.TodoListRunStatus.Active
+                         && r.ResetPolicy != Domain.Enums.ResetPolicy.None
+                         && r.ResetsAt != null
+                         && r.ResetsAt <= now)
                 .Include(r => r.Iterations.OrderByDescending(i => i.Id).Take(1))
-                .ThenInclude(i => i.RunItems)
+                    .ThenInclude(i => i.RunItems)
                 .Include(r => r.Members)
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken);

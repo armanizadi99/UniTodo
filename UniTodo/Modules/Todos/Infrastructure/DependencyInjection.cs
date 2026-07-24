@@ -14,7 +14,7 @@ namespace UniTodo.Modules.Todos.Infrastructure
         IConfigurationSection moduleConfiguration)
         {
             services.AddDbContext<TodoDbContext>(options =>
-            options.UseSqlite(moduleConfiguration.GetConnectionString("sqlite")));
+            options.UseSqlServer(moduleConfiguration.GetConnectionString("Default")));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserContext, UserContext>();
             services.AddScoped(typeof(IRepositoryWithTypedId<,>), typeof(RepositoryWithTypedId<,>));
