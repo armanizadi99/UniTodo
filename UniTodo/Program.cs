@@ -75,30 +75,43 @@ try
     app.UseSerilogRequestLogging();
     app.UseHttpLogging();
 
-    // Automatically apply migrations
+    // Automatically apply migrations with retry
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-        try
-        {
-            var authContext = services.GetRequiredService<UniTodo.Modules.Auth.DB.AuthDbContext>();
-            if (authContext.Database.GetPendingMigrations().Any())
-            {
-                Log.Information("Applying Auth migrations...");
-                authContext.Database.Migrate();
-            }
+        var maxRetries = 5;
+        var retryDelay = TimeSpan.FromSeconds(5);
 
-            var todoContext = services.GetRequiredService<UniTodo.Modules.Todos.Infrastructure.Db.TodoDbContext>();
-            if (todoContext.Database.GetPendingMigrations().Any())
-            {
-                Log.Information("Applying Todo migrations...");
-                todoContext.Database.Migrate();
-            }
-        }
-        catch (Exception ex)
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
-            Log.Error(ex, "An error occurred while migrating the database.");
-            throw; // Fail fast if we can't migrate
+            try
+            {
+                var authContext = services.GetRequiredService<UniTodo.Modules.Auth.DB.AuthDbContext>();
+                if (authContext.Database.GetPendingMigrations().Any())
+                {
+                    Log.Information("Applying Auth migrations...");
+                    authContext.Database.Migrate();
+                }
+
+                var todoContext = services.GetRequiredService<UniTodo.Modules.Todos.Infrastructure.Db.TodoDbContext>();
+                if (todoContext.Database.GetPendingMigrations().Any())
+                {
+                    Log.Information("Applying Todo migrations...");
+                    todoContext.Database.Migrate();
+                }
+
+                break;
+            }
+            catch (Exception ex) when (attempt < maxRetries)
+            {
+                Log.Warning(ex, "Database migration attempt {Attempt} failed, retrying in {Delay}...", attempt, retryDelay);
+                Thread.Sleep(retryDelay);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the database after {MaxRetries} attempts.", maxRetries);
+                throw;
+            }
         }
     }
 
