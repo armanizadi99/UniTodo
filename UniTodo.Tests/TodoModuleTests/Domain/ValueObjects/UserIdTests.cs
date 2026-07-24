@@ -65,5 +65,34 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             equalsResult.Should().BeFalse();
             operatorResult.Should().BeFalse();
         }
+
+        [Fact]
+        public void Equality_NotEqualOperator_ShouldBeTrue_WhenValuesDiffer()
+        {
+            // Arrange
+            var userId1 = new UserId(Guid.NewGuid());
+            var userId2 = new UserId(Guid.NewGuid());
+
+            // Act
+            var operatorResult = userId1 != userId2;
+
+            // Assert
+            operatorResult.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Equality_NotEqualOperator_ShouldBeFalse_WhenValuesAreSame()
+        {
+            // Arrange
+            var guid = Guid.NewGuid();
+            var userId1 = new UserId(guid);
+            var userId2 = new UserId(guid);
+
+            // Act
+            var operatorResult = userId1 != userId2;
+
+            // Assert
+            operatorResult.Should().BeFalse();
+        }
     }
 }

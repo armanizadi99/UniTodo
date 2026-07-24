@@ -7,7 +7,6 @@ using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
 using UniTodo.Modules.Todos.Domain.Enums;
 using UniTodo.Modules.Todos.Domain.ValueObjects;
-using System.Reflection;
 using Xunit;
 
 namespace UniTodo.Tests.TodoModuleTests.Application
@@ -34,11 +33,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         #region Helpers
-        private void SetStatus(Run run, TodoListRunStatus status)
-        {
-            typeof(Run).GetField("<Status>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(run, status);
-        }
+        private static void SetStatus(Run run, TodoListRunStatus status) => TestHelpers.SetStatus(run, status);
 
         private Run CreateActiveRun(string name = "Test Run", bool isShared = false, UserId? ownerId = null)
         {
@@ -233,6 +228,21 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("A closed run couldn't get modified.");
         }
+
+        [Fact]
+        public async Task MakeRunSharedAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(isShared: false, ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.MakeRunSharedAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
         #endregion
 
         #region MakeRunPrivateAsync
@@ -270,7 +280,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task MakeRunPrivateAsync_ClosedRun_ShouldReturnInvalidOperationError()
         {
             // Arrange
-            var run = CreateActiveRun(isShared: false);
+            var run = CreateActiveRun(isShared: true);
             SetStatus(run, TodoListRunStatus.Closed);
             _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
@@ -281,6 +291,21 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("A closed run couldn't get modified.");
+        }
+
+        [Fact]
+        public async Task MakeRunPrivateAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(isShared: true, ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.MakeRunPrivateAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 
@@ -332,6 +357,21 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("The run is already closed.");
         }
+
+        [Fact]
+        public async Task CloseRunAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.CloseRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
         #endregion
 
         #region ResetRunAsync
@@ -380,6 +420,21 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("A closed run cannot be reset.");
+        }
+
+        [Fact]
+        public async Task ResetRunAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.ResetRunAsync(1, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 
@@ -432,6 +487,22 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
             result.Error.Message.Should().Be("A closed run's policy cannot be updated.");
+        }
+
+        [Fact]
+        public async Task UpdateRunResetPolicyAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var run = CreateActiveRun(ownerId: new UserId(Guid.NewGuid()));
+            _runRepository.GetRunByIdAsync(1, false, Arg.Any<CancellationToken>()).Returns(run);
+            var dto = new UpdateResetPolicyDto { ResetPolicy = ResetPolicy.Weekly };
+
+            // Act
+            var result = await _service.UpdateRunResetPolicyAsync(1, dto, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 

@@ -7,7 +7,6 @@ using UniTodo.Modules.Todos.Domain.Common;
 using UniTodo.Modules.Todos.Domain.Entities;
 using UniTodo.Modules.Todos.Domain.Enums;
 using UniTodo.Modules.Todos.Domain.ValueObjects;
-using System.Reflection;
 using Xunit;
 
 namespace UniTodo.Tests.TodoModuleTests.Application
@@ -32,17 +31,9 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         #region Helpers
-        private void SetId<T>(T entity, int id) where T : EntityBase<int>
-        {
-            typeof(EntityBase<int>).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-                .SetValue(entity, id);
-        }
+        private static void SetId<T>(T entity, int id) where T : EntityBase<int> => TestHelpers.SetId(entity, id);
 
-        private void SetStatus(Run run, TodoListRunStatus status)
-        {
-            typeof(Run).GetField("<Status>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .SetValue(run, status);
-        }
+        private static void SetStatus(Run run, TodoListRunStatus status) => TestHelpers.SetStatus(run, status);
 
         private Run CreateActiveRun(string name = "Test Run", bool isShared = false, UserId? ownerId = null)
         {

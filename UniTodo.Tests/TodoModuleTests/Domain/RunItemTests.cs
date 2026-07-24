@@ -159,6 +159,22 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
 
         [Fact]
+        public void AssignTo_WhenAlreadyAssignedToSamePerson_ShouldReturnSuccess()
+        {
+            // Arrange
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            var assignee = new UserId(Guid.NewGuid());
+            item.AssignTo(assignee);
+
+            // Act
+            var result = item.AssignTo(assignee);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            item.AssignedTo.Should().Be(assignee);
+        }
+
+        [Fact]
         public void AssignToNoone_ShouldClearAssignmentAndReturnSuccess()
         {
             // Arrange

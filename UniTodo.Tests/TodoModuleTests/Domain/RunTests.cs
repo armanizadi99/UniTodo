@@ -4,7 +4,6 @@ using UniTodo.Modules.Todos.Domain.Enums;
 using UniTodo.Modules.Todos.Domain.ValueObjects;
 using Xunit;
 using FluentAssertions;
-using System.Reflection;
 
 namespace UniTodo.Tests.TodoModuleTests.Domain
 {
@@ -14,23 +13,11 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         private readonly UserId _otherUserId = new UserId(Guid.NewGuid());
         private readonly UserId _nonMemberId = new UserId(Guid.NewGuid());
 
-        private void SetStatus(Run run, TodoListRunStatus status)
-        {
-            var field = typeof(Run).GetField("<Status>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
-            field?.SetValue(run, status);
-        }
+        private static void SetStatus(Run run, TodoListRunStatus status) => TestHelpers.SetStatus(run, status);
 
-        private void SetId(EntityBase entity, int id)
-        {
-            var field = typeof(EntityBase<int>).GetField("<Id>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
-            field?.SetValue(entity, id);
-        }
+        private static void SetId<T>(T entity, int id) where T : EntityBase<int> => TestHelpers.SetId(entity, id);
 
-        private void SetResetsAt(Run run, DateTimeOffset? resetsAt)
-        {
-            var field = typeof(Run).GetField("<ResetsAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
-            field?.SetValue(run, resetsAt);
-        }
+        private static void SetResetsAt(Run run, DateTimeOffset? resetsAt) => TestHelpers.SetResetsAt(run, resetsAt);
 
         private (Run run, UserId memberId) CreateSharedRunWithPermissions(RunPermissions permissions)
         {
@@ -879,6 +866,31 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
             result.Error.Message.Should().Be("");
         }
+
+        [Fact]
+        public void MakePrivate_ShouldNotUnassignItemsInHistoricalIterations()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            var firstItem = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(firstItem, _ownerId);
+            SetId(firstItem, 1);
+            run.AssignItemToMember(1, memberId, _ownerId);
+            run.Reset(_ownerId);
+            var newItem = run.CurrentIteration.RunItems.First();
+            SetId(newItem, 2);
+            run.AssignItemToMember(2, memberId, _ownerId);
+
+            // Act
+            var result = run.MakePrivate(_ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            newItem.AssignedTo.Should().BeNull();
+            firstItem.AssignedTo.Should().Be(memberId);
+        }
         #endregion
 
         #region MarkItemComplete/Incomplete Tests
@@ -941,6 +953,28 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
 
         [Fact]
+        public void MarkItemComplete_WhenAssigned_AndActorIsNotAssignee_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            var otherMemberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            run.AddMember(otherMemberId, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.AssignItemToMember(1, memberId, _ownerId);
+
+            // Act
+            var result = run.MarkItemComplete(1, otherMemberId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+        }
+
+        [Fact]
         public void MarkItemComplete_WhenClosed_ShouldReturnInvalidOperationError()
         {
             // Arrange
@@ -975,6 +1009,29 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             // Assert
             result.IsSuccess.Should().BeTrue();
             item.IsCompleted.Should().BeFalse();
+        }
+
+        [Fact]
+        public void MarkItemIncomplete_WhenAssigned_AndActorIsNotAssignee_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            var otherMemberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            run.AddMember(otherMemberId, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.AssignItemToMember(1, memberId, _ownerId);
+            run.MarkItemComplete(1, memberId);
+
+            // Act
+            var result = run.MarkItemIncomplete(1, otherMemberId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 
@@ -1029,6 +1086,28 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
             result.Error.Message.Should().Be("'RunItem' with id 999' is not found.");
+        }
+
+        [Fact]
+        public void UpdateNotes_WhenAssigned_AndActorIsNotAssignee_ShouldReturnNotAuthorized()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+            var memberId = new UserId(Guid.NewGuid());
+            var otherMemberId = new UserId(Guid.NewGuid());
+            run.AddMember(memberId, _ownerId);
+            run.AddMember(otherMemberId, _ownerId);
+            var item = new RunItem(new TodoItemDescription("Test Item"));
+            run.AddRunItem(item, _ownerId);
+            SetId(item, 1);
+            run.AssignItemToMember(1, memberId, _ownerId);
+
+            // Act
+            var result = run.UpdateNotes(1, new TodoItemNotes("Notes"), otherMemberId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
 
@@ -1198,6 +1277,21 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
         }
 
         [Fact]
+        public void AddMember_WhenAddingOwner_ShouldReturnDuplicateEntitiesError()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+
+            // Act
+            var result = run.AddMember(_ownerId, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+            result.Error.Message.Should().Be("this user is already a member of this run");
+        }
+
+        [Fact]
         public void RemoveMember_WhenAuthorized_ShouldRemoveMemberAndUnassignTasksAndReturnSuccess()
         {
             // Arrange
@@ -1243,6 +1337,21 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             newItem.AssignedTo.Should().BeNull();
             // the historical iteration's item is frozen and keeps its assignment
             item.AssignedTo.Should().Be(memberId);
+        }
+
+        [Fact]
+        public void RemoveMember_WhenRemovingOwner_ShouldReturnInvalidOperationError()
+        {
+            // Arrange
+            var run = new Run("Test", ResetPolicy.None, true, _ownerId);
+
+            // Act
+            var result = run.RemoveMember(_ownerId, _ownerId);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.InvalidOperation);
+            result.Error.Message.Should().Be("Owner of a run couldn't be get removed.");
         }
         #endregion
 
@@ -1621,7 +1730,6 @@ namespace UniTodo.Tests.TodoModuleTests.Domain
             result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
         }
         #endregion
-
         #endregion
     }
 }

@@ -109,5 +109,64 @@ namespace UniTodo.Tests.TodoModuleTests.Application
                 cts.Cancel();
             }
         }
+
+        [Fact]
+        public async Task StartAsync_WhenNoRunsDue_ShouldNotLogAnyResetAttempts()
+        {
+            // Arrange
+            _repository.GetRunsDueForResetAsync(Arg.Any<CancellationToken>()).Returns(new List<Run>());
+            using var cts = new CancellationTokenSource();
+
+            // Act
+            await _job.StartAsync(cts.Token);
+            await Task.Delay(100);
+            cts.Cancel();
+
+            // Assert
+            _logger.DidNotReceive().Log(
+                LogLevel.Information,
+                Arg.Any<EventId>(),
+                Arg.Is<object>(state => state.ToString()!.Contains("Reset run")),
+                Arg.Any<Exception>(),
+                Arg.Any<Func<object, Exception?, string>>());
+            _logger.DidNotReceive().Log(
+                LogLevel.Warning,
+                Arg.Any<EventId>(),
+                Arg.Is<object>(state => state.ToString()!.Contains("Failed to reset run")),
+                Arg.Any<Exception>(),
+                Arg.Any<Func<object, Exception?, string>>());
+        }
+
+        [Fact]
+        public async Task StartAsync_WhenMultipleRunsAndOneFails_ShouldContinueProcessing()
+        {
+            // Arrange
+            var run1 = new Run("run1", Modules.Todos.Domain.Enums.ResetPolicy.Daily, false, _ownerId);
+            setResetsAt(run1, run1.ResetsAt?.AddDays(-1));
+
+            var run2 = new Run("run2", Modules.Todos.Domain.Enums.ResetPolicy.Daily, false, _ownerId);
+            setResetsAt(run2, run2.ResetsAt?.AddDays(-1));
+            var statusField = typeof(Run).GetField("<Status>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            statusField!.SetValue(run2, Modules.Todos.Domain.Enums.TodoListRunStatus.Closed);
+
+            _repository.GetRunsDueForResetAsync(Arg.Any<CancellationToken>()).Returns(new List<Run> { run1, run2 });
+            using var cts = new CancellationTokenSource();
+
+            // Act
+            await _job.StartAsync(cts.Token);
+            await Task.Delay(100);
+            cts.Cancel();
+
+            // Assert
+            run1.Iterations.Should().HaveCount(2);
+            run2.Iterations.Should().HaveCount(1);
+            await _unitOfWork.Received(1).SaveChangesAsync();
+            _logger.Received(1).Log(
+                LogLevel.Warning,
+                Arg.Any<EventId>(),
+                Arg.Is<object>(state => state.ToString()!.Contains("Failed to reset run")),
+                Arg.Any<Exception>(),
+                Arg.Any<Func<object, Exception?, string>>());
+        }
     }
 }

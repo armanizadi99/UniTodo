@@ -234,6 +234,43 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             await act.Should().ThrowAsync<DbUpdateException>();
         }
 
+        [Fact]
+        public async Task GetRunByIdAsync_ShouldReturnNull_WhenRunDoesNotExist()
+        {
+            // Arrange
+            // No runs in database
+
+            // Act
+            var result = await _repository.GetRunByIdAsync(999, false, CancellationToken.None);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetRunWithAllIterationsAsync_ShouldReturnRunWithAllIterations()
+        {
+            // Arrange
+            var ownerId = new UserId(Guid.NewGuid());
+            var run = new Run("Test Run", ResetPolicy.None, false, ownerId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Item 1")), ownerId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Item 2")), ownerId);
+            await Context.runs.AddAsync(run);
+            await Context.SaveChangesAsync();
+
+            run.Reset(ownerId);
+            run.AddRunItem(new RunItem(new TodoItemDescription("Current Item")), ownerId);
+            await Context.SaveChangesAsync();
+
+            // Act
+            var result = await _repository.GetRunWithAllIterationsAsync(run.Id, CancellationToken.None);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Iterations.Should().HaveCount(2);
+            result.CurrentIteration.RunItems.Should().Contain(i => i.Description.Value == "Current Item");
+        }
+
         private TodoDbContext CreateNewContext()
         {
             var options = new DbContextOptionsBuilder<TodoDbContext>()

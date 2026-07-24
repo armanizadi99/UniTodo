@@ -177,6 +177,22 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         [Fact]
+        public async Task DeleteTodoListAsync_ShouldReturnEntityNotFoundError_WhenIdDoesNotExist()
+        {
+            // Arrange
+            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 99))
+                .Returns((TodoListTemplate)null!);
+
+            // Act
+            var result = await _service.DeleteTodoListAsync(99);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
+            result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
+        }
+
+        [Fact]
         public async Task ArchiveAsync_ShouldArchiveAndSaveAndReturnSuccess_WhenFoundAndAuthorized()
         {
             // Arrange
@@ -207,6 +223,24 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             result.IsSuccess.Should().BeFalse();
             result.Error.Code.Should().Be(DomainErrorCodes.EntityNotFound);
             result.Error.Message.Should().Be("'TodoListTemplate' with id 99' is not found.");
+        }
+
+        [Fact]
+        public async Task ArchiveAsync_WhenNotOwner_ShouldReturnNotAuthorizedError()
+        {
+            // Arrange
+            var otherUserId = new UserId(Guid.NewGuid());
+            var todoList = new TodoListTemplate(otherUserId, "Other List", ResetPolicy.Daily);
+            _repository.GetTodoListTemplateByIdAsync(Arg.Is<int>(v => v == 1))
+                .Returns(todoList);
+
+            // Act
+            var result = await _service.ArchiveAsync(1);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.NotAuthorized);
+            todoList.Status.Should().Be(TodoListStatus.Active);
         }
 
         [Fact]

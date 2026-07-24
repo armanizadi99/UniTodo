@@ -117,6 +117,35 @@ namespace UniTodo.Tests.TodoModuleTests.Infrastructure.Db.Repositories
             }
         }
 
+        [Fact]
+        public async Task GetTodoListTemplateByIdAsync_ShouldReturnNull_WhenNotFound()
+        {
+            // Arrange
+            // No templates in database
+
+            // Act
+            var result = await _repository.GetTodoListTemplateByIdAsync(999, false, CancellationToken.None);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task IsNameDuplicateAsync_CaseInsensitive_ShouldReturnTrue()
+        {
+            // Arrange
+            var ownerId = new UserId(Guid.NewGuid());
+            var template = new TodoListTemplate(ownerId, "My Template", ResetPolicy.None);
+            await Context.todoLists.AddAsync(template);
+            await Context.SaveChangesAsync();
+
+            // Act
+            var result = await _repository.IsNameDuplicateAsync("my template", CancellationToken.None);
+
+            // Assert
+            result.Should().BeTrue();
+        }
+
         private TodoDbContext CreateNewContext()
         {
             var options = new DbContextOptionsBuilder<TodoDbContext>()

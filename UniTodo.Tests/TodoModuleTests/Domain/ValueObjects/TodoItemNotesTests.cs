@@ -65,5 +65,46 @@ namespace UniTodo.Tests.TodoModuleTests.Domain.ValueObjects
             equalsResult.Should().BeFalse();
             operatorResult.Should().BeFalse();
         }
+
+        [Fact]
+        public void Equality_NotEqualOperator_ShouldBeTrue_WhenValuesDiffer()
+        {
+            // Arrange
+            var notes1 = new TodoItemNotes("Value 1");
+            var notes2 = new TodoItemNotes("Value 2");
+
+            // Act
+            var operatorResult = notes1 != notes2;
+
+            // Assert
+            operatorResult.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Equality_NotEqualOperator_ShouldBeFalse_WhenValuesAreSame()
+        {
+            // Arrange
+            var notes1 = new TodoItemNotes("Value");
+            var notes2 = new TodoItemNotes("Value");
+
+            // Act
+            var operatorResult = notes1 != notes2;
+
+            // Assert
+            operatorResult.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Constructor_WithValueAtMaxLength_ShouldSucceed()
+        {
+            // Arrange
+            var longValue = new string('a', Constants.NotesMaxLength);
+
+            // Act
+            var notes = new TodoItemNotes(longValue);
+
+            // Assert
+            notes.Value.Should().Be(longValue);
+        }
     }
 }
