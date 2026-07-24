@@ -59,7 +59,6 @@ UNITODO_JWT_SECRET=your-secret-key-here docker compose up
 - No CI workflows, no `.editorconfig`, no linter/formatter config — standard .NET conventions apply
 - `Todos.txt` at repo root tracks future refactoring ideas (not user-facing docs); it is gitignored by `*.txt`
 - `.opencode/` and `graphify-out/` are in `.gitignore`
-- AutoMapper is used for DTO mapping (`AutoMapper.Extensions.Microsoft.DependencyInjection`)
 
 ## decide
 
