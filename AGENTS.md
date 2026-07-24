@@ -21,12 +21,36 @@ docker compose up                                 # containerized (http://localh
 - **Two modules** in `UniTodo/Modules/`:
   - `Auth/` — flat structure: `AuthDbContext` (Identity + EF), JWT Bearer auth, `JwtSettings`
   - `Todos/` — Clean Architecture: `Api/` → `Application/` → `Domain/` → `Infrastructure/`
-- **Two separate SQLite databases** (`data/Todos.db`, `data/Auth.db`), auto-migrated on startup
+- **Two separate SQL Server databases** (`UniTodo_Todos`, `UniTodo_Auth`), auto-migrated on startup
 - **Registration**: `Program.cs` calls `AddTodoModule(configSection)` and `AddAuthModule(configSection)`
 - **Auth Startup** (`AuthStartup.cs`): registers `AuthDbContext`, Identity, JWT Bearer auth, and `TokenService`. The `JwtSettings` is bound as a singleton.
 - **Todo Startup** (`Modules/Todos/ModuleStartup/Startup.cs`): calls `AddTodoApplication()` and `AddTodoInfrastructure()`. `MapTodoEndpoints()` is a **no-op placeholder** — all Todo endpoints use `[ApiController]`-based controllers mapped via `app.MapControllers()`.
 
-## JWT secret (required before running)
+## Prerequisites
+
+### SQL Server
+
+A SQL Server instance is required. Use Docker (recommended):
+
+```bash
+docker compose up -d sqlserver
+```
+
+Connection strings are configured via environment variables:
+
+```bash
+$env:TodoModule__ConnectionStrings__Default = "Server=localhost,1433;Database=UniTodo_Todos;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+$env:AuthModule__ConnectionStrings__Default = "Server=localhost,1433;Database=UniTodo_Auth;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+```
+
+Or via User Secrets:
+
+```bash
+dotnet user-secrets set "TodoModule:ConnectionStrings:Default" "Server=localhost,1433;Database=UniTodo_Todos;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True" --project UniTodo
+dotnet user-secrets set "AuthModule:ConnectionStrings:Default" "Server=localhost,1433;Database=UniTodo_Auth;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True" --project UniTodo
+```
+
+### JWT secret
 
 The `SecretSigningKey` must be set or the app throws on startup. The rest of the JWT config (`Audience`, `Issuer`, `ExpirationMinutes`) is in `appsettings.json`.
 
@@ -46,15 +70,15 @@ UNITODO_JWT_SECRET=your-secret-key-here docker compose up
 - **xUnit** + **FluentAssertions** + **NSubstitute**, AAA pattern with `// Arrange` / `// Act` / `// Assert`
 - Tests reference the main project directly (not NuGet); `InternalsVisibleTo` grants internal access
 - Service tests mock `IUnitOfWork`, `ITodoListTemplateRepository`, `ITodoListRunRepository`, `IUserContext`
-- Repository tests inherit from `RepositoryTestBase` which creates a **SQLite in-memory** database (`:memory:`) — no external DB setup needed. The SQLite connection must stay open for the lifetime of the test (in-memory DB is destroyed when the last connection closes).
+- Repository tests inherit from `RepositoryTestBase` which spins up a **SQL Server Testcontainer** — no external DB setup needed, but Docker must be running.
 - Test layers mirror the Todo module: `Domain/`, `Application/`, `Infrastructure/`
-- No integration/API tests — all tests are unit tests with mocks or in-memory SQLite
+- No integration/API tests — all tests are unit tests with mocks or SQL Server Testcontainers
 
 ## Gotchas
 
 - `Program.cs` calls `app.UseHttpsRedirection()` — the launch URL is `http://localhost:5000` (HTTPS not fully configured)
 - `appsettings.json` only has `ExpirationMinutes`, `Audience`, and `Issuer` in `JwtSettings` — the secret comes from User Secrets / env
-- `data/` dir is gitignored (via `*.db` pattern); SQLite DBs and Serilog logs (`data/logs/`) are created there on first run
+- `data/` dir is gitignored (via `*.db` pattern); Serilog logs (`data/logs/`) are created there on first run
 - Serilog logs to `data/logs/` as JSON, rolling daily
 - No CI workflows, no `.editorconfig`, no linter/formatter config — standard .NET conventions apply
 - `Todos.txt` at repo root tracks future refactoring ideas (not user-facing docs); it is gitignored by `*.txt`
