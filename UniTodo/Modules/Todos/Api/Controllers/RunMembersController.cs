@@ -33,8 +33,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// members can be added (see the make-shared endpoint).
         ///
         /// Only the owner of the run can add members. The target user must exist.
-        /// The owner themselves cannot be added as a member (they are already
-        /// the owner).
+        /// The owner is already a member and cannot be added again.
         ///
         /// Returns 400 Bad Request if the run is closed or not shared.
         /// Returns 403 Forbidden if the current user is not the owner.
@@ -96,8 +95,8 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <returns>A list of members in the specified run.</returns>
         /// <remarks>
         /// Returns all members of the run, including their user ID and membership status.
-        /// The run owner is not included in the member list — the owner has
-        /// full control and is not treated as a regular member.
+        /// The owner is a regular member and appears in the member list alongside
+        /// other members.
         ///
         /// The current user must be a member or owner of the run.
         ///

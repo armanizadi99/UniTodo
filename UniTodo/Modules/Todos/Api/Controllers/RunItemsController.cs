@@ -127,7 +127,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         ///
         /// Permission rules:
         /// - The item assignee can always complete items assigned to them.
-        /// - The owner can complete any item.
+        /// - The owner can complete unassigned items.
         /// - Non-owner members can complete unassigned items only if the
         ///   MemberAllowedToCompleteUnassignedItems permission is enabled.
         ///
@@ -162,7 +162,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         ///
         /// Permission rules:
         /// - The item assignee can always mark their items as incomplete.
-        /// - The owner can mark any item as incomplete.
+        /// - The owner can mark unassigned items as incomplete.
         /// - Non-owner members can mark unassigned items as incomplete only if the
         ///   MemberAllowedToMarkIncompleteUnassignedItems permission is enabled.
         ///

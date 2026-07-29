@@ -68,12 +68,13 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <returns>The updated member permissions.</returns>
         /// <remarks>
         /// Completely replaces all member permissions for the run with the provided values.
-        /// This is a full replacement, not a partial update — any permission not included
-        /// in the request will be set to its default value.
+        /// This is a full replacement — all permission fields are required and must be
+        /// included in the request body. The request is rejected with a 400 Bad Request
+        /// if any field is missing.
         ///
         /// Only the owner of the run can update permissions.
         ///
-        /// Returns 400 Bad Request if the run is closed.
+        /// Returns 400 Bad Request if the run is closed or any required field is missing.
         /// Returns 403 Forbidden if the current user is not the owner.
         /// Returns 404 Not Found if the run does not exist.
         /// </remarks>
