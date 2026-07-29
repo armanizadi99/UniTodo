@@ -2,6 +2,7 @@
 
 namespace UniTodo.Modules.Auth.Dtos
 {
+    /// <summary>Request to authenticate a user and receive JWT tokens.</summary>
     public class LoginRequestDto
     {
         /// <summary>The email address of the user.</summary>

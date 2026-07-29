@@ -27,6 +27,16 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="runId">The identifier of the run.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The run's scheduling settings.</returns>
+        /// <remarks>
+        /// Returns the scheduling settings for the run, which control when the run
+        /// is considered active. Settings include start date, end date, and pause
+        /// configuration.
+        ///
+        /// The current user must be a member or owner of the run.
+        ///
+        /// Returns 403 Forbidden if the current user is not a member or owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// </remarks>
         [HttpGet]
         [ProducesResponseType(typeof(RunSettingsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -41,12 +51,26 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         /// <summary>
-        /// Updates the scheduling settings for a run. Replaces all settings with the provided values.
+        /// Updates the scheduling settings for a run.
         /// </summary>
         /// <param name="runId">The identifier of the run.</param>
         /// <param name="dto">The new settings to apply.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The updated scheduling settings.</returns>
+        /// <remarks>
+        /// Completely replaces all scheduling settings for the run with the provided values.
+        /// This is a full replacement, not a partial update — any setting not included
+        /// in the request will be set to its default value.
+        ///
+        /// Settings control when the run is active: start date, end date, and whether
+        /// the run is currently paused.
+        ///
+        /// Only the owner of the run can update settings.
+        ///
+        /// Returns 400 Bad Request if the run is closed.
+        /// Returns 403 Forbidden if the current user is not the owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// </remarks>
         [HttpPut]
         [ProducesResponseType(typeof(RunSettingsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

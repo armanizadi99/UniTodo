@@ -28,6 +28,19 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="dto">The data transfer object containing member details.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The added member details.</returns>
+        /// <remarks>
+        /// Adds a user as a member of the run. The run must be shared before
+        /// members can be added (see the make-shared endpoint).
+        ///
+        /// Only the owner of the run can add members. The target user must exist.
+        /// The owner themselves cannot be added as a member (they are already
+        /// the owner).
+        ///
+        /// Returns 400 Bad Request if the run is closed or not shared.
+        /// Returns 403 Forbidden if the current user is not the owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// Returns 409 Conflict if the user is already a member of the run.
+        /// </remarks>
         [HttpPost]
         [ProducesResponseType(typeof(RunMemberDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -50,6 +63,17 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="userId">The identifier of the user to remove.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
+        /// <remarks>
+        /// Removes a user from the run's member list.
+        /// Only the owner of the run can remove members. The owner cannot
+        /// remove themselves.
+        ///
+        /// The removed member loses access to the run and its items immediately.
+        ///
+        /// Returns 400 Bad Request if the run is closed.
+        /// Returns 403 Forbidden if the current user is not the owner.
+        /// Returns 404 Not Found if the run or member does not exist.
+        /// </remarks>
         [HttpDelete("{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -70,6 +94,16 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="runId">The identifier of the run.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of members in the specified run.</returns>
+        /// <remarks>
+        /// Returns all members of the run, including their user ID and membership status.
+        /// The run owner is not included in the member list — the owner has
+        /// full control and is not treated as a regular member.
+        ///
+        /// The current user must be a member or owner of the run.
+        ///
+        /// Returns 403 Forbidden if the current user is not a member or owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// </remarks>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<RunMemberDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

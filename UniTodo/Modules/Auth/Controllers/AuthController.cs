@@ -31,8 +31,20 @@ namespace UniTodo.Modules.Auth.Controllers
         /// </summary>
         /// <param name="dto">The registration details including email and password.</param>
         /// <returns>The newly created user's identifier and email.</returns>
+        /// <remarks>
+        /// Creates a new user account with the provided email and password.
+        /// A user must register before they can authenticate and access protected resources.
+        ///
+        /// The password must meet ASP.NET Identity's default strength requirements
+        /// (minimum length, at least one non-alphanumeric character, at least one digit,
+        /// at least one uppercase letter).
+        ///
+        /// Returns 400 Bad Request if the email is already taken or the password
+        /// does not meet the strength requirements. The error detail message will
+        /// describe the specific validation failures.
+        /// </remarks>
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RegisterResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto dto)
         {
@@ -52,20 +64,29 @@ namespace UniTodo.Modules.Auth.Controllers
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            return Ok(new
-            {
-                Id = user.Id,
-                Email = user.Email
-            });
+            return Ok(new RegisterResponseDto(user.Id, user.Email ?? ""));
         }
 
         /// <summary>
-        /// Authenticates a user and returns a JWT token.
+        /// Authenticates a user and returns a JWT access token and refresh token.
         /// </summary>
         /// <param name="dto">The login credentials including email and password.</param>
-        /// <returns>A JWT token and the user's email address.</returns>
+        /// <returns>An access token, refresh token, access token expiration time, and the user's email.</returns>
+        /// <remarks>
+        /// Authenticates a user by email and password. On success, returns a
+        /// short-lived JWT access token and a long-lived refresh token.
+        ///
+        /// The access token must be included in the Authorization header as a Bearer token
+        /// for all subsequent authenticated requests. When the access token expires, use
+        /// the refresh endpoint to obtain a new pair without re-entering credentials.
+        ///
+        /// Keep the refresh token confidential — if compromised, an attacker can
+        /// generate new access tokens until the refresh token expires or is revoked.
+        ///
+        /// Returns 401 Unauthorized if the email or password is incorrect.
+        /// </remarks>
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto dto)
         {
@@ -102,13 +123,28 @@ namespace UniTodo.Modules.Auth.Controllers
         }
 
         /// <summary>
-        /// Exchanges a valid refresh token for a new access token and a new refresh token.
+        /// Exchanges a valid refresh token for a new access token and refresh token.
         /// </summary>
         /// <param name="dto">The refresh token to exchange.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A new access token and refresh token pair.</returns>
+        /// <returns>A new access token and refresh token pair with expiration details.</returns>
+        /// <remarks>
+        /// Exchanges a valid, non-revoked, non-expired refresh token for a fresh
+        /// access token and refresh token pair. The submitted refresh token is
+        /// immediately revoked and can no longer be used.
+        ///
+        /// This allows the client to maintain an authenticated session without
+        /// requiring the user to re-enter their password. Store the new refresh token
+        /// and discard the old one.
+        ///
+        /// Error responses:
+        /// - 400 Bad Request: The refresh token has already been revoked.
+        /// - 401 Unauthorized: The refresh token has expired.
+        /// - 404 Not Found: The refresh token does not exist.
+        /// - 409 Conflict: A concurrent request already exchanged this token.
+        /// </remarks>
         [HttpPost("refresh")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RefreshAccessTokenResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

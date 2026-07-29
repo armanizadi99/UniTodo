@@ -27,6 +27,25 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <param name="runId">The identifier of the run.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The run's member permissions.</returns>
+        /// <remarks>
+        /// Returns the current permission settings for the run.
+        /// Permissions control what non-owner members are allowed to do:
+        ///
+        /// - Complete unassigned items (mark-complete)
+        /// - Mark unassigned items as incomplete (mark-incomplete)
+        /// - Change item descriptions (change-description)
+        /// - Modify notes on unassigned items (update-notes)
+        /// - Add new items (add items)
+        /// - Remove items (delete items)
+        ///
+        /// Each permission is a boolean flag. Permissions apply to all non-owner
+        /// members uniformly. The owner is not affected by permissions.
+        ///
+        /// The current user must be a member or owner of the run.
+        ///
+        /// Returns 403 Forbidden if the current user is not a member or owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// </remarks>
         [HttpGet]
         [ProducesResponseType(typeof(RunPermissionsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -41,12 +60,23 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         }
 
         /// <summary>
-        /// Updates the member permissions for a run. Replaces all permissions with the provided values.
+        /// Updates the member permissions for a run.
         /// </summary>
         /// <param name="runId">The identifier of the run.</param>
         /// <param name="dto">The new permissions to apply.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The updated member permissions.</returns>
+        /// <remarks>
+        /// Completely replaces all member permissions for the run with the provided values.
+        /// This is a full replacement, not a partial update — any permission not included
+        /// in the request will be set to its default value.
+        ///
+        /// Only the owner of the run can update permissions.
+        ///
+        /// Returns 400 Bad Request if the run is closed.
+        /// Returns 403 Forbidden if the current user is not the owner.
+        /// Returns 404 Not Found if the run does not exist.
+        /// </remarks>
         [HttpPut]
         [ProducesResponseType(typeof(RunPermissionsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

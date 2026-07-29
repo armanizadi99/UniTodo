@@ -24,7 +24,17 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// <summary>
         /// Retrieves all todo list templates belonging to the current authenticated user.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A list of todo list templates for the current user.</returns>
+        /// <remarks>
+        /// Returns all templates owned by the current authenticated user.
+        /// Templates are reusable blueprints that can be used to create runs.
+        /// Each template contains a name and a set of item templates that define
+        /// the default items copied into a run when it is created from the template.
+        ///
+        /// Results are scoped to the authenticated user — users cannot see templates
+        /// owned by other users through this endpoint.
+        /// </remarks>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<TodoListTemplateDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync(CancellationToken cancellationToken)
@@ -40,7 +50,19 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// Creates a new todo list template for the current user.
         /// </summary>
         /// <param name="dto">The data transfer object containing template details.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created todo list template.</returns>
+        /// <remarks>
+        /// Creates a new template owned by the current authenticated user.
+        /// The template name must be unique per user — duplicate names are rejected.
+        ///
+        /// The returned 201 Created response includes a Location header pointing
+        /// to the newly created template. The template starts with no items;
+        /// use the template items endpoints to add items after creation.
+        ///
+        /// Returns 409 Conflict if a template with the same name already exists
+        /// for this user.
+        /// </remarks>
         [HttpPost]
         [ProducesResponseType(typeof(TodoListTemplateDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -57,7 +79,15 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// Retrieves a specific todo list template by its identifier.
         /// </summary>
         /// <param name="id">The identifier of the todo list template.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The requested todo list template.</returns>
+        /// <remarks>
+        /// Returns a single template by its integer ID.
+        /// The template must belong to the current authenticated user.
+        ///
+        /// Returns 403 Forbidden if the template exists but belongs to a different user.
+        /// Returns 404 Not Found if no template with the given ID exists.
+        /// </remarks>
         [HttpGet("{id:int:min(1)}", Name = "GetTodoListTemplateById")]
         [ProducesResponseType(typeof(TodoListTemplateDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -75,7 +105,19 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// Deletes a todo list template.
         /// </summary>
         /// <param name="id">The identifier of the todo list template to delete.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content.</returns>
+        /// <remarks>
+        /// Permanently deletes a template and all its item templates.
+        /// The template must belong to the current authenticated user.
+        ///
+        /// This operation does not affect runs that were previously created
+        /// from this template — those runs are independent copies.
+        /// This action is irreversible.
+        ///
+        /// Returns 403 Forbidden if the template belongs to another user.
+        /// Returns 404 Not Found if no template with the given ID exists.
+        /// </remarks>
         [HttpDelete("{id:int:min(1)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

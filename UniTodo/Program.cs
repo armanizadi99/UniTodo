@@ -52,7 +52,12 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo { Title = "UniTodo API", Version = "1.0" });
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "UniTodo API",
+            Version = "1.0",
+            Description = "API for managing shared todo list templates, runs, and items. Supports user authentication via JWT, collaborative runs with member permissions, iteration-based reset policies, and scheduling settings."
+        });
 
         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -69,6 +74,7 @@ try
         });
 
         options.DocumentFilter<AuthorizedSecurityDocumentFilter>();
+        //options.OperationFilter<FromBodyBadRequestOperationFilter>();
     });
 
     var app = builder.Build();
