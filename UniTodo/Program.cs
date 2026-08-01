@@ -93,46 +93,6 @@ try
     app.UseSerilogRequestLogging();
     app.UseHttpLogging();
 
-    // Automatically apply migrations with retry
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        var maxRetries = 5;
-        var retryDelay = TimeSpan.FromSeconds(5);
-
-        for (var attempt = 1; attempt <= maxRetries; attempt++)
-        {
-            try
-            {
-                var authContext = services.GetRequiredService<UniTodo.Modules.Auth.DB.AuthDbContext>();
-                if (authContext.Database.GetPendingMigrations().Any())
-                {
-                    Log.Information("Applying Auth migrations...");
-                    authContext.Database.Migrate();
-                }
-
-                var todoContext = services.GetRequiredService<UniTodo.Modules.Todos.Infrastructure.Db.TodoDbContext>();
-                if (todoContext.Database.GetPendingMigrations().Any())
-                {
-                    Log.Information("Applying Todo migrations...");
-                    todoContext.Database.Migrate();
-                }
-
-                break;
-            }
-            catch (Exception ex) when (attempt < maxRetries)
-            {
-                Log.Warning(ex, "Database migration attempt {Attempt} failed, retrying in {Delay}...", attempt, retryDelay);
-                Thread.Sleep(retryDelay);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred while migrating the database after {MaxRetries} attempts.", maxRetries);
-                throw;
-            }
-        }
-    }
-
     app.MapControllers();
     app.MapTodoEndpoints();
 
@@ -146,3 +106,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }
