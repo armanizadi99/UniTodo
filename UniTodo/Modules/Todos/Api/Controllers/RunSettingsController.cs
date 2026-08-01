@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
+using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
@@ -12,7 +12,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/runs/{runId:int:min(1)}/settings")]
     [Authorize]
-    public class RunSettingsController : ControllerBase
+    public class RunSettingsController : TodoControllerBase
     {
         private readonly RunSettingsService _service;
 
@@ -41,13 +41,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(RunSettingsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetRunSettingsAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        public async Task<Result<RunSettingsDto>> GetRunSettingsAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetRunSettingsAsync(runId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetRunSettingsAsync(runId, cancellationToken);
         }
 
         /// <summary>
@@ -77,13 +73,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> UpdateRunSettingsAsync([FromRoute] int runId, [FromBody] UpdateRunSettingsDto dto, CancellationToken cancellationToken)
+        public async Task<Result<RunSettingsDto>> UpdateRunSettingsAsync([FromRoute] int runId, [FromBody] UpdateRunSettingsDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.UpdateRunSettingsAsync(runId, dto, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.UpdateRunSettingsAsync(runId, dto, cancellationToken);
         }
     }
 }

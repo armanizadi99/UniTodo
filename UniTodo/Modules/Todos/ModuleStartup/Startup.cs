@@ -1,4 +1,5 @@
 ﻿using UniTodo.Modules.Todos.Api.Controllers;
+using UniTodo.Modules.Todos.Api.Filters;
 using UniTodo.Modules.Todos.Application.Extensions;
 using UniTodo.Modules.Todos.Infrastructure;
 
@@ -12,6 +13,7 @@ namespace UniTodo.Modules.Todos.ModuleStartup
         {
             services.AddTodoApplication();
             services.AddTodoInfrastructure(moduleConfiguration);
+            services.AddScoped<ResultToActionResultFilter>();
 
             return services;
         }

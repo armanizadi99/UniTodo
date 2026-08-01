@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UniTodo.Modules.Todos.Api.Extensions;
+using UniTodo.Modules.Todos.Api.Attributes;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
+using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
@@ -12,7 +13,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/templates")]
     [Authorize]
-    public class TemplatesController : ControllerBase
+    public class TemplatesController : TodoControllerBase
     {
         private readonly TodoListTemplateService _service;
 
@@ -37,13 +38,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// </remarks>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<TodoListTemplateDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllTodoListTemplatesForCurrentUserAsync(CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<TodoListTemplateDto>>> GetAllTodoListTemplatesForCurrentUserAsync(CancellationToken cancellationToken)
         {
-            var result = await _service.GetUserTodoListsAsync(cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetUserTodoListsAsync(cancellationToken);
         }
 
         /// <summary>
@@ -64,15 +61,12 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         /// for this user.
         /// </remarks>
         [HttpPost]
+        [CreatedAtRouteResult("GetTodoListTemplateById")]
         [ProducesResponseType(typeof(TodoListTemplateDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto, CancellationToken cancellationToken)
+        public async Task<Result<TodoListTemplateDto>> CreateTodoListTemplateAsync([FromBody] CreateTodoListTemplateDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.CreateTodoListTemplateAsync(dto, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return CreatedAtRoute("GetTodoListTemplateById", new { id = result.Value.Id }, result.Value);
+            return await _service.CreateTodoListTemplateAsync(dto, cancellationToken);
         }
 
         /// <summary>
@@ -92,13 +86,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(TodoListTemplateDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetTodoListTemplateByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
+        public async Task<Result<TodoListTemplateDto>> GetTodoListTemplateByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var result = await _service.GetTodoListTemplateByIdAsync(id, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetTodoListTemplateByIdAsync(id, cancellationToken);
         }
 
         /// <summary>
@@ -122,13 +112,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> DeleteTodoListTemplate([FromRoute] int id, CancellationToken cancellationToken)
+        public async Task<Result> DeleteTodoListTemplate([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var result = await _service.DeleteTodoListAsync(id, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return NoContent();
+            return await _service.DeleteTodoListAsync(id, cancellationToken);
         }
     }
 }

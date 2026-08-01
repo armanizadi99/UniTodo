@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
+using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
@@ -12,7 +12,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/runs/{runId:int:min(1)}/members")]
     [Authorize]
-    public class RunMembersController : ControllerBase
+    public class RunMembersController : TodoControllerBase
     {
         private readonly RunMembersService _service;
 
@@ -46,13 +46,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> AddMemberToRunAsync([FromRoute] int runId, [FromBody] AddMemberToRunDto dto, CancellationToken cancellationToken)
+        public async Task<Result<RunMemberDto>> AddMemberToRunAsync([FromRoute] int runId, [FromBody] AddMemberToRunDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.AddMemberToRunAsync(runId, dto, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.AddMemberToRunAsync(runId, dto, cancellationToken);
         }
 
         /// <summary>
@@ -78,13 +74,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> RemoveMemberFromRunAsync([FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
+        public async Task<Result> RemoveMemberFromRunAsync([FromRoute] int runId, [FromRoute] Guid userId, CancellationToken cancellationToken)
         {
-            var result = await _service.RemoveMemberFromRunAsync(runId, userId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return NoContent();
+            return await _service.RemoveMemberFromRunAsync(runId, userId, cancellationToken);
         }
 
         /// <summary>
@@ -107,13 +99,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(IReadOnlyList<RunMemberDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetRunMembersAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<RunMemberDto>>> GetRunMembersAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetRunMembersAsync(runId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetRunMembersAsync(runId, cancellationToken);
         }
     }
 }

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
+using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
@@ -12,7 +12,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/runs/{runId:int:min(1)}/permissions")]
     [Authorize]
-    public class RunPermissionsController : ControllerBase
+    public class RunPermissionsController : TodoControllerBase
     {
         private readonly RunPermissionsService _service;
 
@@ -50,13 +50,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(RunPermissionsDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetRunPermissionsAsync([FromRoute] int runId, CancellationToken cancellationToken)
+        public async Task<Result<RunPermissionsDto>> GetRunPermissionsAsync([FromRoute] int runId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetRunPermissionsAsync(runId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetRunPermissionsAsync(runId, cancellationToken);
         }
 
         /// <summary>
@@ -83,13 +79,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> UpdateRunPermissionsAsync([FromRoute] int runId, [FromBody] UpdateRunPermissionsDto dto, CancellationToken cancellationToken)
+        public async Task<Result<RunPermissionsDto>> UpdateRunPermissionsAsync([FromRoute] int runId, [FromBody] UpdateRunPermissionsDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.UpdateRunPermissionsAsync(runId, dto, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.UpdateRunPermissionsAsync(runId, dto, cancellationToken);
         }
     }
 }

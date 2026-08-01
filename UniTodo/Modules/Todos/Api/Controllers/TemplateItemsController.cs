@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UniTodo.Modules.Todos.Api.Extensions;
 using UniTodo.Modules.Todos.Application.DTOs;
 using UniTodo.Modules.Todos.Application.Services;
+using UniTodo.Modules.Todos.Domain.Common;
 
 namespace UniTodo.Modules.Todos.Api.Controllers
 {
@@ -12,7 +12,7 @@ namespace UniTodo.Modules.Todos.Api.Controllers
     [ApiController]
     [Route("api/templates/{todoListTemplateId:int:min(1)}/items")]
     [Authorize]
-    public class TemplateItemsController : ControllerBase
+    public class TemplateItemsController : TodoControllerBase
     {
         private readonly TodoListTemplateItemsService _service;
 
@@ -45,13 +45,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto, CancellationToken cancellationToken)
+        public async Task<Result<TodoItemTemplateDto>> AddTodoItemTemplate([FromRoute] int todoListTemplateId, [FromBody] AddTodoItemTemplateDto dto, CancellationToken cancellationToken)
         {
-            var result = await _service.AddTodoItemTemplateAsync(todoListTemplateId, dto, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.AddTodoItemTemplateAsync(todoListTemplateId, dto, cancellationToken);
         }
 
         /// <summary>
@@ -75,13 +71,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId, CancellationToken cancellationToken)
+        public async Task<Result> DeleteTodoItemTemplateAsync([FromRoute] int todoListTemplateId, [FromRoute] int todoItemTemplateId, CancellationToken cancellationToken)
         {
-            var result = await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return NoContent();
+            return await _service.DeleteTodoItemTemplateAsync(todoListTemplateId, todoItemTemplateId, cancellationToken);
         }
 
         /// <summary>
@@ -102,13 +94,9 @@ namespace UniTodo.Modules.Todos.Api.Controllers
         [ProducesResponseType(typeof(IReadOnlyList<TodoItemTemplateDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<TodoItemTemplateDto>>> GetTodoItemTemplatesAsync([FromRoute] int todoListTemplateId, CancellationToken cancellationToken)
         {
-            var result = await _service.GetTodoItemTemplatesAsync(todoListTemplateId, cancellationToken);
-            if (!result.IsSuccess)
-                return result.Error.ToActionResult();
-
-            return Ok(result.Value);
+            return await _service.GetTodoItemTemplatesAsync(todoListTemplateId, cancellationToken);
         }
     }
 }
