@@ -41,6 +41,8 @@ namespace UniTodo.Modules.Todos.Application.BackgroundServices
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    if (stoppingToken.IsCancellationRequested)
+                        break;
                     _logger.LogWarning(exception: ex, message: "Exception thrown.");
                 }
                 try

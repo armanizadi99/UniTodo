@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -31,8 +32,11 @@ try
 
         Log.Information("Configuring Seq sink: {SeqUrl}", seqUrl);
 
+        var minimumLevel = context.Configuration.GetValue(
+            "Serilog:MinimumLevel:Default", Serilog.Events.LogEventLevel.Information);
+
         loggerConfig
-            .MinimumLevel.Information()
+            .MinimumLevel.Is(minimumLevel)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
             .WriteTo.Console()
             .WriteTo.Seq(serverUrl: seqUrl, apiKey: seqApiKey);

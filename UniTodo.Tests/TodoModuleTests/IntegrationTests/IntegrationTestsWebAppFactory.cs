@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Respawn;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using System.Threading.Tasks;
 using Testcontainers.MsSql;
 using UniTodo.Modules.Auth;
 using UniTodo.Modules.Auth.DB;
+using UniTodo.Modules.Todos.Application.BackgroundServices;
 using UniTodo.Modules.Todos.Infrastructure.Db;
 
 namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
@@ -68,14 +70,21 @@ SchemasToInclude = new[] { "dbo" }
         {
             { "AuthModule:JwtSettings:SecretSigningKey", DummyJwtSecretKey },
             { "SEQ_API_KEY", "dummy-test-api-key" },
-            { "Serilog:WriteTo:0:Name", "Console" }
+            { "Serilog:MinimumLevel:Default", "Warning" }
         };
 
 configBuilder.AddInMemoryCollection(testConfig);
 });
 
+        builder.ConfigureLogging(logging =>
+        logging.SetMinimumLevel(LogLevel.Warning));
+
         builder.ConfigureTestServices(services =>
         {
+        var resetJob = services.SingleOrDefault(d => d.ImplementationType == typeof(ResetPolicyJob));
+        if (resetJob != null)
+            services.Remove(resetJob);
+
         var jwtSettingsDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(JwtSettings));
         if (jwtSettingsDescriptor?.ImplementationInstance is JwtSettings jwtSettings)
             jwtSettings.SecretSigningKey = DummyJwtSecretKey;
