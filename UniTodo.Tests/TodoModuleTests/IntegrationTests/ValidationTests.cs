@@ -9,7 +9,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public ValidationTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task CreateRunAsync_WhenNameMissing_ShouldReturnBadRequest()
+        public async Task CreateRun_WhenNameMissing_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -22,7 +22,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateRunAsync_WhenResetPolicyMissing_ShouldReturnBadRequest()
+        public async Task CreateRun_WhenResetPolicyMissing_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -35,7 +35,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateRunAsync_WhenResetPolicyInvalid_ShouldReturnBadRequest()
+        public async Task CreateRun_WhenResetPolicyInvalid_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -48,7 +48,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddRunItemAsync_WhenDescriptionMissing_ShouldReturnBadRequest()
+        public async Task AddRunItem_WhenDescriptionMissing_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -62,7 +62,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddRunItemAsync_WhenDescriptionEmpty_ShouldReturnBadRequest()
+        public async Task AddRunItem_WhenDescriptionEmpty_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -76,7 +76,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunSettingsAsync_WhenTimeZoneInvalid_ShouldReturnBadRequest()
+        public async Task UpdateRunSettings_WhenTimeZoneInvalid_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -95,7 +95,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunSettingsAsync_WhenEndOfWeekDayInvalid_ShouldReturnBadRequest()
+        public async Task UpdateRunSettings_WhenEndOfWeekDayInvalid_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -114,7 +114,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateTodoListTemplateAsync_WhenNameTooLong_ShouldReturnBadRequest()
+        public async Task CreateTodoListTemplate_WhenNameTooLong_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -131,7 +131,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddMemberToRunAsync_WhenUserIdMissing_ShouldReturnBadRequest()
+        public async Task AddMemberToRun_WhenUserIdMissing_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

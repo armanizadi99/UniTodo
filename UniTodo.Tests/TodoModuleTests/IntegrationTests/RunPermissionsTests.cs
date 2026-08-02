@@ -10,7 +10,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunPermissionsTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task GetRunPermissionsAsync_ShouldReturnDefaults()
+        public async Task GetRunPermissions_ShouldReturnDefaults()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -22,12 +22,16 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             // Assert
             response.EnsureSuccessStatusCode();
             var permissions = await response.Content.ReadFromJsonAsync<RunPermissionsDto>(IntegrationTestHelpers.JsonOptions);
-            permissions!.MemberAllowedToAddItems.Should().BeFalse();
-            permissions.MemberAllowedToCompleteUnassignedItems.Should().BeFalse();
+            permissions!.MemberAllowedToCompleteUnassignedItems.Should().BeFalse();
+            permissions.MemberAllowedToMarkIncompleteUnassignedItems.Should().BeFalse();
+            permissions.MemberAllowedToChangeDescriptions.Should().BeFalse();
+            permissions.MemberAllowedToModifyNotesForUnassignedItems.Should().BeFalse();
+            permissions.MemberAllowedToAddItems.Should().BeFalse();
+            permissions.MemberAllowedToRemoveItems.Should().BeFalse();
         }
 
         [Fact]
-        public async Task UpdateRunPermissionsAsync_ShouldUpdatePermissions()
+        public async Task UpdateRunPermissions_ShouldUpdatePermissions()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -39,21 +43,26 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
                 memberAllowedToCompleteUnassignedItems = true,
                 memberAllowedToMarkIncompleteUnassignedItems = false,
                 memberAllowedToChangeDescriptions = true,
-                memberAllowedToModifyNotesForUnassignedItems = true,
+                memberAllowedToModifyNotesForUnassignedItems = false,
                 memberAllowedToAddItems = true,
-                memberAllowedToRemoveItems = true
+                memberAllowedToRemoveItems = false
             });
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var permissions = await response.Content.ReadFromJsonAsync<RunPermissionsDto>(IntegrationTestHelpers.JsonOptions);
+
+            var permissionsResponse = await _client.GetAsync($"api/runs/{run.Id}/permissions");
+            var permissions = await permissionsResponse.Content.ReadFromJsonAsync<RunPermissionsDto>(IntegrationTestHelpers.JsonOptions);
             permissions!.MemberAllowedToCompleteUnassignedItems.Should().BeTrue();
+            permissions.MemberAllowedToMarkIncompleteUnassignedItems.Should().BeFalse();
+            permissions.MemberAllowedToChangeDescriptions.Should().BeTrue();
+            permissions.MemberAllowedToModifyNotesForUnassignedItems.Should().BeFalse();
             permissions.MemberAllowedToAddItems.Should().BeTrue();
-            permissions.MemberAllowedToRemoveItems.Should().BeTrue();
+            permissions.MemberAllowedToRemoveItems.Should().BeFalse();
         }
 
         [Fact]
-        public async Task UpdateRunPermissionsAsync_WhenUserIsNotOwner_ShouldReturnForbidden()
+        public async Task UpdateRunPermissions_WhenUserIsNotOwner_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

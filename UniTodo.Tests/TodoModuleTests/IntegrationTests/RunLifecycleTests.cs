@@ -11,11 +11,13 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunLifecycleTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task GetActiveRunsAsync_ShouldOnlyReturnActiveRuns()
+        public async Task GetActiveRuns_ShouldOnlyReturnActiveRuns()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
-            await _client.CreateRunAsync("Active run");
+            var activeRun = await _client.CreateRunAsync("Active run");
+            var closedRun = await _client.CreateRunAsync("Closed run");
+            await _client.PostAsync($"api/runs/{closedRun.Id}/close", null);
 
             // Act
             var response = await _client.GetAsync("api/runs");
@@ -23,12 +25,13 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             // Assert
             response.EnsureSuccessStatusCode();
             var runs = await response.Content.ReadFromJsonAsync<List<RunDto>>(IntegrationTestHelpers.JsonOptions);
-            runs!.Single().Name.Should().Be("Active run");
-            runs.Single().Status.Should().Be(TodoListRunStatus.Active);
+            runs!.Select(r => r.Id).Should().Contain(activeRun.Id);
+            runs.Select(r => r.Id).Should().NotContain(closedRun.Id);
+            runs.Single(r => r.Id == activeRun.Id).Status.Should().Be(TodoListRunStatus.Active);
         }
 
         [Fact]
-        public async Task GetClosedRunsAsync_ShouldOnlyReturnClosedRuns()
+        public async Task GetClosedRuns_ShouldOnlyReturnClosedRuns()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -47,10 +50,11 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateRunFromTemplateAsync_ShouldReturnCreatedWithLocationAndTemplateName()
+        public async Task CreateRunFromTemplate_ShouldCreateRunWithTemplateNameLocationAndCopiedItems()
         {
             // Arrange
-            AuthenticateClient(Guid.NewGuid().ToString());
+            var ownerId = Guid.NewGuid();
+            AuthenticateClient(ownerId.ToString());
             var template = await _client.CreateTemplateAsync("Template run");
             await _client.AddTemplateItemAsync(template.Id, "Buy milk");
             await _client.AddTemplateItemAsync(template.Id, "Write report");
@@ -62,30 +66,17 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var run = await response.Content.ReadFromJsonAsync<RunDto>(IntegrationTestHelpers.JsonOptions);
             run!.Name.Should().Be("Template run");
+            run.OwnerId.Should().Be(ownerId);
+            run.Status.Should().Be(TodoListRunStatus.Active);
             response.Headers.Location.ToString().Should().Contain($"api/runs/{run.Id}");
-        }
 
-        [Fact]
-        public async Task CreateRunFromTemplateAsync_WhenRunCreated_ShouldContainCopiedItems()
-        {
-            // Arrange
-            AuthenticateClient(Guid.NewGuid().ToString());
-            var template = await _client.CreateTemplateAsync("Template run");
-            await _client.AddTemplateItemAsync(template.Id, "Buy milk");
-
-            // Act
-            var runResponse = await _client.PostAsync($"api/runs/from-template/{template.Id}", null);
-            runResponse.EnsureSuccessStatusCode();
-            var run = await runResponse.Content.ReadFromJsonAsync<RunDto>(IntegrationTestHelpers.JsonOptions);
-
-            // Assert
-            var itemsResponse = await _client.GetAsync($"api/runs/{run!.Id}/items");
+            var itemsResponse = await _client.GetAsync($"api/runs/{run.Id}/items");
             var items = await itemsResponse.Content.ReadFromJsonAsync<List<RunItemDto>>(IntegrationTestHelpers.JsonOptions);
-            items!.Single().Description.Should().Be("Buy milk");
+            items!.Select(i => i.Description).Should().BeEquivalentTo("Buy milk", "Write report");
         }
 
         [Fact]
-        public async Task MakeRunSharedAsync_ShouldMarkRunAsShared()
+        public async Task MakeRunShared_ShouldMarkRunAsShared()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -100,7 +91,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MakeRunSharedAsync_WhenAlreadyShared_ShouldReturnBadRequest()
+        public async Task MakeRunShared_WhenAlreadyShared_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -115,7 +106,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MakeRunPrivateAsync_ShouldRemoveNonOwnerMembers()
+        public async Task MakeRunPrivate_ShouldRemoveNonOwnerMembers()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -129,13 +120,14 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            (await _client.GetRunAsync(created.Id)).IsShared.Should().BeFalse();
             var membersResponse = await _client.GetAsync($"api/runs/{created.Id}/members");
             var members = await membersResponse.Content.ReadFromJsonAsync<List<RunMemberDto>>(IntegrationTestHelpers.JsonOptions);
             members!.Select(m => m.UserId).Should().NotContain(memberId);
         }
 
         [Fact]
-        public async Task CloseRunAsync_ShouldMarkRunAsClosed()
+        public async Task CloseRun_ShouldMarkRunAsClosed()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -146,11 +138,13 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            (await _client.GetRunAsync(created.Id)).Status.Should().Be(TodoListRunStatus.Closed);
+            var run = await _client.GetRunAsync(created.Id);
+            run.Status.Should().Be(TodoListRunStatus.Closed);
+            run.ClosedAt.Should().NotBeNull();
         }
 
         [Fact]
-        public async Task CloseRunAsync_WhenAlreadyClosed_ShouldReturnBadRequest()
+        public async Task CloseRun_WhenAlreadyClosed_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -165,7 +159,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task ResetRunAsync_WhenPolicyIsNone_ShouldSucceedAndCreateNewIteration()
+        public async Task ResetRun_WhenPolicyIsNone_ShouldSucceedAndCreateNewIteration()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -177,10 +171,17 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            (await _client.GetRunAsync(created.Id)).Status.Should().Be(TodoListRunStatus.Active);
+            (await _client.GetRunItemsAsync(created.Id)).Single().Description.Should().Be("Persist me");
+            var historyResponse = await _client.GetAsync($"api/runs/{created.Id}/history");
+            var history = await historyResponse.Content.ReadFromJsonAsync<List<RunIterationDto>>(IntegrationTestHelpers.JsonOptions);
+            history!.Should().HaveCount(1);
+            history.Single().ClosedAt.Should().NotBeNull();
+            history.Single().Items.Single().Description.Should().Be("Persist me");
         }
 
         [Fact]
-        public async Task GetRunHistoryAsync_AfterReset_ShouldReturnClosedIteration()
+        public async Task GetRunHistory_AfterReset_ShouldReturnClosedIteration()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -200,7 +201,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunResetPolicyAsync_ShouldUpdatePolicy()
+        public async Task UpdateRunResetPolicy_ShouldUpdatePolicy()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -218,7 +219,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunResetPolicyAsync_WhenUserIsNotOwner_ShouldReturnForbidden()
+        public async Task UpdateRunResetPolicy_WhenUserIsNotOwner_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -239,7 +240,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task RemoveRunAsync_WhenOwner_ShouldDeleteRun()
+        public async Task RemoveRun_WhenOwner_ShouldDeleteRun()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

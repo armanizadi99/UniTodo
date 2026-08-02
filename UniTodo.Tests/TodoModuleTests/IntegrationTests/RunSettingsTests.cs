@@ -11,7 +11,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunSettingsTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task GetRunSettingsAsync_ShouldReturnDefaults()
+        public async Task GetRunSettings_ShouldReturnDefaults()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -29,7 +29,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunSettingsAsync_ShouldUpdateSettings()
+        public async Task UpdateRunSettings_ShouldUpdateSettings()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -45,14 +45,16 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var settings = await response.Content.ReadFromJsonAsync<RunSettingsDto>(IntegrationTestHelpers.JsonOptions);
+
+            var settingsResponse = await _client.GetAsync($"api/runs/{run.Id}/settings");
+            var settings = await settingsResponse.Content.ReadFromJsonAsync<RunSettingsDto>(IntegrationTestHelpers.JsonOptions);
             settings!.TimeZone.Should().Be(TZConvert.GetTimeZoneInfo("America/New_York").Id);
             settings.EndOfWeekDay.Should().Be(DayOfWeek.Sunday);
             settings.PreserveHistory.Should().BeFalse();
         }
 
         [Fact]
-        public async Task UpdateRunSettingsAsync_WhenUserIsNotOwner_ShouldReturnForbidden()
+        public async Task UpdateRunSettings_WhenUserIsNotOwner_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

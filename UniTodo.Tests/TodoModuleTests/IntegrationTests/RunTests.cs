@@ -11,10 +11,11 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task CreateRunAsync_ShouldReturnOkWithRunDto()
+        public async Task CreateRun_ShouldReturnOkWithRunDto()
         {
             // Arrange
-            AuthenticateClient(Guid.NewGuid().ToString());
+            var ownerId = Guid.NewGuid();
+            AuthenticateClient(ownerId.ToString());
 
             // Act
             var createResponse = await _client.PostAsJsonAsync("api/runs", new
@@ -29,12 +30,20 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             created!.Id.Should().BeGreaterThan(0);
             created.Name.Should().Be("Test Run");
             created.ResetPolicy.Should().Be(ResetPolicy.Daily);
+            created.OwnerId.Should().Be(ownerId);
             created.Status.Should().Be(TodoListRunStatus.Active);
             created.IsShared.Should().BeFalse();
+
+            var persisted = await _client.GetRunAsync(created.Id);
+            persisted.Name.Should().Be("Test Run");
+            persisted.ResetPolicy.Should().Be(ResetPolicy.Daily);
+            persisted.OwnerId.Should().Be(ownerId);
+            persisted.Status.Should().Be(TodoListRunStatus.Active);
+            persisted.IsShared.Should().BeFalse();
         }
 
         [Fact]
-        public async Task GetRunByIdAsync_WhenRunExists_ShouldReturnTheRun()
+        public async Task GetRun_WhenRunExists_ShouldReturnTheRun()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -51,7 +60,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetRunByIdAsync_WhenRunDoesNotExist_ShouldReturnNotFound()
+        public async Task GetRun_WhenRunDoesNotExist_ShouldReturnNotFound()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -64,7 +73,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetRunByIdAsync_WhenUserIsNotAMember_ShouldReturnForbidden()
+        public async Task GetRun_WhenUserIsNotAMember_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

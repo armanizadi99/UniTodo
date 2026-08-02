@@ -10,7 +10,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunItemsTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task GetRunItemsAsync_ShouldReturnCurrentIterationItems()
+        public async Task GetRunItems_ShouldReturnCurrentIterationItems()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -28,7 +28,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetRunItemsAsync_WhenUserIsNotAMember_ShouldReturnForbidden()
+        public async Task GetRunItems_WhenUserIsNotAMember_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -44,7 +44,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddRunItemAsync_ShouldReturnItem()
+        public async Task AddRunItem_ShouldReturnItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -58,10 +58,14 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             var item = await response.Content.ReadFromJsonAsync<RunItemDto>(IntegrationTestHelpers.JsonOptions);
             item!.Description.Should().Be("Buy milk");
             item.IsCompleted.Should().BeFalse();
+
+            var items = await _client.GetRunItemsAsync(run.Id);
+            items.Single().Id.Should().Be(item.Id);
+            items.Single().Description.Should().Be("Buy milk");
         }
 
         [Fact]
-        public async Task AddRunItemAsync_WhenDuplicateDescription_ShouldReturnConflict()
+        public async Task AddRunItem_WhenDuplicateDescription_ShouldReturnConflict()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -76,7 +80,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddRunItemAsync_WhenRunClosed_ShouldReturnBadRequest()
+        public async Task AddRunItem_WhenRunClosed_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -91,7 +95,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task DeleteRunItemAsync_ShouldRemoveItem()
+        public async Task DeleteRunItem_ShouldRemoveItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -109,7 +113,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MarkRunItemCompleteAsync_ShouldCompleteItem()
+        public async Task MarkRunItemComplete_ShouldCompleteItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -124,11 +128,12 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             var itemsResponse = await _client.GetAsync($"api/runs/{run.Id}/items");
             var items = await itemsResponse.Content.ReadFromJsonAsync<List<RunItemDto>>(IntegrationTestHelpers.JsonOptions);
             items!.Single().IsCompleted.Should().BeTrue();
+            items.Single().CompletedAt.Should().NotBeNull();
             items.Single().CompletedBy.Should().NotBeNull();
         }
 
         [Fact]
-        public async Task MarkRunItemCompleteAsync_WhenAlreadyComplete_ShouldReturnBadRequest()
+        public async Task MarkRunItemComplete_WhenAlreadyComplete_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -144,7 +149,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MarkRunItemIncompleteAsync_ShouldUncompleteItem()
+        public async Task MarkRunItemIncomplete_ShouldUncompleteItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -163,7 +168,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MarkRunItemIncompleteAsync_WhenNotComplete_ShouldReturnBadRequest()
+        public async Task MarkRunItemIncomplete_WhenNotComplete_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -178,7 +183,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task UpdateRunItemNotesAsync_ShouldPersistNotes()
+        public async Task UpdateRunItemNotes_ShouldPersistNotes()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -199,7 +204,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task ChangeRunItemDescriptionAsync_ShouldChangeDescription()
+        public async Task ChangeRunItemDescription_ShouldChangeDescription()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -220,7 +225,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task ChangeRunItemDescriptionAsync_WhenDuplicateOtherItem_ShouldReturnConflict()
+        public async Task ChangeRunItemDescription_WhenDuplicateOtherItem_ShouldReturnConflict()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -239,7 +244,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AssignRunItemToMemberAsync_ShouldAssignItem()
+        public async Task AssignRunItemToMember_ShouldAssignItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -263,7 +268,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AssignRunItemToNonMemberAsync_ShouldReturnBadRequest()
+        public async Task AssignRunItemToNonMember_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -302,7 +307,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task MemberCanModifyAssignedItem_ShouldReturnNoContent()
+        public async Task MemberCanModifyAssignedItem_ShouldCompleteTheItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -320,6 +325,10 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            var itemsResponse = await _client.GetAsync($"api/runs/{ownerRun.Id}/items");
+            var items = await itemsResponse.Content.ReadFromJsonAsync<List<RunItemDto>>(IntegrationTestHelpers.JsonOptions);
+            items!.Single().IsCompleted.Should().BeTrue();
+            items.Single().CompletedBy.Should().Be(memberId);
         }
     }
 }

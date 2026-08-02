@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using UniTodo.Modules.Todos.Application.DTOs;
+using UniTodo.Modules.Todos.Domain.Enums;
 
 namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 {
@@ -10,7 +11,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public TemplatesTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task CreateTodoListTemplateAsync_ShouldReturnCreatedWithLocation()
+        public async Task CreateTodoListTemplate_ShouldReturnCreatedWithLocation()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -28,10 +29,16 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             template!.Id.Should().BeGreaterThan(0);
             template.Name.Should().Be("My Template");
             response.Headers.Location.ToString().Should().Contain($"api/templates/{template.Id}");
+
+            var persistedResponse = await _client.GetAsync($"api/templates/{template.Id}");
+            var persisted = await persistedResponse.Content.ReadFromJsonAsync<TodoListTemplateDto>(IntegrationTestHelpers.JsonOptions);
+            persisted!.Id.Should().Be(template.Id);
+            persisted.Name.Should().Be("My Template");
+            persisted.ResetPolicy.Should().Be(ResetPolicy.Weekly);
         }
 
         [Fact]
-        public async Task GetAllTodoListTemplatesAsync_ShouldReturnOwnersTemplates()
+        public async Task GetAllTodoListTemplates_ShouldReturnOwnersTemplates()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -48,7 +55,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_WhenOwned_ShouldReturnTemplate()
+        public async Task GetTodoListTemplateById_WhenOwned_ShouldReturnTemplate()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -64,7 +71,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_WhenNotOwned_ShouldReturnForbidden()
+        public async Task GetTodoListTemplateById_WhenNotOwned_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -79,7 +86,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetTodoListTemplateByIdAsync_WhenNotFound_ShouldReturnNotFound()
+        public async Task GetTodoListTemplateById_WhenNotFound_ShouldReturnNotFound()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -92,7 +99,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task DeleteTodoListTemplateAsync_ShouldDeleteTemplate()
+        public async Task DeleteTodoListTemplate_ShouldDeleteTemplate()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -108,7 +115,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task DeleteTodoListTemplateAsync_WhenNotOwned_ShouldReturnForbidden()
+        public async Task DeleteTodoListTemplate_WhenNotOwned_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -123,7 +130,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateTodoListTemplateAsync_WhenNameDuplicated_ShouldReturnConflict()
+        public async Task CreateTodoListTemplate_WhenNameDuplicated_ShouldReturnConflict()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -141,7 +148,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddTodoItemTemplateAsync_ShouldReturnItem()
+        public async Task AddTodoItemTemplate_ShouldReturnItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -157,10 +164,15 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             response.EnsureSuccessStatusCode();
             var item = await response.Content.ReadFromJsonAsync<TodoItemTemplateDto>(IntegrationTestHelpers.JsonOptions);
             item!.Description.Should().Be("Buy milk");
+
+            var itemsResponse = await _client.GetAsync($"api/templates/{template.Id}/items");
+            var items = await itemsResponse.Content.ReadFromJsonAsync<List<TodoItemTemplateDto>>(IntegrationTestHelpers.JsonOptions);
+            items!.Single().Id.Should().Be(item.Id);
+            items.Single().Description.Should().Be("Buy milk");
         }
 
         [Fact]
-        public async Task GetTodoItemTemplatesAsync_ShouldReturnItems()
+        public async Task GetTodoItemTemplates_ShouldReturnItems()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -178,7 +190,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task DeleteTodoItemTemplateAsync_ShouldDeleteItem()
+        public async Task DeleteTodoItemTemplate_ShouldDeleteItem()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -196,7 +208,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetTodoItemTemplatesAsync_WhenNotOwned_ShouldReturnForbidden()
+        public async Task GetTodoItemTemplates_WhenNotOwned_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());

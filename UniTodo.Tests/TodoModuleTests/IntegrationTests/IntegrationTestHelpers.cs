@@ -33,6 +33,13 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             return await client.PostAsync($"api/runs/{runId}/make-shared", null);
         }
 
+        public static async Task<List<RunItemDto>> GetRunItemsAsync(this HttpClient client, int runId)
+        {
+            var response = await client.GetAsync($"api/runs/{runId}/items");
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<List<RunItemDto>>(JsonOptions))!;
+        }
+
         public static async Task<RunItemDto> AddItemAsync(this HttpClient client, int runId, string description)
         {
             var response = await client.PostAsJsonAsync($"api/runs/{runId}/items", new { description });

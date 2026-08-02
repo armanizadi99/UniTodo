@@ -10,7 +10,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         public RunMembersTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
 
         [Fact]
-        public async Task GetRunMembersAsync_ShouldReturnOwnerAsMember()
+        public async Task GetRunMembers_ShouldReturnOwnerAsMember()
         {
             // Arrange
             var ownerId = Guid.NewGuid();
@@ -27,7 +27,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddMemberToRunAsync_WhenRunIsPrivate_ShouldReturnBadRequest()
+        public async Task AddMemberToRun_WhenRunIsPrivate_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -44,10 +44,11 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task AddMemberToRunAsync_WhenRunIsShared_ShouldAddMember()
+        public async Task AddMemberToRun_WhenRunIsShared_ShouldAddMember()
         {
             // Arrange
-            AuthenticateClient(Guid.NewGuid().ToString());
+            var ownerId = Guid.NewGuid();
+            AuthenticateClient(ownerId.ToString());
             var run = await _client.CreateRunAsync();
             await _client.MakeSharedAsync(run.Id);
             var memberId = Guid.NewGuid();
@@ -62,10 +63,15 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var member = await response.Content.ReadFromJsonAsync<RunMemberDto>(IntegrationTestHelpers.JsonOptions);
             member!.UserId.Should().Be(memberId);
+
+            var membersResponse = await _client.GetAsync($"api/runs/{run.Id}/members");
+            var members = await membersResponse.Content.ReadFromJsonAsync<List<RunMemberDto>>(IntegrationTestHelpers.JsonOptions);
+            members!.Select(m => m.UserId).Should().Contain(memberId);
+            members.Select(m => m.UserId).Should().Contain(ownerId);
         }
 
         [Fact]
-        public async Task AddMemberToRunAsync_WhenAlreadyAMember_ShouldReturnConflict()
+        public async Task AddMemberToRun_WhenAlreadyAMember_ShouldReturnConflict()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -85,7 +91,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task RemoveMemberFromRunAsync_ShouldRemoveMember()
+        public async Task RemoveMemberFromRun_ShouldRemoveMember()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -105,7 +111,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task RemoveMemberFromRunAsync_WhenRemovingOwner_ShouldReturnBadRequest()
+        public async Task RemoveMemberFromRun_WhenRemovingOwner_ShouldReturnBadRequest()
         {
             // Arrange
             var ownerId = Guid.NewGuid();
@@ -121,7 +127,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task RemoveMemberFromRunAsync_WhenUserIsNotAMember_ShouldReturnBadRequest()
+        public async Task RemoveMemberFromRun_WhenUserIsNotAMember_ShouldReturnBadRequest()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
@@ -136,7 +142,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetRunMembersAsync_WhenUserIsNotAMember_ShouldReturnForbidden()
+        public async Task GetRunMembers_WhenUserIsNotAMember_ShouldReturnForbidden()
         {
             // Arrange
             AuthenticateClient(Guid.NewGuid().ToString());
