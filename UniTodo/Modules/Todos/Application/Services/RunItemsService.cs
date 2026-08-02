@@ -105,7 +105,7 @@ namespace UniTodo.Modules.Todos.Application.Services
 
         public async Task<Result> ChangeRunItemDescriptionAsync(int runId, int itemId, ChangeRunItemDescriptionDto dto, CancellationToken cancellationToken)
         {
-            var run = await _runRepository.GetRunByIdAsync(runId, itemId, cancellationToken);
+            var run = await _runRepository.GetRunByIdAsync(runId, true, cancellationToken);
             if (run == null)
                 return DomainError.EntityNotFound(nameof(Run), runId);
             var result = run.ChangeItemDescription(itemId, new TodoItemDescription(dto.Description), _userContext.UserId);

@@ -419,7 +419,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
             var item = new RunItem(new TodoItemDescription("Old"));
             SetId(item, 10);
             run.AddRunItem(item, _currentUserId);
-            _runRepository.GetRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             var result = await _service.ChangeRunItemDescriptionAsync(1, 10, new ChangeRunItemDescriptionDto { Description = "New" }, CancellationToken.None);
@@ -434,7 +434,7 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         public async Task ChangeRunItemDescriptionAsync_WhenRunNotFound_ShouldReturnEntityNotFoundError()
         {
             // Arrange
-            _runRepository.GetRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns((Run)null!);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns((Run)null!);
 
             // Act
             var result = await _service.ChangeRunItemDescriptionAsync(1, 10, new ChangeRunItemDescriptionDto { Description = "X" }, CancellationToken.None);
@@ -445,12 +445,33 @@ namespace UniTodo.Tests.TodoModuleTests.Application
         }
 
         [Fact]
+        public async Task ChangeRunItemDescriptionAsync_WhenDuplicateOfAnotherItem_ShouldReturnDuplicateError()
+        {
+            // Arrange
+            var run = CreateActiveRun();
+            var first = new RunItem(new TodoItemDescription("Buy milk"));
+            SetId(first, 10);
+            run.AddRunItem(first, _currentUserId);
+            var second = new RunItem(new TodoItemDescription("Walk dog"));
+            SetId(second, 11);
+            run.AddRunItem(second, _currentUserId);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
+
+            // Act
+            var result = await _service.ChangeRunItemDescriptionAsync(1, 10, new ChangeRunItemDescriptionDto { Description = "Walk dog" }, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Code.Should().Be(DomainErrorCodes.DuplicateEntities);
+        }
+
+        [Fact]
         public async Task ChangeRunItemDescriptionAsync_ClosedRun_ShouldReturnInvalidOperationError()
         {
             // Arrange
             var run = CreateActiveRun();
             SetStatus(run, TodoListRunStatus.Closed);
-            _runRepository.GetRunByIdAsync(1, 10, Arg.Any<CancellationToken>()).Returns(run);
+            _runRepository.GetRunByIdAsync(1, true, Arg.Any<CancellationToken>()).Returns(run);
 
             // Act
             var result = await _service.ChangeRunItemDescriptionAsync(1, 10, new ChangeRunItemDescriptionDto { Description = "new desc" }, CancellationToken.None);

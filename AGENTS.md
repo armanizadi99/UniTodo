@@ -72,7 +72,7 @@ UNITODO_JWT_SECRET=your-secret-key-here docker compose up
 - Service tests mock `IUnitOfWork`, `ITodoListTemplateRepository`, `ITodoListRunRepository`, `IUserContext`
 - Repository tests inherit from `RepositoryTestBase` which spins up a **SQL Server Testcontainer** — no external DB setup needed, but Docker must be running.
 - Test layers mirror the Todo module: `Domain/`, `Application/`, `Infrastructure/`
-- No integration/API tests — all tests are unit tests with mocks or SQL Server Testcontainers
+- Integration tests use a `WebApplicationFactory` + SQL Server Testcontainer (`IntegrationTestsWebAppFactory`), with Respawn resetting the DB between tests; `IntegrationTestsBase` handles auth via a dummy JWT
 
 ## Gotchas
 

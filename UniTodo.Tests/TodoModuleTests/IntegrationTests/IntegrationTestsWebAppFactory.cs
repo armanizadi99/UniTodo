@@ -27,7 +27,7 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 .Build();
 
         private DbConnection _dbConnection = null!;
-        private Respawner _respawner = null!;
+        private Respawner? _respawner;
 
         public static readonly string DummyJwtSecretKey = "ThisIsADummySecretKeyThatIsAtLeast32CharactersLong!";
 
@@ -37,16 +37,18 @@ namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 
         _dbConnection = new SqlConnection(_dbContainer.GetConnectionString());
         await _dbConnection.OpenAsync();
+        }
 
+public async Task ResetDatabaseAsync()
+{
+        if (_respawner is null)
+        {
         _respawner = await Respawner.CreateAsync(_dbConnection, new RespawnerOptions
         {
 DbAdapter = DbAdapter.SqlServer,
 SchemasToInclude = new[] { "dbo" }
         });
         }
-
-public async Task ResetDatabaseAsync()
-{
         await _respawner.ResetAsync(_dbConnection);
         }
 
