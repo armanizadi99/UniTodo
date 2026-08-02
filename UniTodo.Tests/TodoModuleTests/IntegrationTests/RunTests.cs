@@ -1,22 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using FluentAssertions;
+using UniTodo.Modules.Todos.Application.DTOs;
 
 namespace UniTodo.Tests.TodoModuleTests.IntegrationTests
 {
     public class RunTests : IntegrationTestsBase
     {
-        public RunTests( IntegrationTestsWebAppFactory factory ) : base(factory) { }
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-[Fact]
-public async Task test1()
-{
-        AuthenticateClient(Guid.NewGuid().ToString());
-        var response = await _client.GetAsync("api/runs/1");
+        static RunTests()
+        {
+            JsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        }
 
-        response.EnsureSuccessStatusCode();
+        public RunTests(IntegrationTestsWebAppFactory factory) : base(factory) { }
+
+        [Fact]
+        public async Task test1()
+        {
+            AuthenticateClient(Guid.NewGuid().ToString());
+
+            var createResponse = await _client.PostAsJsonAsync("api/runs", new
+            {
+                name = "Test Run",
+                resetPolicy = "Daily"
+            });
+            createResponse.EnsureSuccessStatusCode();
+            var created = await createResponse.Content.ReadFromJsonAsync<RunDto>(JsonOptions);
+
+            var response = await _client.GetAsync($"api/runs/{created!.Id}");
+
+            response.EnsureSuccessStatusCode();
+            var fetched = await response.Content.ReadFromJsonAsync<RunDto>(JsonOptions);
+            fetched!.Name.Should().Be("Test Run");
         }
     }
 }

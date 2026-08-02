@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Testcontainers.MsSql;
+using UniTodo.Modules.Auth;
 using UniTodo.Modules.Auth.DB;
 using UniTodo.Modules.Todos.Infrastructure.Db;
 
@@ -61,7 +62,7 @@ public async Task ResetDatabaseAsync()
 
         builder.ConfigureAppConfiguration(( context, configBuilder ) =>
 {
-var testConfig = new Dictionary<string, string?>
+        var testConfig = new Dictionary<string, string?>
         {
             { "AuthModule:JwtSettings:SecretSigningKey", DummyJwtSecretKey },
             { "SEQ_API_KEY", "dummy-test-api-key" },
@@ -73,6 +74,10 @@ configBuilder.AddInMemoryCollection(testConfig);
 
         builder.ConfigureTestServices(services =>
         {
+        var jwtSettingsDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(JwtSettings));
+        if (jwtSettingsDescriptor?.ImplementationInstance is JwtSettings jwtSettings)
+            jwtSettings.SecretSigningKey = DummyJwtSecretKey;
+
         var todosDbContextDescriptor = services.SingleOrDefault(
         d => d.ServiceType == typeof(DbContextOptions<TodoDbContext>));
 
